@@ -20,6 +20,8 @@ const OBJECTS = [
     key: 'diary',
     label: '모이모 만나기',
     image: '/ui/diary.svg',
+    // 마우스를 올리면 펼쳐진 다이어리로 바뀝니다.
+    hoverImage: '/ui/diary2.svg',
     to: '/name',
     style: { left: '17%', top: '28%', width: '23%' },
     tilt: -6,
@@ -76,12 +78,18 @@ export default function MainPage() {
             onClick={() => handleClick(object)}
           >
             <img src={object.image} alt={object.label} />
+            {object.hoverImage && (
+              <img className="desk__object-hover" src={object.hoverImage} alt="" aria-hidden="true" />
+            )}
             <span className="desk__label">{object.label}</span>
           </button>
         ))}
 
         <div className="desk__mascot">
-          <p className="speech-bubble">마우스를 올려바!</p>
+          <p className="speech-bubble">
+            <img src="/ui/speechbubble.svg" alt="" aria-hidden="true" />
+            <span className="speech-bubble__text">마우스를 올려바!</span>
+          </p>
           <img src="/ui/mascot.svg" alt="" />
         </div>
       </div>

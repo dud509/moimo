@@ -224,6 +224,26 @@ img {
   width: 100%;
   height: auto;
   filter: drop-shadow(0 10px 16px rgba(122, 104, 83, 0.18));
+  transition: opacity 0.2s ease;
+}
+
+/* 마우스를 올렸을 때 바뀌는 그림(예: 펼쳐진 다이어리)은 같은 자리에 겹쳐둡니다. */
+.desk__object-hover {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}
+
+.desk__object:hover .desk__object-hover,
+.desk__object:focus-visible .desk__object-hover {
+  opacity: 1;
+}
+
+/* 겹친 그림이 비쳐 보이지 않도록 원래 그림은 숨깁니다. */
+.desk__object:has(.desk__object-hover):hover > img:first-of-type,
+.desk__object:has(.desk__object-hover):focus-visible > img:first-of-type {
+  opacity: 0;
 }
 
 .desk__object:hover,
@@ -265,34 +285,42 @@ img {
   gap: 10px;
 }
 
-.desk__mascot img {
+/* 말풍선 안에도 img 가 있으므로 마스코트 그림만 골라 잡습니다. */
+.desk__mascot > img {
   width: clamp(70px, 6vw, 110px);
   animation: bob 3.2s ease-in-out infinite;
 }
 
+/* 말풍선은 피그마에서 내보낸 speechbubble.svg 그림입니다.
+   그림은 원래 비율 그대로 두고, 글자만 그 위에 얹습니다.
+   글자 위치가 안 맞으면 아래 세 숫자만 고치세요. */
 .speech-bubble {
+  --bubble-w: clamp(120px, 11vw, 190px); /* 말풍선 크기 */
+  --bubble-text-x: 50%; /* 글자 가로 위치 (꼬리 쪽으로 치우쳤으면 조절) */
+  --bubble-text-y: 44%; /* 글자 세로 위치 (꼬리 높이만큼 위로) */
+
   position: relative;
   margin: 0 0 14px;
-  background: var(--white);
-  border: 3px solid var(--line);
-  border-radius: 999px;
-  padding: 12px 22px;
-  font-family: var(--font-display);
-  font-size: clamp(14px, 1.15vw, 19px);
-  white-space: nowrap;
+  width: var(--bubble-w);
 }
 
-.speech-bubble::after {
-  content: '';
+.speech-bubble img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.speech-bubble__text {
   position: absolute;
-  right: 22px;
-  bottom: -14px;
-  width: 16px;
-  height: 16px;
-  background: var(--white);
-  border-right: 3px solid var(--line);
-  border-bottom: 3px solid var(--line);
-  transform: rotate(35deg) skew(-8deg);
+  left: var(--bubble-text-x);
+  top: var(--bubble-text-y);
+  transform: translate(-50%, -50%);
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(13px, 1.05vw, 18px);
+  color: var(--text);
+  white-space: nowrap;
 }
 
 @keyframes bob {
