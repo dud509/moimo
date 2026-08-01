@@ -1,0 +1,14 @@
+{
+  "name": "moimo-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "모이모 - 사진을 보관하는 서버(창고)",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
