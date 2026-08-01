@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1125" viewBox="0 0 2000 1125" preserveAspectRatio="none">
+  <defs>
+    <pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="7" fill="#CADEEA"/>
+    </pattern>
+  </defs>
+
+  <rect width="2000" height="1125" fill="#FCF5DD"/>
+  <rect y="185" width="2000" height="900" fill="url(#dots)"/>
+  <rect width="2000" height="185" fill="#C2D9E5"/>
+  <rect y="1085" width="2000" height="40" fill="#C2D9E5"/>
+</svg>
