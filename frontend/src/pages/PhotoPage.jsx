@@ -1,11 +1,11 @@
 // ============================================================
 // QR코드로 들어왔을 때 보게 되는 화면 (주로 방문자의 휴대폰)
-// 사진 한 장과 저장 버튼을 보여줍니다.
 // ============================================================
 
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import Layout from '../components/Layout.jsx';
 import { fetchPhoto } from '../api.js';
 
 export default function PhotoPage() {
@@ -31,36 +31,41 @@ export default function PhotoPage() {
     };
   }, [id]);
 
+  const extension = photo?.fileName?.endsWith('.png') ? 'png' : 'jpg';
+
   return (
-    <main className="screen screen--center photo-page">
-      {status === 'loading' && <span className="spinner" />}
+    <Layout>
+      <div className="page page--center">
+        {status === 'loading' && <span className="spinner" />}
 
-      {status === 'error' && (
-        <div className="stack stack--center">
-          <p className="lead">사진을 찾을 수 없어요.</p>
-          <Link className="button button--ghost" to="/gallery">
-            갤러리 보기
-          </Link>
-        </div>
-      )}
+        {status === 'error' && (
+          <div className="stack stack--center">
+            <p className="lead">사진을 찾을 수 없어요.</p>
+            <Link className="button button--mint" to="/gallery">
+              모카이빙 보기
+            </Link>
+          </div>
+        )}
 
-      {status === 'done' && (
-        <div className="stack stack--center">
-          <p className="eyebrow">moimo</p>
-          <img className="photo-page__image" src={photo.imageUrl} alt={`${photo.name} 님의 모이모`} />
+        {status === 'done' && (
+          <div className="stack stack--center">
+            <img className="photo-page__image" src={photo.imageUrl} alt={`${photo.name} 님의 모이모`} />
 
-          <a className="button button--primary" href={photo.imageUrl} download={`moimo-${photo.name || photo.id}.jpg`}>
-            사진 저장하기
-          </a>
-          <p className="hint">
-            버튼이 동작하지 않으면 사진을 길게 눌러 저장해 주세요.
-          </p>
+            <a
+              className="button button--pink"
+              href={photo.imageUrl}
+              download={`moimo-${photo.name || photo.id}.${extension}`}
+            >
+              저장하기
+            </a>
+            <p className="hint">버튼이 안 되면 사진을 길게 눌러 저장해 주세요.</p>
 
-          <Link className="corner-link corner-link--static" to="/gallery">
-            모두의 모이모 보기 →
-          </Link>
-        </div>
-      )}
-    </main>
+            <Link className="button button--mint" to="/gallery">
+              모카이빙 보기
+            </Link>
+          </div>
+        )}
+      </div>
+    </Layout>
   );
 }

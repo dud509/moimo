@@ -34,8 +34,8 @@ app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '365d' }));
 // ------------------------------------------------------------
 app.post('/api/photos', (req, res) => {
   try {
-    const { name, character, imageDataUrl } = req.body ?? {};
-    const record = savePhoto({ name, character, imageDataUrl });
+    const { name, character, imageDataUrl, kind } = req.body ?? {};
+    const record = savePhoto({ name, character, imageDataUrl, kind });
     console.log(`[저장] ${record.name || '이름없음'} → ${record.fileName}`);
     res.status(201).json(record);
   } catch (error) {

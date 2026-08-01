@@ -1,51 +1,91 @@
 // ============================================================
-// 2번째 화면 : 캐릭터 등장
+// 캐릭터 결과 화면 (피그마 Desktop-9)
+//
+// 태블릿 안에 완성된 모이모가 등장하고,
+// 아래에 출력하기 / 공유하기, 오른쪽에 세로 메뉴가 붙습니다.
+// 캐릭터는 만들어지는 즉시 모카이빙에 보관됩니다.
 // ============================================================
 
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
+import Layout from '../components/Layout.jsx';
+import Tablet from '../components/Tablet.jsx';
+import SideMenu from '../components/SideMenu.jsx';
+import ShareModal from '../components/ShareModal.jsx';
 import CharacterView from '../components/CharacterView.jsx';
+import { composeCharacterCard } from '../character/draw.js';
+import { useArchive } from '../lib/useArchive.js';
 import { useSession } from '../SessionContext.jsx';
 
 export default function CharacterPage() {
-  const { session, reset } = useSession();
-  const navigate = useNavigate();
+  const { session } = useSession();
+  const [cardImage, setCardImage] = useState(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
-  // 이름을 입력하지 않고 이 주소로 바로 들어온 경우 첫 화면으로 보냅니다.
-  if (!session.character) return <Navigate to="/" replace />;
+  const character = session.character;
 
-  const { character } = session;
+  // 화면이 열리면 저장·공유에 쓸 카드 이미지를 미리 만들어 둡니다.
+  useEffect(() => {
+    if (!character) return;
+    let cancelled = false;
+    composeCharacterCard(character)
+      .then((image) => !cancelled && setCardImage(image))
+      .catch((error) => console.error(error));
+    return () => {
+      cancelled = true;
+    };
+  }, [character]);
 
-  function goBackToStart() {
-    reset();
-    navigate('/');
+  const archive = useArchive({
+    imageDataUrl: cardImage,
+    name: character?.name,
+    character,
+    kind: 'character',
+  });
+
+  // 이름을 입력하지 않고 이 주소로 바로 들어온 경우 이름 입력으로 보냅니다.
+  if (!character) return <Navigate to="/name" replace />;
+
+  function handlePrint() {
+    if (!cardImage) return;
+    const link = document.createElement('a');
+    link.href = cardImage;
+    link.download = `moimo-${character.name || '모이모'}.png`;
+    link.click();
   }
 
   return (
-    <main className="screen screen--center">
-      <div className="stack stack--center reveal">
-        <p className="eyebrow">{character.name} 님의 모이모</p>
+    <Layout>
+      <div className="with-side-menu">
+        <Tablet>
+          <div className="character-screen">
+            <CharacterView character={character} withBackground={false} className="character-screen__figure" />
 
-        <CharacterView character={character} size={380} className="reveal__character" />
+            <p className="character-screen__name">
+              {character.title} {character.name}
+            </p>
 
-        <h2 className="title">
-          {character.title} {character.name}의 모이모
-        </h2>
-        <p className="lead lead--small">
-          이름에서 태어난 단 하나의 모습이에요.
-          <br />
-          이제 함께 사진을 찍어 볼까요?
-        </p>
+            <div className="button-row">
+              <button className="button button--mint" type="button" onClick={handlePrint} disabled={!cardImage}>
+                출력하기
+              </button>
+              <button className="button button--pink" type="button" onClick={() => setShareOpen(true)}>
+                공유하기
+              </button>
+            </div>
+          </div>
+        </Tablet>
 
-        <div className="button-row">
-          <button className="button button--ghost" type="button" onClick={goBackToStart}>
-            다시 입력하기
-          </button>
-          <button className="button button--primary" type="button" onClick={() => navigate('/capture')}>
-            같이 사진 찍기
-          </button>
-        </div>
+        <SideMenu />
       </div>
-    </main>
+
+      <ShareModal
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        archive={archive}
+        imageDataUrl={cardImage}
+      />
+    </Layout>
   );
 }

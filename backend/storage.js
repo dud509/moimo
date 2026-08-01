@@ -52,7 +52,7 @@ function makeId() {
  * 화면에서 보낸 사진(dataURL 형식의 글자)을 실제 이미지 파일로 저장하고,
  * 목록에 한 줄 추가합니다.
  */
-export function savePhoto({ name, character, imageDataUrl }) {
+export function savePhoto({ name, character, imageDataUrl, kind = 'photo' }) {
   const match = /^data:image\/(png|jpeg);base64,(.+)$/s.exec(imageDataUrl ?? '');
   if (!match) throw new Error('사진 형식이 올바르지 않습니다.');
 
@@ -64,6 +64,8 @@ export function savePhoto({ name, character, imageDataUrl }) {
 
   const record = {
     id,
+    // 'character' = 캐릭터 카드, 'photo' = 웹캠으로 찍은 사진
+    kind: kind === 'character' ? 'character' : 'photo',
     name: String(name ?? '').slice(0, 20),
     character: character ?? null,
     fileName,

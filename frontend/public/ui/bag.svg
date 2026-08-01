@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="360" viewBox="0 0 340 360" fill="none">
+  <g stroke="#8A7660" stroke-width="7" stroke-linejoin="round">
+    <path d="M108 118 c0 -56 24 -84 62 -84 s62 28 62 84" fill="none" stroke-linecap="round"/>
+    <path d="M40 112 h260 l-22 224 h-216 Z" fill="#FBF0C4"/>
+    <path d="M170 100 c-22 -26 -58 -12 -50 14 6 18 30 20 50 8 20 12 44 10 50 -8 8 -26 -28 -40 -50 -14 Z" fill="#F7CBD9"/>
+    <circle cx="170" cy="112" r="12" fill="#F9DCE4"/>
+    <text x="170" y="266" text-anchor="middle" font-family="Jua, sans-serif" font-size="48"
+          fill="#FDF8E7" stroke="#8A7660" stroke-width="6" paint-order="stroke">moimo</text>
+  </g>
+</svg>

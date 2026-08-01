@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="200" viewBox="0 0 420 200" fill="none">
+  <g stroke="#8A7660" stroke-width="7" stroke-linejoin="round">
+    <path d="M150 62 C150 30 178 14 196 32 C206 12 232 12 242 32 C262 14 288 32 286 62 C286 78 268 88 218 88 C168 88 150 78 150 62 Z" fill="#F7CBD9"/>
+  </g>
+  <text x="210" y="168" text-anchor="middle" font-family="Jua, sans-serif" font-size="104"
+        fill="#FDF8E7" stroke="#8A7660" stroke-width="9" paint-order="stroke" letter-spacing="2">moimo</text>
+</svg>

@@ -3,11 +3,11 @@
 // ============================================================
 
 /** 사진을 창고에 저장합니다. 저장된 사진의 정보를 돌려줍니다. */
-export async function uploadPhoto({ name, character, imageDataUrl }) {
+export async function uploadPhoto({ name, character, imageDataUrl, kind }) {
   const response = await fetch('/api/photos', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, character, imageDataUrl }),
+    body: JSON.stringify({ name, character, imageDataUrl, kind }),
   });
 
   if (!response.ok) {

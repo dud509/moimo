@@ -1,10 +1,15 @@
 // ============================================================
-// 1번째 화면 : 이름 입력
+// 이름 입력 화면 (피그마 Desktop-7)
+//
+// 태블릿 안에 아직 정해지지 않은 회색 모이모가 있고,
+// 아래에 "이름이 머야?" 입력칸과 "눌러바" 버튼이 있습니다.
 // ============================================================
 
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
+import Layout from '../components/Layout.jsx';
+import Tablet from '../components/Tablet.jsx';
 import { createCharacter } from '../character/generate.js';
 import { useSession } from '../SessionContext.jsx';
 
@@ -29,43 +34,29 @@ export default function NamePage() {
   }
 
   return (
-    <main className="screen screen--center name-page">
-      <div className="name-page__blobs" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
+    <Layout>
+      <Tablet>
+        <div className="name-screen">
+          <img className="name-screen__unknown" src="/ui/unknown.svg" alt="아직 정해지지 않은 모이모" />
 
-      <div className="stack stack--center">
-        <p className="eyebrow">졸업전시 · moimo</p>
-        <h1 className="display">모이모</h1>
-        <p className="lead">
-          이름을 알려주세요.
-          <br />
-          당신만의 모이모가 태어납니다.
-        </p>
-
-        <form className="name-form" onSubmit={handleSubmit}>
-          <input
-            ref={inputRef}
-            className="name-input"
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="이름을 입력해 주세요"
-            maxLength={12}
-            autoComplete="off"
-            aria-label="이름"
-          />
-          <button className="button button--primary" type="submit" disabled={!name.trim()}>
-            모이모 만나기
-          </button>
-        </form>
-      </div>
-
-      <Link className="corner-link" to="/gallery">
-        모두의 모이모 보기 →
-      </Link>
-    </main>
+          <form className="name-form" onSubmit={handleSubmit}>
+            <input
+              ref={inputRef}
+              className="name-input"
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="이름이 머야?"
+              maxLength={12}
+              autoComplete="off"
+              aria-label="이름"
+            />
+            <button className="button button--pink" type="submit" disabled={!name.trim()}>
+              눌러바
+            </button>
+          </form>
+        </div>
+      </Tablet>
+    </Layout>
   );
 }

@@ -95,6 +95,80 @@ export async function composePhoto({ video, character }) {
   return canvas.toDataURL('image/jpeg', 0.92);
 }
 
+/**
+ * 캐릭터만 담긴 카드 이미지를 만듭니다.
+ * (사진을 찍지 않아도 캐릭터를 저장하거나 공유할 수 있도록)
+ */
+export async function composeCharacterCard(character) {
+  const images = await loadCharacterImages(character);
+
+  if (document.fonts?.ready) {
+    try {
+      await document.fonts.ready;
+    } catch {
+      // 글씨체를 못 불러와도 계속 진행합니다.
+    }
+  }
+
+  const SIZE = 1000;
+  const BAR_H = 180;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = SIZE;
+  canvas.height = SIZE + BAR_H;
+  const ctx = canvas.getContext('2d');
+
+  // 배경
+  ctx.fillStyle = '#FCF5DD';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 물방울 무늬
+  ctx.fillStyle = '#CADEEA';
+  for (let y = 40; y < canvas.height; y += 56) {
+    for (let x = 40; x < SIZE; x += 56) {
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // 캐릭터가 놓일 흰 판
+  const pad = 70;
+  roundedRect(ctx, pad, pad, SIZE - pad * 2, SIZE - pad * 2, 40);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fill();
+  ctx.strokeStyle = '#8A7660';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  drawCharacter(ctx, images, pad + 60, pad + 40, SIZE - pad * 2 - 120);
+
+  // 이름
+  ctx.fillStyle = '#7A6853';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = '600 62px Jua, "Gowun Dodum", sans-serif';
+  const label = character.name ? `${character.title} ${character.name}의 모이모` : '나의 모이모';
+  ctx.fillText(label, SIZE / 2, SIZE + BAR_H / 2 - 18);
+
+  ctx.font = '400 30px "Gowun Dodum", sans-serif';
+  ctx.globalAlpha = 0.6;
+  ctx.fillText(formatDate(new Date()), SIZE / 2, SIZE + BAR_H / 2 + 34);
+  ctx.globalAlpha = 1;
+
+  return canvas.toDataURL('image/png');
+}
+
+function roundedRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + width, y, x + width, y + height, radius);
+  ctx.arcTo(x + width, y + height, x, y + height, radius);
+  ctx.arcTo(x, y + height, x, y, radius);
+  ctx.arcTo(x, y, x + width, y, radius);
+  ctx.closePath();
+}
+
 function formatDate(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
