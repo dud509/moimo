@@ -75,8 +75,8 @@ const OBJECTS = [
 // 누르는 물건은 아니고, 오른쪽 아래에 그냥 놓이는 그림들입니다.
 // 말풍선 그림 안에는 글자가 이미 그려져 있어서 따로 글씨를 얹지 않습니다.
 const DECOR = [
-  { key: 'mascot', image: '/ui/mascot.svg', x: 2059, y: 1048, w: 169, bob: true },
-  { key: 'bubble', image: '/ui/speechbubble.svg', x: 2316, y: 1168, w: 259 },
+  { key: 'bubble', image: '/ui/speechbubble.svg', x: 2059, y: 1048, w: 259 },
+  { key: 'mascot', image: '/ui/mascot.svg', x: 2316, y: 1168, w: 169, bob: true },
 ];
 
 // 피그마 좌표를 화면 위치(%)로 바꿉니다.

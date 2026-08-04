@@ -38,6 +38,9 @@
      지금 값은 background.svg (2560×1440) 안의 띠에서 그대로 뽑았습니다.
        위  244 ÷ 1440 = 16.94
        아래  64 ÷ 1440 =  4.44 */
+  /* 테두리 선 두께. 시안 오브젝트의 선이 2560 기준 약 7px 입니다. */
+  --line-w: clamp(3px, 0.27vw, 7px);
+
   --header-h: 16.94%;
   --footer-h: 4.44%;
 
@@ -122,9 +125,9 @@ img {
 
 .hamburger span {
   display: block;
-  width: 34px;
-  height: 5px;
-  border-radius: 3px;
+  width: clamp(34px, 2.65vw, 68px);
+  height: clamp(5px, 0.4vw, 10px);
+  border-radius: 999px;
   background: var(--line);
 }
 
@@ -161,7 +164,7 @@ img {
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--white);
-  border: 4px solid var(--line);
+  border: var(--line-w) solid var(--line);
   display: grid;
   place-items: center;
   transition: transform 0.16s ease;
@@ -248,11 +251,11 @@ img {
   transform: translate(-50%, 8px);
   white-space: nowrap;
   background: var(--white);
-  border: 3px solid var(--line);
+  border: var(--line-w) solid var(--line);
   border-radius: 999px;
-  padding: 8px 20px;
+  padding: clamp(8px, 0.6vw, 15px) clamp(20px, 1.5vw, 38px);
   font-family: var(--font-display);
-  font-size: clamp(14px, 1.15vw, 19px);
+  font-size: clamp(14px, 1.15vw, 29px);
   color: var(--text);
   opacity: 0;
   pointer-events: none;
@@ -352,7 +355,7 @@ img {
 .character-screen__name {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(18px, 1.9vw, 30px);
+  font-size: clamp(18px, 1.9vw, 49px);
   color: var(--text);
 }
 
@@ -383,13 +386,13 @@ img {
 .name-input {
   flex: 1;
   min-width: 0;
-  border: 3px solid var(--line);
+  border: var(--line-w) solid var(--line);
   background: var(--white);
-  border-radius: 10px;
-  padding: 0 18px;
-  height: clamp(44px, 4.6vh, 58px);
+  border-radius: clamp(10px, 0.8vw, 20px);
+  padding: 0 clamp(18px, 1.4vw, 36px);
+  height: clamp(44px, 4.6vh, 66px);
   font-family: var(--font-body);
-  font-size: clamp(14px, 1.2vw, 19px);
+  font-size: clamp(14px, 1.2vw, 31px);
   color: var(--text);
   outline: none;
   -webkit-user-select: text;
@@ -410,12 +413,12 @@ img {
 
 .button {
   appearance: none;
-  border: 3px solid var(--line);
-  border-radius: 10px;
-  padding: 0 clamp(16px, 1.8vw, 30px);
-  height: clamp(44px, 4.6vh, 58px);
+  border: var(--line-w) solid var(--line);
+  border-radius: clamp(10px, 0.8vw, 20px);
+  padding: 0 clamp(16px, 1.8vw, 46px);
+  height: clamp(44px, 4.6vh, 66px);
   font-family: var(--font-display);
-  font-size: clamp(14px, 1.2vw, 19px);
+  font-size: clamp(14px, 1.2vw, 31px);
   color: var(--text);
   cursor: pointer;
   transition: transform 0.14s ease, background 0.14s ease;
@@ -511,7 +514,7 @@ img {
   border-radius: 8px;
   padding: 7px 16px;
   font-family: var(--font-display);
-  font-size: clamp(12px, 1.05vw, 17px);
+  font-size: clamp(12px, 1.05vw, 27px);
   color: var(--text);
   white-space: nowrap;
 }
@@ -556,7 +559,7 @@ img {
   display: grid;
   place-items: center;
   font-family: var(--font-display);
-  font-size: min(22vw, 200px);
+  font-size: 22vw;
   color: var(--white);
   text-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
   background: rgba(122, 104, 83, 0.18);
@@ -605,7 +608,7 @@ img {
   text-align: center;
   padding: 28px;
   background: rgba(252, 245, 221, 0.95);
-  font-size: clamp(13px, 1.1vw, 17px);
+  font-size: clamp(13px, 1.1vw, 28px);
   line-height: 1.7;
 }
 
@@ -647,7 +650,7 @@ img {
 .page__title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(24px, 2.6vw, 40px);
+  font-size: clamp(24px, 2.6vw, 67px);
   color: var(--text);
 }
 
@@ -664,13 +667,13 @@ img {
 
 .lead {
   margin: 0;
-  font-size: clamp(15px, 1.4vw, 20px);
+  font-size: clamp(15px, 1.4vw, 36px);
   line-height: 1.7;
 }
 
 .hint {
   margin: 0;
-  font-size: clamp(12px, 1vw, 15px);
+  font-size: clamp(12px, 1vw, 26px);
   opacity: 0.7;
   text-align: center;
 }
@@ -712,7 +715,7 @@ img {
   border-radius: 999px;
   padding: 4px 14px;
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: clamp(12px, 1.1vw, 28px);
   color: var(--text);
 }
 
@@ -776,7 +779,7 @@ img {
   right: 16px;
   background: none;
   border: none;
-  font-size: 22px;
+  font-size: clamp(18px, 1.4vw, 36px);
   color: var(--text);
   cursor: pointer;
   line-height: 1;
@@ -785,18 +788,18 @@ img {
 .modal__title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(20px, 1.9vw, 26px);
+  font-size: clamp(20px, 1.9vw, 49px);
 }
 
 .modal__text {
   margin: 0;
-  font-size: 14px;
+  font-size: clamp(12px, 1.05vw, 27px);
   line-height: 1.6;
   opacity: 0.8;
 }
 
 .modal__url {
-  font-size: 11px;
+  font-size: clamp(10px, 0.85vw, 22px);
   opacity: 0.6;
   word-break: break-all;
   text-decoration: none;
