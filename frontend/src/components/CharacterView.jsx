@@ -5,7 +5,7 @@
 // size 를 주지 않으면 CSS 에서 크기를 정합니다.
 // ============================================================
 
-import { LAYER_ORDER, partUrl } from '../character/parts.js';
+import { EXAMPLE_IMAGE, LAYER_ORDER, partUrl } from '../character/parts.js';
 
 export default function CharacterView({ character, size, withBackground = true, className = '' }) {
   if (!character) return null;
@@ -19,9 +19,13 @@ export default function CharacterView({ character, size, withBackground = true, 
 
   return (
     <div className={`character ${withBackground ? 'character--card' : ''} ${className}`} style={style}>
-      {LAYER_ORDER.map((layer) => (
-        <img key={layer} src={partUrl(layer, character.parts[layer])} alt="" draggable="false" />
-      ))}
+      {EXAMPLE_IMAGE ? (
+        <img className="character__example" src={EXAMPLE_IMAGE} alt="" draggable="false" />
+      ) : (
+        LAYER_ORDER.map((layer) => (
+          <img key={layer} src={partUrl(layer, character.parts[layer])} alt="" draggable="false" />
+        ))
+      )}
     </div>
   );
 }

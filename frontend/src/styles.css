@@ -318,6 +318,11 @@ img {
   height: auto;
 }
 
+/* 완성 예시 그림 한 장을 쓸 때. 원래 비율 그대로 안쪽에 맞춰 넣습니다. */
+.character__example {
+  object-fit: contain;
+}
+
 /* 캐릭터: 그림 파일들을 같은 자리에 겹쳐 한 마리로 보이게 합니다. */
 .character {
   position: relative;

@@ -6,7 +6,7 @@
 // ============================================================
 
 import { makeRandom } from '../lib/random.js';
-import { PARTS, LAYER_ORDER, BACKGROUNDS, TITLES, partUrl } from './parts.js';
+import { PARTS, LAYER_ORDER, BACKGROUNDS, TITLES, EXAMPLE_IMAGE, partUrl } from './parts.js';
 
 /**
  * 이름을 받아 캐릭터 정보를 만듭니다.
@@ -36,5 +36,7 @@ export function createCharacter(name) {
 
 /** 캐릭터를 그리는 데 필요한 그림 파일 주소들을 순서대로 돌려줍니다. */
 export function characterImageUrls(character) {
+  // 완성 예시 그림을 쓰는 동안에는 그 한 장만 씁니다.
+  if (EXAMPLE_IMAGE) return [EXAMPLE_IMAGE];
   return LAYER_ORDER.map((layer) => partUrl(layer, character.parts[layer]));
 }
