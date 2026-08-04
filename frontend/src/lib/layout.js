@@ -35,20 +35,25 @@ export const SCREEN = {
   h: 770.4,
 };
 
-/** 책상(위아래 띠 사이) 위에 놓습니다. 메인 화면 물건들과 홈 버튼용. */
-export function onDesk({ x, y, w }) {
-  return {
+/** 책상(위아래 띠 사이) 위에 놓습니다. 메인 화면 물건들과 홈 버튼용.
+ *  h 는 안 적어도 됩니다. 적으면 세로 크기까지 고정합니다. */
+export function onDesk({ x, y, w, h }) {
+  const style = {
     left: `${(x / FRAME.w) * 100}%`,
     top: `${((y - DESK.y) / DESK.h) * 100}%`,
     width: `${(w / FRAME.w) * 100}%`,
   };
+  if (h) style.height = `${(h / DESK.h) * 100}%`;
+  return style;
 }
 
 /** 다이어리 안쪽 흰 종이 위에 놓습니다. 이름 입력 등 화면 내용용. */
-export function onScreen({ x, y, w }) {
-  return {
+export function onScreen({ x, y, w, h }) {
+  const style = {
     left: `${((x - SCREEN.x) / SCREEN.w) * 100}%`,
     top: `${((y - SCREEN.y) / SCREEN.h) * 100}%`,
     width: `${(w / SCREEN.w) * 100}%`,
   };
+  if (h) style.height = `${(h / SCREEN.h) * 100}%`;
+  return style;
 }

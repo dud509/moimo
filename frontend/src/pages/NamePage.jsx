@@ -18,8 +18,8 @@ import { useSession } from '../SessionContext.jsx';
 
 const SPOT = {
   unknown: { x: 1156, y: 720, w: 243 },
-  input: { x: 987, y: 1057, w: 400 },
-  submit: { x: 1419, y: 1057, w: 148 },
+  input: { x: 987, y: 1057, w: 400, h: 80 },
+  submit: { x: 1419, y: 1057, w: 148, h: 80 },
 };
 
 export default function NamePage() {
