@@ -80,12 +80,12 @@ export async function composePhoto({ video, character }) {
   ctx.fillStyle = '#3A3330';
   ctx.textBaseline = 'middle';
 
-  ctx.font = '600 46px Jua, "Gowun Dodum", sans-serif';
+  ctx.font = '46px "Ownglyph meetme", sans-serif';
   ctx.textAlign = 'left';
   const label = character.name ? `${character.title} ${character.name}의 모이모` : '나의 모이모';
   ctx.fillText(label, 48, photoH + BAR_H / 2);
 
-  ctx.font = '400 28px "Gowun Dodum", sans-serif';
+  ctx.font = '28px "Ownglyph meetme", sans-serif';
   ctx.textAlign = 'right';
   ctx.globalAlpha = 0.6;
   ctx.fillText(formatDate(new Date()), WIDTH - 48, photoH + BAR_H / 2);
@@ -147,11 +147,11 @@ export async function composeCharacterCard(character) {
   ctx.fillStyle = '#7A6853';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = '600 62px Jua, "Gowun Dodum", sans-serif';
+  ctx.font = '62px "Ownglyph meetme", sans-serif';
   const label = character.name ? `${character.title} ${character.name}의 모이모` : '나의 모이모';
   ctx.fillText(label, SIZE / 2, SIZE + BAR_H / 2 - 18);
 
-  ctx.font = '400 30px "Gowun Dodum", sans-serif';
+  ctx.font = '30px "Ownglyph meetme", sans-serif';
   ctx.globalAlpha = 0.6;
   ctx.fillText(formatDate(new Date()), SIZE / 2, SIZE + BAR_H / 2 + 34);
   ctx.globalAlpha = 1;

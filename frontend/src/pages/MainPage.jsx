@@ -14,16 +14,19 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import { useSession } from '../SessionContext.jsx';
 
-// 피그마 시안(background.svg)의 가로 크기입니다. 물건 크기를 이 값으로 나눠서 %로 씁니다.
-const FRAME_WIDTH = 2560;
+// 피그마 시안(background.svg) 크기와 하늘색 띠 높이입니다.
+const FRAME = { width: 2560, height: 1440, bandTop: 244, bandBottom: 64 };
+const DESK_HEIGHT = FRAME.height - FRAME.bandTop - FRAME.bandBottom; // 1132
 
 // ------------------------------------------------------------
-// width  : 피그마에서 내보낸 그림 파일의 "원래 가로 크기"를 그대로 적습니다.
-//          (터미널에서 `head -c 100 파일.svg` 하면 width="697" 처럼 보입니다)
-//          이 값을 쓰면 시안과 크기가 정확히 같아집니다. 눈대중 금지!
-// center : 물건의 "한가운데"가 놓일 자리입니다. 책상 영역 기준 %입니다.
-//          x 0=왼쪽끝 100=오른쪽끝, y 0=하늘색 띠 바로 아래 100=아래 띠 바로 위
-// tilt   : 기울기(도)
+// ★ 아래 x, y, w 는 전부 "피그마에 뜨는 숫자 그대로" 입니다.
+//
+//   피그마에서 물건을 클릭하면 오른쪽 패널에 X · Y · W · H 가 나옵니다.
+//   그 숫자를 그냥 옮겨 적으세요. % 계산은 아래 place() 가 알아서 합니다.
+//
+//   x, y : 물건의 왼쪽 위 모서리 (피그마 프레임 기준)
+//   w    : 물건의 가로 크기
+//   tilt : 기울기(도). 그림에 이미 기울기가 들어있으면 0 으로 둡니다.
 // ------------------------------------------------------------
 const OBJECTS = [
   {
@@ -31,9 +34,10 @@ const OBJECTS = [
     label: '모이모 만나기',
     image: '/ui/diary.svg',
     to: '/name',
-    width: 697,
-    center: { x: 28.5, y: 53.6 },
-    tilt: -6,
+    x: 262,
+    y: 450,
+    w: 697,
+    tilt: 0,
   },
   {
     key: 'camera',
@@ -41,29 +45,48 @@ const OBJECTS = [
     image: '/ui/camera.svg',
     to: '/capture',
     needsCharacter: true,
-    width: 319,
-    center: { x: 71.5, y: 30.3 },
-    tilt: 5,
+    x: 1672,
+    y: 423,
+    w: 319,
+    tilt: 0,
   },
   {
     key: 'polaroid',
     label: '모카이빙',
     image: '/ui/polaroid.svg',
     to: '/gallery',
-    width: 319,
-    center: { x: 56.5, y: 58.5 },
-    tilt: -3,
+    x: 1320,
+    y: 653,
+    w: 319,
+    tilt: 0,
   },
   {
     key: 'bag',
     label: '모이모 굿즈',
     image: '/ui/bag.svg',
     to: '/goods',
-    width: 359,
-    center: { x: 69.5, y: 79 },
-    tilt: 4,
+    x: 1631,
+    y: 944,
+    w: 359,
+    tilt: 0,
   },
 ];
+
+// 누르는 물건은 아니고, 오른쪽 아래에 그냥 놓이는 그림들입니다.
+// 말풍선 그림 안에는 글자가 이미 그려져 있어서 따로 글씨를 얹지 않습니다.
+const DECOR = [
+  { key: 'mascot', image: '/ui/mascot.svg', x: 2059, y: 1048, w: 169, bob: true },
+  { key: 'bubble', image: '/ui/speechbubble.svg', x: 2316, y: 1168, w: 259 },
+];
+
+// 피그마 좌표를 화면 위치(%)로 바꿉니다.
+function place({ x, y, w }) {
+  return {
+    left: `${(x / FRAME.width) * 100}%`,
+    top: `${((y - FRAME.bandTop) / DESK_HEIGHT) * 100}%`,
+    width: `${(w / FRAME.width) * 100}%`,
+  };
+}
 
 export default function MainPage() {
   const navigate = useNavigate();
@@ -86,12 +109,7 @@ export default function MainPage() {
             key={object.key}
             className="desk__object"
             type="button"
-            style={{
-              left: `${object.center.x}%`,
-              top: `${object.center.y}%`,
-              width: `${(object.width / FRAME_WIDTH) * 100}%`,
-              '--tilt': `${object.tilt}deg`,
-            }}
+            style={{ ...place(object), '--tilt': `${object.tilt}deg` }}
             onClick={() => handleClick(object)}
           >
             <img src={object.image} alt={object.label} />
@@ -99,13 +117,16 @@ export default function MainPage() {
           </button>
         ))}
 
-        <div className="desk__mascot">
-          <p className="speech-bubble">
-            <img src="/ui/speechbubble.svg" alt="" aria-hidden="true" />
-            <span className="speech-bubble__text">마우스를 올려바!</span>
-          </p>
-          <img src="/ui/mascot.svg" alt="" />
-        </div>
+        {DECOR.map((item) => (
+          <img
+            key={item.key}
+            className={`desk__decor ${item.bob ? 'desk__decor--bob' : ''}`}
+            src={item.image}
+            style={place(item)}
+            alt=""
+            aria-hidden="true"
+          />
+        ))}
       </div>
     </Layout>
   );
