@@ -147,26 +147,17 @@ img {
    핑크 태블릿
    ============================================================ */
 
+/* 안의 요소들을 피그마 좌표 그대로 절대배치합니다. (src/lib/layout.js) */
 .tablet-area {
+  position: relative;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(12px, 2vw, 32px);
-  padding: clamp(20px, 5vh, 60px) clamp(12px, 2vw, 32px);
 }
 
+/* home.svg 에 흰 동그라미와 갈색 테두리가 이미 그려져 있어서
+   CSS 로 테두리를 또 그리지 않습니다. 그리면 동그라미가 두 겹이 됩니다. */
 .home-button {
-  flex: none;
-  align-self: flex-start;
-  margin-top: clamp(8px, 4vh, 48px);
-  width: 2.54vw; /* 시안 크기 그대로: home.svg 65 ÷ 2560 */
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--white);
-  border: var(--line-w) solid var(--line);
-  display: grid;
-  place-items: center;
+  position: absolute;
+  display: block;
   transition: transform 0.16s ease;
 }
 
@@ -175,29 +166,21 @@ img {
 }
 
 .home-button img {
-  width: 58%;
+  width: 100%;
+  height: auto;
 }
 
 /* 틀은 diary2.svg 그림 한 장입니다. 겹친 종이·손잡이가 전부 그림에 들어있어서
    CSS 로 따로 그리지 않습니다. */
 .tablet {
-  position: relative;
-  width: fit-content;
-  max-width: 100%;
-  max-height: 100%;
+  position: absolute;
 }
 
 .tablet__frame {
   display: block;
-  width: 54.8vw; /* 시안 크기 그대로: diary2.svg 1403 ÷ 2560 */
-  max-width: 100%;
-  max-height: 100%; /* 세로가 좁은 화면에서는 비율을 지키며 알아서 줄어듭니다 */
+  width: 100%;
   height: auto;
   filter: drop-shadow(0 16px 34px rgba(122, 104, 83, 0.28));
-}
-
-.tablet--wide .tablet__frame {
-  width: min(80vw, 1300px);
 }
 
 /* 맨 앞 흰 종이 자리에 정확히 겹칩니다.
@@ -309,22 +292,28 @@ img {
   padding: clamp(16px, 3vh, 36px);
 }
 
-/* 이름 입력 화면: 캐릭터는 가운데, 입력칸은 아래쪽 (피그마 Desktop-7) */
+/* 이름 입력 화면 (피그마 Desktop-7).
+   회색 모이모·입력칸·버튼은 전부 피그마 좌표 그대로 놓입니다.
+   자리를 옮기려면 NamePage.jsx 의 SPOT 숫자만 고치세요. */
 .name-screen {
+  position: relative;
   height: 100%;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  justify-items: center;
-  padding: clamp(16px, 4vh, 44px) clamp(16px, 3vh, 36px) clamp(24px, 7vh, 72px);
+  margin: 0;
+}
+
+.name-screen > * {
+  position: absolute;
 }
 
 .name-screen__unknown {
-  align-self: center;
-  width: 9.53vw; /* 시안 크기 그대로: unknown.svg 244 ÷ 2560 */
   height: auto;
-  max-height: 100%;
-  object-fit: contain;
   animation: bob 3.6s ease-in-out infinite;
+}
+
+/* 입력칸·버튼 높이는 시안에 맞춰 글자 크기를 따라갑니다. */
+.name-screen .name-input,
+.name-screen__submit {
+  height: 3.4vw;
 }
 
 /* 캐릭터: 그림 파일들을 같은 자리에 겹쳐 한 마리로 보이게 합니다. */
@@ -375,13 +364,6 @@ img {
 }
 
 /* ---- 이름 입력 ---- */
-
-.name-form {
-  display: flex;
-  align-items: stretch;
-  gap: clamp(8px, 1vw, 16px);
-  width: min(62%, 460px);
-}
 
 .name-input {
   flex: 1;
@@ -466,26 +448,26 @@ img {
    오른쪽 세로 메뉴 (결과 화면)
    ============================================================ */
 
-.with-side-menu {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(16px, 3vw, 60px);
-  padding: clamp(20px, 5vh, 60px) clamp(12px, 2vw, 32px);
-}
+/* 다이어리는 이름 입력 화면과 똑같은 자리에 두고,
+   메뉴만 다이어리 오른쪽 빈 자리에 세로로 놓습니다.
+   (다이어리 그림 오른쪽 끝이 2048 이라 그 바깥을 씁니다)
 
-.with-side-menu .tablet-area {
-  padding: 0;
-  flex: 0 1 auto;
-  height: auto;
+   ※ 이 메뉴 자리는 아직 추정치입니다. 피그마 Desktop-9 의 X/Y/W 를 주시면
+      메인 화면처럼 정확히 맞출 수 있습니다. */
+.with-side-menu {
+  position: relative;
+  height: 100%;
 }
 
 .side-menu {
-  flex: none;
+  position: absolute;
+  left: 82.4%; /* 2110 ÷ 2560 */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14.5%; /* 371 ÷ 2560 */
   display: flex;
   flex-direction: column;
-  gap: clamp(10px, 2.2vh, 28px);
+  gap: clamp(10px, 2.2vh, 40px);
   align-items: center;
 }
 
@@ -493,7 +475,7 @@ img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: clamp(8px, 0.6vw, 15px);
   text-decoration: none;
   transition: transform 0.18s cubic-bezier(0.2, 1.2, 0.4, 1);
 }
@@ -510,9 +492,9 @@ img {
 
 .side-menu__label {
   background: var(--white);
-  border: 3px solid var(--line);
-  border-radius: 8px;
-  padding: 7px 16px;
+  border: var(--line-w) solid var(--line);
+  border-radius: clamp(8px, 0.6vw, 16px);
+  padding: clamp(7px, 0.5vw, 13px) clamp(16px, 1.2vw, 30px);
   font-family: var(--font-display);
   font-size: clamp(12px, 1.05vw, 27px);
   color: var(--text);
