@@ -159,45 +159,38 @@ img {
   width: 58%;
 }
 
+/* 틀은 diary2.svg 그림 한 장입니다. 겹친 종이·손잡이가 전부 그림에 들어있어서
+   CSS 로 따로 그리지 않습니다. */
 .tablet {
   position: relative;
-  width: min(54vw, 960px);
-  aspect-ratio: 990 / 690;
+  width: fit-content;
+  max-width: 100%;
   max-height: 100%;
-  background: var(--pink);
-  border-radius: clamp(28px, 3.4vw, 56px);
-  padding: clamp(14px, 1.9vw, 32px);
-  box-shadow: 0 16px 34px -18px rgba(122, 104, 83, 0.5);
 }
 
-.tablet--wide {
-  width: min(76vw, 1240px);
+.tablet__frame {
+  display: block;
+  width: min(58vw, 1020px);
+  max-width: 100%;
+  max-height: 100%; /* 세로가 좁은 화면에서는 비율을 지키며 알아서 줄어듭니다 */
+  height: auto;
+  filter: drop-shadow(0 16px 34px rgba(122, 104, 83, 0.28));
 }
 
-/* 오른쪽으로 튀어나온 손잡이 */
-.tablet__tab {
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translate(-2px, -30%);
-  width: clamp(30px, 3.4vw, 56px);
-  height: 18%;
-  background: var(--pink);
-  border-radius: 0 999px 999px 0;
+.tablet--wide .tablet__frame {
+  width: min(80vw, 1300px);
 }
 
-/* 안쪽 흰 액정. 종이가 겹친 듯한 이중선을 넣었습니다. */
+/* 맨 앞 흰 종이 자리에 정확히 겹칩니다.
+   숫자는 diary2.svg 안의 rect 를 그대로 옮긴 것입니다.
+   (x 83.39 / y 61.2 / w 1102.74 / h 770.4  ÷  전체 1403 × 894) */
 .tablet__screen {
-  position: relative;
-  height: 100%;
-  background: var(--white);
-  border: 3px solid var(--line);
-  border-radius: 10px;
-  box-shadow:
-    3px 3px 0 0 var(--white),
-    3px 3px 0 3px var(--line),
-    7px 7px 0 0 var(--white),
-    7px 7px 0 3px var(--line);
+  position: absolute;
+  left: 5.94%;
+  top: 6.85%;
+  width: 78.6%;
+  height: 86.17%;
+  border-radius: clamp(10px, 1.8vw, 26px);
   overflow: hidden;
 }
 
@@ -224,26 +217,6 @@ img {
   width: 100%;
   height: auto;
   filter: drop-shadow(0 10px 16px rgba(122, 104, 83, 0.18));
-  transition: opacity 0.2s ease;
-}
-
-/* 마우스를 올렸을 때 바뀌는 그림(예: 펼쳐진 다이어리)은 같은 자리에 겹쳐둡니다. */
-.desk__object-hover {
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: 0;
-}
-
-.desk__object:hover .desk__object-hover,
-.desk__object:focus-visible .desk__object-hover {
-  opacity: 1;
-}
-
-/* 겹친 그림이 비쳐 보이지 않도록 원래 그림은 숨깁니다. */
-.desk__object:has(.desk__object-hover):hover > img:first-of-type,
-.desk__object:has(.desk__object-hover):focus-visible > img:first-of-type {
-  opacity: 0;
 }
 
 .desk__object:hover,
@@ -295,9 +268,9 @@ img {
    그림은 원래 비율 그대로 두고, 글자만 그 위에 얹습니다.
    글자 위치가 안 맞으면 아래 세 숫자만 고치세요. */
 .speech-bubble {
-  --bubble-w: clamp(120px, 11vw, 190px); /* 말풍선 크기 */
+  --bubble-w: clamp(150px, 13.5vw, 235px); /* 말풍선 크기 */
   --bubble-text-x: 50%; /* 글자 가로 위치 (꼬리 쪽으로 치우쳤으면 조절) */
-  --bubble-text-y: 44%; /* 글자 세로 위치 (꼬리 높이만큼 위로) */
+  --bubble-text-y: 42%; /* 글자 세로 위치 (꼬리 높이만큼 위로) */
 
   position: relative;
   margin: 0 0 14px;
@@ -315,12 +288,12 @@ img {
   left: var(--bubble-text-x);
   top: var(--bubble-text-y);
   transform: translate(-50%, -50%);
-  width: 100%;
+  width: 74%; /* 구름 모양이라 양옆은 비워둡니다 */
   text-align: center;
   font-family: var(--font-display);
-  font-size: clamp(13px, 1.05vw, 18px);
+  font-size: clamp(11px, 0.92vw, 16px);
+  line-height: 1.25;
   color: var(--text);
-  white-space: nowrap;
 }
 
 @keyframes bob {
