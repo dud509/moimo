@@ -14,14 +14,25 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import { useSession } from '../SessionContext.jsx';
 
-// 물건마다 놓이는 자리(%)와 크기(%)입니다. 위치를 옮기고 싶으면 이 숫자만 고치세요.
+// 피그마 시안(background.svg)의 가로 크기입니다. 물건 크기를 이 값으로 나눠서 %로 씁니다.
+const FRAME_WIDTH = 2560;
+
+// ------------------------------------------------------------
+// width  : 피그마에서 내보낸 그림 파일의 "원래 가로 크기"를 그대로 적습니다.
+//          (터미널에서 `head -c 100 파일.svg` 하면 width="697" 처럼 보입니다)
+//          이 값을 쓰면 시안과 크기가 정확히 같아집니다. 눈대중 금지!
+// center : 물건의 "한가운데"가 놓일 자리입니다. 책상 영역 기준 %입니다.
+//          x 0=왼쪽끝 100=오른쪽끝, y 0=하늘색 띠 바로 아래 100=아래 띠 바로 위
+// tilt   : 기울기(도)
+// ------------------------------------------------------------
 const OBJECTS = [
   {
     key: 'diary',
     label: '모이모 만나기',
     image: '/ui/diary.svg',
     to: '/name',
-    style: { left: '17%', top: '28%', width: '23%' },
+    width: 697,
+    center: { x: 28.5, y: 53.6 },
     tilt: -6,
   },
   {
@@ -30,7 +41,8 @@ const OBJECTS = [
     image: '/ui/camera.svg',
     to: '/capture',
     needsCharacter: true,
-    style: { left: '63%', top: '10%', width: '17%' },
+    width: 319,
+    center: { x: 71.5, y: 30.3 },
     tilt: 5,
   },
   {
@@ -38,7 +50,8 @@ const OBJECTS = [
     label: '모카이빙',
     image: '/ui/polaroid.svg',
     to: '/gallery',
-    style: { left: '49%', top: '40%', width: '15%' },
+    width: 319,
+    center: { x: 56.5, y: 58.5 },
     tilt: -3,
   },
   {
@@ -46,7 +59,8 @@ const OBJECTS = [
     label: '모이모 굿즈',
     image: '/ui/bag.svg',
     to: '/goods',
-    style: { left: '62%', top: '62%', width: '15%' },
+    width: 359,
+    center: { x: 69.5, y: 79 },
     tilt: 4,
   },
 ];
@@ -72,7 +86,12 @@ export default function MainPage() {
             key={object.key}
             className="desk__object"
             type="button"
-            style={{ ...object.style, '--tilt': `${object.tilt}deg` }}
+            style={{
+              left: `${object.center.x}%`,
+              top: `${object.center.y}%`,
+              width: `${(object.width / FRAME_WIDTH) * 100}%`,
+              '--tilt': `${object.tilt}deg`,
+            }}
             onClick={() => handleClick(object)}
           >
             <img src={object.image} alt={object.label} />

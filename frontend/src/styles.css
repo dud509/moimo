@@ -21,9 +21,12 @@
   /* ---- 크기 ----
      띠 높이는 배경 그림(background.svg) 안의 띠와 정확히 겹쳐야 합니다.
      배경 그림을 새로 내보냈는데 띠 위치가 어긋나면 이 % 를 맞춰 주세요.
-     계산법: 띠 높이 ÷ 그림 전체 높이 × 100 */
-  --header-h: 16.44%;
-  --footer-h: 3.56%;
+     계산법: 띠 높이 ÷ 그림 전체 높이 × 100
+     지금 값은 background.svg (2560×1440) 안의 띠에서 그대로 뽑았습니다.
+       위  244 ÷ 1440 = 16.94
+       아래  64 ÷ 1440 =  4.44 */
+  --header-h: 16.94%;
+  --footer-h: 4.44%;
 
   --font-display: 'Jua', 'Gowun Dodum', system-ui, sans-serif;
   --font-body: 'Gowun Dodum', system-ui, sans-serif;
@@ -85,8 +88,8 @@ img {
 }
 
 .app__logo img {
-  /* 하늘색 띠 안에 항상 들어가도록 높이를 직접 정해 둡니다. */
-  height: clamp(52px, 11vh, 104px);
+  /* 시안 크기 그대로: logo.svg 128 ÷ 그림 높이 1440 = 8.89vh */
+  height: 8.89vh;
   width: auto;
 }
 
@@ -141,7 +144,7 @@ img {
   flex: none;
   align-self: flex-start;
   margin-top: clamp(8px, 4vh, 48px);
-  width: clamp(44px, 3.4vw, 60px);
+  width: 2.54vw; /* 시안 크기 그대로: home.svg 65 ÷ 2560 */
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--white);
@@ -170,7 +173,7 @@ img {
 
 .tablet__frame {
   display: block;
-  width: min(58vw, 1020px);
+  width: 54.8vw; /* 시안 크기 그대로: diary2.svg 1403 ÷ 2560 */
   max-width: 100%;
   max-height: 100%; /* 세로가 좁은 화면에서는 비율을 지키며 알아서 줄어듭니다 */
   height: auto;
@@ -209,7 +212,8 @@ img {
   border: none;
   padding: 0;
   cursor: pointer;
-  transform: rotate(var(--tilt));
+  /* left/top 은 물건의 한가운데 자리라서 절반만큼 되돌립니다. */
+  transform: translate(-50%, -50%) rotate(var(--tilt));
   transition: transform 0.22s cubic-bezier(0.2, 1.2, 0.4, 1);
 }
 
@@ -221,7 +225,7 @@ img {
 
 .desk__object:hover,
 .desk__object:focus-visible {
-  transform: rotate(var(--tilt)) scale(1.07) translateY(-8px);
+  transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1.07) translateY(-3%);
   outline: none;
 }
 
@@ -258,9 +262,10 @@ img {
   gap: 10px;
 }
 
-/* 말풍선 안에도 img 가 있으므로 마스코트 그림만 골라 잡습니다. */
+/* 말풍선 안에도 img 가 있으므로 마스코트 그림만 골라 잡습니다.
+   시안 크기 그대로: mascot.svg 169 ÷ 2560 = 6.6vw */
 .desk__mascot > img {
-  width: clamp(70px, 6vw, 110px);
+  width: 6.6vw;
   animation: bob 3.2s ease-in-out infinite;
 }
 
@@ -268,7 +273,7 @@ img {
    그림은 원래 비율 그대로 두고, 글자만 그 위에 얹습니다.
    글자 위치가 안 맞으면 아래 세 숫자만 고치세요. */
 .speech-bubble {
-  --bubble-w: clamp(150px, 13.5vw, 235px); /* 말풍선 크기 */
+  --bubble-w: 10.12vw; /* 시안 크기 그대로: speechbubble.svg 259 ÷ 2560 */
   --bubble-text-x: 50%; /* 글자 가로 위치 (꼬리 쪽으로 치우쳤으면 조절) */
   --bubble-text-y: 42%; /* 글자 세로 위치 (꼬리 높이만큼 위로) */
 
@@ -332,9 +337,9 @@ img {
 
 .name-screen__unknown {
   align-self: center;
-  height: 100%;
-  width: auto;
-  max-width: 40%;
+  width: 9.53vw; /* 시안 크기 그대로: unknown.svg 244 ÷ 2560 */
+  height: auto;
+  max-height: 100%;
   object-fit: contain;
   animation: bob 3.6s ease-in-out infinite;
 }
