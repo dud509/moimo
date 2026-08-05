@@ -14,9 +14,16 @@
 
 import { Link } from 'react-router-dom';
 
-export default function Layout({ children, onMenuClick }) {
+import useStageScale from '../lib/useStageScale.js';
+
+// stage=false 로 주면 시안 고정 크기를 쓰지 않고 화면 크기를 그대로 따릅니다.
+// (QR 로 들어온 휴대폰 화면에서 씁니다)
+export default function Layout({ children, onMenuClick, stage = true }) {
+  // 시안(2560×1440)을 화면 크기에 맞춰 통째로 확대·축소합니다.
+  useStageScale();
+
   return (
-    <div className="app">
+    <div className={`app ${stage ? 'app--stage' : ''}`}>
       <header className="app__header">
         <button
           className="hamburger"

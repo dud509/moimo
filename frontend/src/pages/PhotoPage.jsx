@@ -34,7 +34,7 @@ export default function PhotoPage() {
   const extension = photo?.fileName?.endsWith('.png') ? 'png' : 'jpg';
 
   return (
-    <Layout>
+    <Layout stage={false}>
       <div className="page page--center">
         {status === 'loading' && <span className="spinner" />}
 
