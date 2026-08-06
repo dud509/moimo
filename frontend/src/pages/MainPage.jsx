@@ -9,6 +9,7 @@
 //   쇼핑백     → 모이모 굿즈
 // ============================================================
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout.jsx';
@@ -27,6 +28,11 @@ const DESK_HEIGHT = FRAME.height - FRAME.bandTop - FRAME.bandBottom; // 1132
 //   x, y : 물건의 왼쪽 위 모서리 (피그마 프레임 기준)
 //   w    : 물건의 가로 크기
 //   tilt : 기울기(도). 그림에 이미 기울기가 들어있으면 0 으로 둡니다.
+//
+//   hover: 마우스를 올렸을 때 대신 보여줄 그림입니다.
+//          캐릭터와 흰 테두리까지 전부 그려진 한 장이라, 평소 그림보다 큽니다.
+//          그래서 자리(x, y, w)를 따로 적습니다. 역시 피그마 숫자 그대로입니다.
+//          아직 그림이 없으면 hover 줄을 지우면 됩니다. (그냥 안 바뀝니다)
 // ------------------------------------------------------------
 const OBJECTS = [
   {
@@ -92,6 +98,9 @@ export default function MainPage() {
   const navigate = useNavigate();
   const { session } = useSession();
 
+  // 지금 마우스가 올라가 있는 물건의 key 입니다.
+  const [hovered, setHovered] = useState(null);
+
   function handleClick(object) {
     // 아직 캐릭터가 없는데 사진부터 찍으려 하면 이름 입력으로 먼저 보냅니다.
     if (object.needsCharacter && !session.character) {
@@ -104,17 +113,39 @@ export default function MainPage() {
   return (
     <Layout>
       <div className="desk">
-        {OBJECTS.map((object) => (
-          <button
+        {OBJECTS.map((object) => {
+          // 마우스를 올렸고, 바뀔 그림이 준비되어 있을 때만 평소 그림을 숨깁니다.
+          const swapped = hovered === object.key && Boolean(object.hover);
+
+          return (
+            <button
+              key={object.key}
+              className={`desk__object ${swapped ? 'desk__object--swapped' : ''}`}
+              type="button"
+              style={{ ...place(object), '--tilt': `${object.tilt}deg` }}
+              onClick={() => handleClick(object)}
+              onMouseEnter={() => setHovered(object.key)}
+              onMouseLeave={() => setHovered((key) => (key === object.key ? null : key))}
+              onFocus={() => setHovered(object.key)}
+              onBlur={() => setHovered((key) => (key === object.key ? null : key))}
+            >
+              <img src={object.image} alt={object.label} />
+              <span className="desk__label">{object.label}</span>
+            </button>
+          );
+        })}
+
+        {/* 마우스를 올렸을 때 나오는 그림 (캐릭터 + 흰 테두리가 함께 그려진 한 장).
+            평소 그림보다 커서 버튼 밖으로 나오므로 책상 위에 따로 놓습니다. */}
+        {OBJECTS.filter((object) => object.hover && hovered === object.key).map((object) => (
+          <img
             key={object.key}
-            className="desk__object"
-            type="button"
-            style={{ ...place(object), '--tilt': `${object.tilt}deg` }}
-            onClick={() => handleClick(object)}
-          >
-            <img src={object.image} alt={object.label} />
-            <span className="desk__label">{object.label}</span>
-          </button>
+            className="desk__hover-art"
+            src={object.hover.image}
+            style={place(object.hover)}
+            alt=""
+            aria-hidden="true"
+          />
         ))}
 
         {DECOR.map((item) => (
