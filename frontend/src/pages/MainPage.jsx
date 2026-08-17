@@ -91,8 +91,8 @@ const OBJECTS = [
 //     bottom : 아래 하늘색 띠 위쪽(1376)에서 그림 아래쪽 끝까지의 거리
 //              (창 높이가 바뀌어도 띠에 붙어 있으므로 자리가 안 변합니다)
 const CORNER_DECOR = [
-  { key: 'bubble', image: '/ui/speechbubble.svg', right: 287, bottom: 203, w: 259 },
-  { key: 'mascot', image: '/ui/mascot.svg', right: 120, bottom: 32, w: 169, bob: true },
+  { key: 'bubble', image: '/ui/speechbubble.svg', right: 227, bottom: 203, w: 259 },
+  { key: 'mascot', image: '/ui/mascot.svg', right: 60, bottom: 32, w: 169, bob: true },
 ];
 
 // 오른쪽 아래 모서리 기준으로 놓습니다. (숫자는 전부 시안 px)
