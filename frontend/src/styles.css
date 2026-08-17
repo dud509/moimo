@@ -20,7 +20,7 @@
 
 :root {
   /* ---- 색 (피그마에서 뽑은 정확한 값으로 바꿔주세요) ---- */
-  --sky: #c2d9e5; /* 위아래 하늘색 띠 */
+  --sky: #c7dbe2; /* 위아래 하늘색 띠 (background.svg 안의 색과 동일) */
   --cream: #fcf5dd; /* 가운데 크림색 배경 */
   --dot: #cadeea; /* 물방울 무늬 (지금은 background.svg 안에 들어있습니다) */
   --pink: #f9cdd9; /* 태블릿 테두리 · 핑크 버튼 */
@@ -70,7 +70,10 @@ body {
   margin: 0;
   color: var(--text);
   font-family: var(--font-body);
-  background: var(--cream);
+  /* 화면 비율이 시안(16:9)과 다를 때 위아래에 남는 자리입니다.
+     하늘색 띠와 같은 색이라 띠가 조금 두꺼워 보일 뿐, 여백처럼 보이지 않습니다.
+     전시장 27인치는 정확히 16:9 라 이 색이 아예 보이지 않습니다. */
+  background: var(--sky);
   -webkit-font-smoothing: antialiased;
   /* 전시장 터치스크린에서 글자가 드래그로 선택되지 않도록 합니다. */
   -webkit-user-select: none;
