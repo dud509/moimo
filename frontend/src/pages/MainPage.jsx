@@ -10,7 +10,6 @@
 // ============================================================
 
 import { useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout.jsx';
@@ -90,19 +89,15 @@ const OBJECTS = [
 //   그래서 화면 비율을 어떻게 바꿔도 오른쪽 아래 같은 자리를 지킵니다.
 //     right  : 시안 오른쪽 끝(2560)에서 그림 오른쪽 끝까지의 거리
 //     bottom : 아래 하늘색 띠 위쪽(1376)에서 그림 아래쪽 끝까지의 거리
+//              (창 높이가 바뀌어도 띠에 붙어 있으므로 자리가 안 변합니다)
 const CORNER_DECOR = [
   { key: 'bubble', image: '/ui/speechbubble.svg', right: 242, bottom: 203, w: 259 },
   { key: 'mascot', image: '/ui/mascot.svg', right: 75, bottom: 32, w: 169, bob: true },
 ];
 
-// 창 오른쪽 아래 모서리 기준으로 놓습니다. 크기만 무대 배율을 따라갑니다.
+// 오른쪽 아래 모서리 기준으로 놓습니다. (숫자는 전부 시안 px)
 function pinToCorner({ right, bottom, w }) {
-  return {
-    right: `calc(${right}px * var(--fit))`,
-    // 아래 하늘색 띠(64) + 띠에서 떨어진 거리
-    bottom: `calc(${64 + bottom}px * var(--fit))`,
-    width: `calc(${w}px * var(--fit))`,
-  };
+  return { right: `${right}px`, bottom: `${bottom}px`, width: `${w}px` };
 }
 
 // 피그마 좌표를 화면 위치(%)로 바꿉니다.
@@ -148,55 +143,55 @@ export default function MainPage() {
   return (
     <Layout>
       <div className="desk">
-        {OBJECTS.map((object) => {
-          // 교체 그림을 다 불러왔을 때만 평소 그림을 숨깁니다.
-          const swapped = hovered === object.key && readyArt.has(object.key);
+        {/* 물건들은 시안 크기(2560×1132) 상자 안에 놓입니다. */}
+        <div className="desk__scene">
+          {OBJECTS.map((object) => {
+            // 교체 그림을 다 불러왔을 때만 평소 그림을 숨깁니다.
+            const swapped = hovered === object.key && readyArt.has(object.key);
 
-          return (
-            <button
-              key={object.key}
-              className={`desk__object ${swapped ? 'desk__object--swapped' : ''}`}
-              type="button"
-              style={{ ...place(object), '--tilt': `${object.tilt}deg` }}
-              onClick={() => handleClick(object)}
-              onMouseEnter={() => setHovered(object.key)}
-              onMouseLeave={() => setHovered((key) => (key === object.key ? null : key))}
-              onFocus={() => setHovered(object.key)}
-              onBlur={() => setHovered((key) => (key === object.key ? null : key))}
-            >
-              <img src={object.image} alt={object.label} />
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={object.key}
+                className={`desk__object ${swapped ? 'desk__object--swapped' : ''}`}
+                type="button"
+                style={{ ...place(object), '--tilt': `${object.tilt}deg` }}
+                onClick={() => handleClick(object)}
+                onMouseEnter={() => setHovered(object.key)}
+                onMouseLeave={() => setHovered((key) => (key === object.key ? null : key))}
+                onFocus={() => setHovered(object.key)}
+                onBlur={() => setHovered((key) => (key === object.key ? null : key))}
+              >
+                <img src={object.image} alt={object.label} />
+              </button>
+            );
+          })}
 
-        {/* 마우스를 올렸을 때 나오는 그림 (캐릭터 + 흰 테두리가 함께 그려진 한 장).
+          {/* 마우스를 올렸을 때 나오는 그림 (캐릭터 + 흰 테두리가 함께 그려진 한 장).
             평소 그림보다 커서 버튼 밖으로 나오므로 책상 위에 따로 놓습니다.
             물건 이름은 그림 속 캐릭터가 대신 알려주므로 따로 적지 않습니다.
             (누르는 곳이 어디인지는 알림용 alt 로 전달됩니다)
 
             ★ 화면이 열릴 때 미리 다 불러둡니다. 마우스를 올린 순간에 불러오면
               그림이 도착할 때까지 물건이 사라져 보이기 때문입니다. */}
-        {OBJECTS.filter((object) => object.hover && !missingArt.has(object.key)).map((object) => (
-          <div
-            key={object.key}
-            className={`desk__hover ${hovered === object.key ? 'desk__hover--on' : ''}`}
-            style={place(object.hover)}
-          >
-            <img
-              src={object.hover.image}
-              onLoad={() => markReady(object.key)}
-              onError={() => markMissing(object.key)}
-              alt=""
-              aria-hidden="true"
-            />
-          </div>
-        ))}
+          {OBJECTS.filter((object) => object.hover && !missingArt.has(object.key)).map((object) => (
+            <div
+              key={object.key}
+              className={`desk__hover ${hovered === object.key ? 'desk__hover--on' : ''}`}
+              style={place(object.hover)}
+            >
+              <img
+                src={object.hover.image}
+                onLoad={() => markReady(object.key)}
+                onError={() => markMissing(object.key)}
+                alt=""
+                aria-hidden="true"
+              />
+            </div>
+          ))}
+        </div>
 
-      </div>
-
-      {/* 마스코트·말풍선은 무대 밖(창 기준)에 놓아야 비율이 바뀌어도 자리를 지킵니다.
-          무대는 transform 으로 확대·축소되기 때문에, 그 안에 두면 같이 움직입니다. */}
-      {createPortal(
+        {/* 마스코트·말풍선은 물건 상자가 아니라 아래 하늘색 띠 기준으로 붙습니다.
+            그래서 창 높이가 바뀌어도 오른쪽 아래 같은 자리를 지킵니다. */}
         <div className="corner-decor" aria-hidden="true">
           {CORNER_DECOR.map((item) => (
             <img
@@ -207,9 +202,8 @@ export default function MainPage() {
               alt=""
             />
           ))}
-        </div>,
-        document.body,
-      )}
+        </div>
+      </div>
     </Layout>
   );
 }
