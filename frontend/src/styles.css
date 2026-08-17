@@ -278,16 +278,36 @@ img {
 /* 마우스를 올렸을 때 나오는 그림.
    캐릭터와 흰 테두리까지 한 장에 그려져 있어서 CSS 로 덧그리지 않습니다.
    클릭은 아래에 있는 버튼이 받아야 하므로 마우스를 통과시킵니다. */
-.desk__hover-art {
+.desk__hover {
   position: absolute;
-  height: auto;
+  /* 클릭은 아래에 있는 버튼이 받아야 하므로 마우스를 통과시킵니다. */
   pointer-events: none;
   animation: pop-in 0.18s ease-out both;
+  z-index: 2;
 }
 
-/* 바뀔 그림이 뜨는 동안에는 평소 그림을 숨깁니다. 이름표는 그대로 둡니다. */
+.desk__hover img {
+  width: 100%;
+  height: auto;
+}
+
+/* 이름표는 그림 아래로 완전히 내려서 캐릭터를 가리지 않게 합니다. */
+.desk__hover .desk__label {
+  top: 100%;
+  bottom: auto;
+  margin-top: 20px;
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* 교체 그림이 뜨는 동안에는 평소 그림과 그 이름표를 숨깁니다. */
 .desk__object--swapped img {
   visibility: hidden;
+}
+
+.desk__object--swapped:hover .desk__label,
+.desk__object--swapped:focus-visible .desk__label {
+  opacity: 0;
 }
 
 @keyframes pop-in {

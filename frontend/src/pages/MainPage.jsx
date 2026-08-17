@@ -44,7 +44,7 @@ const OBJECTS = [
     y: 458,
     w: 697,
     tilt: 0,
-    hover: { image: '/ui/diary-hover.svg', x: 217, y: 375, w: 754 },
+    hover: { image: '/ui/diary-hover.svg', x: 217, y: 375, w: 755 },
   },
   {
     key: 'camera',
@@ -52,7 +52,7 @@ const OBJECTS = [
     image: '/ui/camera.svg',
     to: '/capture',
     needsCharacter: true,
-    x: 1580,
+    x: 1680,
     y: 336,
     w: 319,
     tilt: 0,
@@ -67,7 +67,7 @@ const OBJECTS = [
     y: 625,
     w: 319,
     tilt: 0,
-    hover: { image: '/ui/polaroid-hover.svg', x: 1206, y: 587, w: 371 },
+    hover: { image: '/ui/polaroid-hover.svg', x: 1206, y: 587, w: 372 },
   },
   {
     key: 'bag',
@@ -78,7 +78,7 @@ const OBJECTS = [
     y: 929,
     w: 359,
     tilt: 0,
-    hover: { image: '/ui/bag-hover.svg', x: 1457, y: 901, w: 505 },
+    hover: { image: '/ui/bag-hover.svg', x: 1457, y: 901, w: 506 },
   },
 ];
 
@@ -147,19 +147,20 @@ export default function MainPage() {
         })}
 
         {/* 마우스를 올렸을 때 나오는 그림 (캐릭터 + 흰 테두리가 함께 그려진 한 장).
-            평소 그림보다 커서 버튼 밖으로 나오므로 책상 위에 따로 놓습니다. */}
+            평소 그림보다 커서 버튼 밖으로 나오므로 책상 위에 따로 놓습니다.
+            이름표는 캐릭터를 가리지 않게 이 그림 바로 아래에 붙입니다. */}
         {OBJECTS.filter(
           (object) => object.hover && hovered === object.key && !missingArt.has(object.key),
         ).map((object) => (
-          <img
-            key={object.key}
-            className="desk__hover-art"
-            src={object.hover.image}
-            style={place(object.hover)}
-            onError={() => markMissing(object.key)}
-            alt=""
-            aria-hidden="true"
-          />
+          <div key={object.key} className="desk__hover" style={place(object.hover)}>
+            <img
+              src={object.hover.image}
+              onError={() => markMissing(object.key)}
+              alt=""
+              aria-hidden="true"
+            />
+            <span className="desk__label">{object.label}</span>
+          </div>
         ))}
 
         {DECOR.map((item) => (
