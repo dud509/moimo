@@ -27,9 +27,16 @@
   /* 물방울 무늬. background.svg 를 실제로 재서 나온 값입니다.
      줄마다 반 칸씩 밀린 엇갈림(마름모) 배열입니다.
        같은 줄 안 간격 86.5 / 줄 사이 간격 43.25 (= 절반) / 지름 17
+
      무늬를 바꾸고 싶으면 이 두 숫자만 고치세요. */
   --dot-gap: 86.5px; /* 같은 줄 안에서 물방울 사이 간격 */
   --dot-size: 17px; /* 물방울 지름 */
+
+  /* ★ 물방울 크기를 어떻게 다룰지 고르는 스위치입니다.
+       1          → 어느 화면에서든 똑같은 크기 (지금 설정)
+       var(--fit) → 물건과 같은 비율로 함께 줄어듦
+     작은 화면에서 무늬가 굵어 보이면 var(--fit) 로 바꿔 보세요. */
+  --dot-scale: 1;
   --pink: #f9cdd9; /* 태블릿 테두리 · 핑크 버튼 */
   --pink-deep: #f2b3c4; /* 핑크 눌렀을 때 */
   --mint: #ddeef0; /* 민트 버튼 */
@@ -176,27 +183,36 @@ img {
 }
 
 /* 가운데 크림 바탕 + 물방울.
-   무대 안이라 숫자가 전부 시안 px 입니다.
-   같은 무늬를 두 겹 깔고 두 번째를 반 칸씩 밀어 엇갈림(마름모) 배열을 만듭니다. */
+   같은 무늬를 두 겹 깔고 두 번째를 반 칸씩 밀어 엇갈림(마름모) 배열을 만듭니다.
+
+   ★ 무대 안은 모든 길이가 배율(--fit)만큼 줄어들어 그려집니다.
+     그래서 물방울은 미리 배율로 나눠 둡니다. 그러면 줄어든 뒤의 크기가
+     정확히 --dot-gap / --dot-size 가 되어, 어떤 화면에서든 똑같습니다.
+     (--dot-scale 로 이 동작을 끌 수 있습니다) */
 .app--stage .app__body {
+  --gap: calc(var(--dot-gap) * var(--dot-scale) / var(--fit));
+  --radius: calc(var(--dot-size) * var(--dot-scale) / 2 / var(--fit));
+  --edge: calc(0.5px / var(--fit));
+
   background-color: var(--cream);
   background-image:
     radial-gradient(
       circle,
-      var(--dot) calc(var(--dot-size) / 2 - 0.5px),
-      transparent calc(var(--dot-size) / 2 + 0.5px)
+      var(--dot) calc(var(--radius) - var(--edge)),
+      transparent calc(var(--radius) + var(--edge))
     ),
     radial-gradient(
       circle,
-      var(--dot) calc(var(--dot-size) / 2 - 0.5px),
-      transparent calc(var(--dot-size) / 2 + 0.5px)
+      var(--dot) calc(var(--radius) - var(--edge)),
+      transparent calc(var(--radius) + var(--edge))
     );
   background-size:
-    var(--dot-gap) var(--dot-gap),
-    var(--dot-gap) var(--dot-gap);
+    var(--gap) var(--gap),
+    var(--gap) var(--gap);
+  /* 두 번째 겹을 가로·세로로 반 칸씩 밀어 엇갈리게 합니다. */
   background-position:
-    -38.25px -240.25px,
-    5px -197px;
+    0 0,
+    calc(var(--gap) / 2) calc(var(--gap) / 2);
 }
 
 .app__header {
@@ -241,7 +257,10 @@ img {
   align-items: center;
 }
 
+/* 메인 화면만 예외: 마스코트를 창 오른쪽·아래 끝에 붙여야 하므로
+   책상은 창 전체를 차지하고, 물건 상자만 그 안에서 가운데 정렬됩니다. */
 .app--stage .app__body > .desk {
+  width: 100%;
   height: 100%;
 }
 
@@ -381,13 +400,14 @@ img {
    ※ 말풍선은 "마우스를 올려바!" 글자가 그림 안에 이미 그려져 있습니다.
       그래서 HTML 로 글씨를 또 얹지 않습니다. 얹으면 글자가 겹쳐 보입니다.
       문구를 바꾸려면 피그마에서 말풍선을 다시 내보내세요. */
-/* 물건 상자와 가로 중심을 맞추고, 아래는 하늘색 띠 바로 위에 붙입니다. */
+/* 오른쪽 끝과 아래 하늘색 띠에 붙습니다.
+   물건 상자(가운데 정렬)가 아니라 창 기준이라, 창 크기가 바뀌어도
+   오른쪽 아래 모서리에서 같은 자리를 지킵니다. */
 .corner-decor {
   position: absolute;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: 0;
-  transform: translateX(-50%);
-  width: 2560px;
   height: 0;
   pointer-events: none;
   z-index: 5;
