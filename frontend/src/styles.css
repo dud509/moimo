@@ -25,8 +25,10 @@
   --dot: #c7dbe2; /* 물방울 무늬 (띠와 같은 색) */
 
   /* 물방울 무늬. background.svg 를 실제로 재서 나온 값입니다.
+     줄마다 반 칸씩 밀린 엇갈림(마름모) 배열입니다.
+       같은 줄 안 간격 86.5 / 줄 사이 간격 43.25 (= 절반) / 지름 17
      무늬를 바꾸고 싶으면 이 두 숫자만 고치세요. */
-  --dot-gap: 86.5px; /* 물방울 사이 간격 */
+  --dot-gap: 86.5px; /* 같은 줄 안에서 물방울 사이 간격 */
   --dot-size: 17px; /* 물방울 지름 */
   --pink: #f9cdd9; /* 태블릿 테두리 · 핑크 버튼 */
   --pink-deep: #f2b3c4; /* 핑크 눌렀을 때 */
@@ -139,17 +141,30 @@ img {
   /* 띠 사이 높이 1440 - 244 - 64 = 1132 */
   height: calc(1132px * var(--fit));
   background-color: var(--cream);
-  background-image: radial-gradient(
-    circle,
-    var(--dot) calc(var(--dot-size) / 2 * var(--fit) - 0.5px),
-    transparent calc(var(--dot-size) / 2 * var(--fit) + 0.5px)
-  );
-  background-size: calc(var(--dot-gap) * var(--fit)) calc(var(--dot-gap) * var(--fit));
-  /* 시안에서 첫 물방울 중심이 (5, 46) 이라 그 자리에 맞춥니다.
-     (간격의 절반 43.25 를 빼면 무늬 칸의 시작점이 됩니다) */
+  /* 같은 무늬를 두 겹 깔고, 두 번째를 가로·세로로 반 칸씩 밀어서
+     줄마다 엇갈리는 마름모 배열을 만듭니다. */
+  background-image:
+    radial-gradient(
+      circle,
+      var(--dot) calc(var(--dot-size) / 2 * var(--fit) - 0.5px),
+      transparent calc(var(--dot-size) / 2 * var(--fit) + 0.5px)
+    ),
+    radial-gradient(
+      circle,
+      var(--dot) calc(var(--dot-size) / 2 * var(--fit) - 0.5px),
+      transparent calc(var(--dot-size) / 2 * var(--fit) + 0.5px)
+    );
+  background-size:
+    calc(var(--dot-gap) * var(--fit)) calc(var(--dot-gap) * var(--fit)),
+    calc(var(--dot-gap) * var(--fit)) calc(var(--dot-gap) * var(--fit));
+  /* 시안에서 첫 물방울 중심이 (5, 47) 입니다.
+     무늬 칸의 시작점은 중심에서 반 칸(43.25) 을 뺀 자리입니다.
+     두 번째 겹은 거기서 다시 반 칸씩 밀어 놓습니다. */
   background-position:
     calc((100vw - 2560px * var(--fit)) / 2 - 38.25px * var(--fit))
-    calc(-241.25px * var(--fit));
+      calc(-240.25px * var(--fit)),
+    calc((100vw - 2560px * var(--fit)) / 2 + 5px * var(--fit))
+      calc(-197px * var(--fit));
 }
 
 .app__header {
