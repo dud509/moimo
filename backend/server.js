@@ -86,8 +86,26 @@ if (existsSync(DIST_DIR)) {
   app.use(express.static(DIST_DIR));
   // 어떤 주소로 들어와도 (예: /gallery, /p/abc) 화면 앱이 뜨도록 합니다.
   app.get('*', (_req, res) => res.sendFile(join(DIST_DIR, 'index.html')));
+} else {
+  // 개발 중에는 이 주소에 볼 화면이 없습니다.
+  // 그냥 열면 "Cannot GET /" 만 나와서 헷갈리므로, 어디로 가야 하는지 알려줍니다.
+  app.get('/', (_req, res) => {
+    res.type('html').send(
+      `<meta charset="utf-8">
+       <div style="font-family:system-ui;padding:40px;line-height:1.7">
+         <h2>여기는 사진 창고입니다 (${PORT}번)</h2>
+         <p>볼 화면은 여기가 아니라 아래 주소입니다.</p>
+         <p style="font-size:20px"><a href="http://localhost:5173">http://localhost:5173</a> ← 사이트 화면</p>
+       </div>`,
+    );
+  });
 }
 
 app.listen(PORT, () => {
-  console.log(`\n🗄  모이모 창고(서버) 준비 완료 → http://localhost:${PORT}\n`);
+  console.log(`\n🗄  모이모 창고(서버) 준비 완료 (${PORT}번)`);
+  if (!existsSync(DIST_DIR)) {
+    console.log('   ※ 볼 화면은 창고가 아니라 http://localhost:5173 입니다.\n');
+  } else {
+    console.log(`   화면 주소 → http://localhost:${PORT}\n`);
+  }
 });
