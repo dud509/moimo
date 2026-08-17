@@ -2,7 +2,7 @@
 // 모든 화면이 공통으로 쓰는 틀
 //
 //   ┌──────────────────────────┐
-//   │ ☰      moimo 로고        │  ← 하늘색 띠
+//   │        moimo 로고        │  ← 하늘색 띠
 //   ├──────────────────────────┤
 //   │                          │
 //   │   (여기에 화면 내용)      │  ← 크림색 물방울 배경
@@ -18,7 +18,7 @@ import useStageScale from '../lib/useStageScale.js';
 
 // stage=false 로 주면 시안 고정 크기를 쓰지 않고 화면 크기를 그대로 따릅니다.
 // (QR 로 들어온 휴대폰 화면에서 씁니다)
-export default function Layout({ children, onMenuClick, stage = true }) {
+export default function Layout({ children, stage = true }) {
   // 시안(2560×1440)을 화면 크기에 맞춰 통째로 확대·축소합니다.
   useStageScale();
 
@@ -35,17 +35,6 @@ export default function Layout({ children, onMenuClick, stage = true }) {
 
       <div className={`app ${stage ? 'app--stage' : ''}`}>
         <header className="app__header">
-          <button
-            className="hamburger"
-            type="button"
-            aria-label="메뉴"
-            onClick={onMenuClick}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-
           <Link to="/" className="app__logo" aria-label="모이모 홈">
             <img src="/ui/logo.svg" alt="moimo" />
           </Link>

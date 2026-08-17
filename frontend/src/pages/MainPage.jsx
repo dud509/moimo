@@ -10,6 +10,7 @@
 // ============================================================
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout.jsx';
@@ -82,12 +83,27 @@ const OBJECTS = [
   },
 ];
 
-// 누르는 물건은 아니고, 오른쪽 아래에 그냥 놓이는 그림들입니다.
+// 누르는 물건은 아니고, 화면 오른쪽 아래 모서리에 붙어 있는 그림들입니다.
 // 말풍선 그림 안에는 글자가 이미 그려져 있어서 따로 글씨를 얹지 않습니다.
-const DECOR = [
-  { key: 'bubble', image: '/ui/speechbubble.svg', x: 2059, y: 1048, w: 259 },
-  { key: 'mascot', image: '/ui/mascot.svg', x: 2316, y: 1168, w: 169, bob: true },
+//
+// ★ 이 둘만 무대 기준이 아니라 "창 모서리 기준"으로 놓습니다.
+//   그래서 화면 비율을 어떻게 바꿔도 오른쪽 아래 같은 자리를 지킵니다.
+//     right  : 시안 오른쪽 끝(2560)에서 그림 오른쪽 끝까지의 거리
+//     bottom : 아래 하늘색 띠 위쪽(1376)에서 그림 아래쪽 끝까지의 거리
+const CORNER_DECOR = [
+  { key: 'bubble', image: '/ui/speechbubble.svg', right: 242, bottom: 203, w: 259 },
+  { key: 'mascot', image: '/ui/mascot.svg', right: 75, bottom: 32, w: 169, bob: true },
 ];
+
+// 창 오른쪽 아래 모서리 기준으로 놓습니다. 크기만 무대 배율을 따라갑니다.
+function pinToCorner({ right, bottom, w }) {
+  return {
+    right: `calc(${right}px * var(--fit))`,
+    // 무대 아래 여백 + 아래 하늘색 띠(64) + 띠에서 떨어진 거리
+    bottom: `calc((100vh - 1440px * var(--fit)) / 2 + ${64 + bottom}px * var(--fit))`,
+    width: `calc(${w}px * var(--fit))`,
+  };
+}
 
 // 피그마 좌표를 화면 위치(%)로 바꿉니다.
 function place({ x, y, w }) {
@@ -176,17 +192,24 @@ export default function MainPage() {
           </div>
         ))}
 
-        {DECOR.map((item) => (
-          <img
-            key={item.key}
-            className={`desk__decor ${item.bob ? 'desk__decor--bob' : ''}`}
-            src={item.image}
-            style={place(item)}
-            alt=""
-            aria-hidden="true"
-          />
-        ))}
       </div>
+
+      {/* 마스코트·말풍선은 무대 밖(창 기준)에 놓아야 비율이 바뀌어도 자리를 지킵니다.
+          무대는 transform 으로 확대·축소되기 때문에, 그 안에 두면 같이 움직입니다. */}
+      {createPortal(
+        <div className="corner-decor" aria-hidden="true">
+          {CORNER_DECOR.map((item) => (
+            <img
+              key={item.key}
+              className={`corner-decor__item ${item.bob ? 'corner-decor__item--bob' : ''}`}
+              src={item.image}
+              style={pinToCorner(item)}
+              alt=""
+            />
+          ))}
+        </div>,
+        document.body,
+      )}
     </Layout>
   );
 }

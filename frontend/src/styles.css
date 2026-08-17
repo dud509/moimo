@@ -185,28 +185,6 @@ img {
   width: auto;
 }
 
-.hamburger {
-  position: absolute;
-  left: 90px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 20px;
-}
-
-.hamburger span {
-  display: block;
-  width: 68px;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--line);
-}
-
 .app__body {
   flex: 1;
   position: relative;
@@ -256,7 +234,6 @@ img {
   display: block;
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 16px 34px rgba(122, 104, 83, 0.28));
 }
 
 /* 맨 앞 흰 종이 자리에 정확히 겹칩니다.
@@ -294,7 +271,6 @@ img {
 .desk__object img {
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 10px 16px rgba(122, 104, 83, 0.18));
 }
 
 .desk__object:hover,
@@ -332,19 +308,27 @@ img {
   visibility: hidden;
 }
 
-/* 마스코트·말풍선처럼 누르지 않고 그냥 놓이는 그림들.
-   자리와 크기는 MainPage.jsx 의 피그마 좌표에서 계산해 넣습니다.
+/* 마스코트·말풍선: 화면 오른쪽 아래 모서리에 붙어 있습니다.
+   무대(가운데 정렬되는 시안 영역) 안이 아니라 창 기준으로 놓기 때문에,
+   화면 비율을 어떻게 바꿔도 모서리에서 같은 자리를 지킵니다.
+   자리는 MainPage.jsx 의 CORNER_DECOR 에서 계산해 넣습니다.
 
    ※ 말풍선은 "마우스를 올려바!" 글자가 그림 안에 이미 그려져 있습니다.
       그래서 HTML 로 글씨를 또 얹지 않습니다. 얹으면 글자가 겹쳐 보입니다.
       문구를 바꾸려면 피그마에서 말풍선을 다시 내보내세요. */
-.desk__decor {
-  position: absolute;
-  height: auto;
+.corner-decor {
+  position: fixed;
+  inset: 0;
   pointer-events: none;
+  z-index: 5;
 }
 
-.desk__decor--bob {
+.corner-decor__item {
+  position: absolute;
+  height: auto;
+}
+
+.corner-decor__item--bob {
   animation: bob 3.2s ease-in-out infinite;
 }
 
@@ -354,7 +338,7 @@ img {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-5%);
   }
 }
 
@@ -566,7 +550,6 @@ img {
 .side-menu__image {
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 8px 14px rgba(122, 104, 83, 0.18));
 }
 
 .side-menu__label {
