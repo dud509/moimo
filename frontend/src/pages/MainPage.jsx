@@ -105,8 +105,16 @@ export default function MainPage() {
   // 지금 마우스가 올라가 있는 물건의 key 입니다.
   const [hovered, setHovered] = useState(null);
 
+  // 교체 그림을 다 불러온 물건들입니다.
+  // 다 불러온 뒤에만 그림을 바꿔야, 첫 호버에서 잠깐 아무것도 없는 상태가 생기지 않습니다.
+  const [readyArt, setReadyArt] = useState(() => new Set());
+
   // 교체 그림 파일이 아직 없는 물건들입니다. 이 경우 평소 그림을 그대로 둡니다.
   const [missingArt, setMissingArt] = useState(() => new Set());
+
+  function markReady(key) {
+    setReadyArt((keys) => new Set(keys).add(key));
+  }
 
   function markMissing(key) {
     setMissingArt((keys) => new Set(keys).add(key));
@@ -125,8 +133,8 @@ export default function MainPage() {
     <Layout>
       <div className="desk">
         {OBJECTS.map((object) => {
-          // 마우스를 올렸고, 바뀔 그림이 준비되어 있을 때만 평소 그림을 숨깁니다.
-          const swapped = hovered === object.key && Boolean(object.hover) && !missingArt.has(object.key);
+          // 교체 그림을 다 불러왔을 때만 평소 그림을 숨깁니다.
+          const swapped = hovered === object.key && readyArt.has(object.key);
 
           return (
             <button
@@ -148,13 +156,19 @@ export default function MainPage() {
         {/* 마우스를 올렸을 때 나오는 그림 (캐릭터 + 흰 테두리가 함께 그려진 한 장).
             평소 그림보다 커서 버튼 밖으로 나오므로 책상 위에 따로 놓습니다.
             물건 이름은 그림 속 캐릭터가 대신 알려주므로 따로 적지 않습니다.
-            (누르는 곳이 어디인지는 alt 로 화면 읽기 프로그램에 전달됩니다) */}
-        {OBJECTS.filter(
-          (object) => object.hover && hovered === object.key && !missingArt.has(object.key),
-        ).map((object) => (
-          <div key={object.key} className="desk__hover" style={place(object.hover)}>
+            (누르는 곳이 어디인지는 알림용 alt 로 전달됩니다)
+
+            ★ 화면이 열릴 때 미리 다 불러둡니다. 마우스를 올린 순간에 불러오면
+              그림이 도착할 때까지 물건이 사라져 보이기 때문입니다. */}
+        {OBJECTS.filter((object) => object.hover && !missingArt.has(object.key)).map((object) => (
+          <div
+            key={object.key}
+            className={`desk__hover ${hovered === object.key ? 'desk__hover--on' : ''}`}
+            style={place(object.hover)}
+          >
             <img
               src={object.hover.image}
+              onLoad={() => markReady(object.key)}
               onError={() => markMissing(object.key)}
               alt=""
               aria-hidden="true"

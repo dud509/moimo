@@ -258,8 +258,16 @@ img {
   position: absolute;
   /* 클릭은 아래에 있는 버튼이 받아야 하므로 마우스를 통과시킵니다. */
   pointer-events: none;
-  animation: pop-in 0.18s ease-out both;
   z-index: 2;
+  /* 미리 불러두기만 하고 평소에는 보이지 않게 둡니다. */
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.desk__hover--on {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .desk__hover img {
@@ -270,17 +278,6 @@ img {
 /* 교체 그림이 뜨는 동안에는 평소 그림을 숨깁니다. */
 .desk__object--swapped img {
   visibility: hidden;
-}
-
-@keyframes pop-in {
-  from {
-    opacity: 0;
-    transform: scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 /* 마스코트·말풍선처럼 누르지 않고 그냥 놓이는 그림들.
