@@ -99,8 +99,8 @@ const CORNER_DECOR = [
 function pinToCorner({ right, bottom, w }) {
   return {
     right: `calc(${right}px * var(--fit))`,
-    // 무대 아래 여백 + 아래 하늘색 띠(64) + 띠에서 떨어진 거리
-    bottom: `calc((100vh - 1440px * var(--fit)) / 2 + ${64 + bottom}px * var(--fit))`,
+    // 아래 하늘색 띠(64) + 띠에서 떨어진 거리
+    bottom: `calc(${64 + bottom}px * var(--fit))`,
     width: `calc(${w}px * var(--fit))`,
   };
 }

@@ -92,7 +92,7 @@ img {
    ============================================================ */
 
 /* 휴대폰 화면(PhotoPage)용 배경입니다.
-   전시장 화면의 배경은 아래 .app-backdrop 이 CSS 로 그립니다. */
+   전시장 화면(.app--stage)의 배경은 아래에서 CSS 로 그립니다. */
 .app {
   height: 100%;
   display: flex;
@@ -103,68 +103,55 @@ img {
 }
 
 /* ★ 무대(stage) — 전시장 화면용
-   시안 크기(2560×1440) 그대로 만들어 두고 --fit 배율로 화면에 맞춥니다.
-   덕분에 아래 모든 숫자를 "피그마 숫자 그대로" 적을 수 있고,
-   모니터가 커지든 작아지든 비율이 절대 안 깨집니다.
+   가로 2560 으로 만들어 두고 창 너비에 맞춰 --fit 배율로 줄입니다.
+   덕분에 아래 모든 숫자를 "피그마 숫자 그대로" 적을 수 있습니다.
    배율은 src/lib/useStageScale.js 가 정합니다.
+
+   높이는 창 높이를 시안 단위로 환산해서 씁니다. 그래서 무대가 창을 꽉 채우고,
+   하늘색 띠는 위·아래 끝에 붙은 채 두께를 유지하며,
+   남거나 부족한 높이는 가운데 크림 영역이 흡수합니다.
 
    ※ QR 로 들어온 휴대폰 화면(PhotoPage)은 이 무대를 쓰지 않습니다.
       폰에서는 글자가 너무 작아지기 때문입니다. */
 .app--stage {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 0;
   width: 2560px;
-  height: 1440px;
-  transform: translate(-50%, -50%) scale(var(--fit, 1));
-  /* 배경은 .app-backdrop 이 그립니다. 무대 안팎이 이어져 보이도록
-     물방울까지 CSS 로 그리기 때문에, 여기서는 그림을 쓰지 않습니다. */
+  height: calc(100vh / var(--fit, 1));
+  transform: translateX(-50%) scale(var(--fit, 1));
+  transform-origin: top center;
   background-image: none;
 }
 
-/* ★ 창 전체 배경
-   하늘색이 기본이고, 그 위에 크림+물방울 칸을 무대의 몸통 자리에 맞춰 얹습니다.
-   칸의 자리·크기·무늬 간격이 모두 --fit 배율을 따라가므로,
-   창을 어느 방향으로 늘려도 색과 무늬가 그대로 이어집니다. */
-.app-backdrop {
-  position: absolute;
-  inset: 0;
+/* 위아래 하늘색 띠 */
+.app--stage .app__header,
+.app--stage .app__footer {
   background: var(--sky);
 }
 
-.app-backdrop__field {
-  position: absolute;
-  left: 0;
-  right: 0;
-  /* 무대 위쪽 여백 + 하늘색 띠(244) 만큼 내려온 자리에서 시작합니다. */
-  top: calc((100vh - 1440px * var(--fit)) / 2 + 244px * var(--fit));
-  /* 띠 사이 높이 1440 - 244 - 64 = 1132 */
-  height: calc(1132px * var(--fit));
+/* 가운데 크림 바탕 + 물방울.
+   무대 안이라 숫자가 전부 시안 px 입니다.
+   같은 무늬를 두 겹 깔고 두 번째를 반 칸씩 밀어 엇갈림(마름모) 배열을 만듭니다. */
+.app--stage .app__body {
   background-color: var(--cream);
-  /* 같은 무늬를 두 겹 깔고, 두 번째를 가로·세로로 반 칸씩 밀어서
-     줄마다 엇갈리는 마름모 배열을 만듭니다. */
   background-image:
     radial-gradient(
       circle,
-      var(--dot) calc(var(--dot-size) / 2 * var(--fit) - 0.5px),
-      transparent calc(var(--dot-size) / 2 * var(--fit) + 0.5px)
+      var(--dot) calc(var(--dot-size) / 2 - 0.5px),
+      transparent calc(var(--dot-size) / 2 + 0.5px)
     ),
     radial-gradient(
       circle,
-      var(--dot) calc(var(--dot-size) / 2 * var(--fit) - 0.5px),
-      transparent calc(var(--dot-size) / 2 * var(--fit) + 0.5px)
+      var(--dot) calc(var(--dot-size) / 2 - 0.5px),
+      transparent calc(var(--dot-size) / 2 + 0.5px)
     );
   background-size:
-    calc(var(--dot-gap) * var(--fit)) calc(var(--dot-gap) * var(--fit)),
-    calc(var(--dot-gap) * var(--fit)) calc(var(--dot-gap) * var(--fit));
-  /* 시안에서 첫 물방울 중심이 (5, 47) 입니다.
-     무늬 칸의 시작점은 중심에서 반 칸(43.25) 을 뺀 자리입니다.
-     두 번째 겹은 거기서 다시 반 칸씩 밀어 놓습니다. */
+    var(--dot-gap) var(--dot-gap),
+    var(--dot-gap) var(--dot-gap);
   background-position:
-    calc((100vw - 2560px * var(--fit)) / 2 - 38.25px * var(--fit))
-      calc(-240.25px * var(--fit)),
-    calc((100vw - 2560px * var(--fit)) / 2 + 5px * var(--fit))
-      calc(-197px * var(--fit));
+    -38.25px -240.25px,
+    5px -197px;
 }
 
 .app__header {
@@ -190,6 +177,17 @@ img {
   position: relative;
   min-height: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 화면 내용은 시안의 띠 사이 높이(1132)를 그대로 유지하고,
+   남는 자리에서 세로 가운데에 놓입니다.
+   창 높이가 바뀌어도 물건 크기와 배치가 흔들리지 않습니다. */
+.app--stage .app__body > * {
+  flex: none;
+  height: 1132px;
 }
 
 .app__footer {
@@ -255,7 +253,7 @@ img {
 
 .desk {
   position: relative;
-  height: 100%;
+  height: 1132px;
 }
 
 .desk__object {
@@ -512,7 +510,7 @@ img {
 
 .button-row {
   display: flex;
-  gap: clamp(8px, 1vw, 16px);
+  gap: 16px;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -675,7 +673,7 @@ img {
 .page {
   height: 100%;
   overflow: auto;
-  padding: clamp(20px, 3vw, 52px);
+  padding: 52px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -815,7 +813,7 @@ img {
   background: var(--cream);
   border: 4px solid var(--line);
   border-radius: 24px;
-  padding: clamp(26px, 3vw, 40px);
+  padding: 40px;
   width: min(380px, 100%);
   text-align: center;
 }
