@@ -141,14 +141,14 @@ export default function MainPage() {
               onBlur={() => setHovered((key) => (key === object.key ? null : key))}
             >
               <img src={object.image} alt={object.label} />
-              <span className="desk__label">{object.label}</span>
             </button>
           );
         })}
 
         {/* 마우스를 올렸을 때 나오는 그림 (캐릭터 + 흰 테두리가 함께 그려진 한 장).
             평소 그림보다 커서 버튼 밖으로 나오므로 책상 위에 따로 놓습니다.
-            이름표는 캐릭터를 가리지 않게 이 그림 바로 아래에 붙입니다. */}
+            물건 이름은 그림 속 캐릭터가 대신 알려주므로 따로 적지 않습니다.
+            (누르는 곳이 어디인지는 alt 로 화면 읽기 프로그램에 전달됩니다) */}
         {OBJECTS.filter(
           (object) => object.hover && hovered === object.key && !missingArt.has(object.key),
         ).map((object) => (
@@ -159,7 +159,6 @@ export default function MainPage() {
               alt=""
               aria-hidden="true"
             />
-            <span className="desk__label">{object.label}</span>
           </div>
         ))}
 
