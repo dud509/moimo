@@ -40,10 +40,11 @@ const OBJECTS = [
     label: '모이모 만나기',
     image: '/ui/diary.svg',
     to: '/name',
-    x: 262,
-    y: 450,
+    x: 242,
+    y: 458,
     w: 697,
     tilt: 0,
+    hover: { image: '/ui/diary-hover.svg', x: 217, y: 375, w: 754 },
   },
   {
     key: 'camera',
@@ -51,30 +52,33 @@ const OBJECTS = [
     image: '/ui/camera.svg',
     to: '/capture',
     needsCharacter: true,
-    x: 1672,
-    y: 423,
+    x: 1580,
+    y: 336,
     w: 319,
     tilt: 0,
+    hover: { image: '/ui/camera-hover.svg', x: 1652, y: 309, w: 374 },
   },
   {
     key: 'polaroid',
     label: '모카이빙',
     image: '/ui/polaroid.svg',
     to: '/gallery',
-    x: 1320,
-    y: 653,
+    x: 1232,
+    y: 625,
     w: 319,
     tilt: 0,
+    hover: { image: '/ui/polaroid-hover.svg', x: 1206, y: 587, w: 371 },
   },
   {
     key: 'bag',
     label: '모이모 굿즈',
     image: '/ui/bag.svg',
     to: '/goods',
-    x: 1631,
-    y: 944,
+    x: 1577,
+    y: 929,
     w: 359,
     tilt: 0,
+    hover: { image: '/ui/bag-hover.svg', x: 1457, y: 901, w: 505 },
   },
 ];
 
@@ -101,6 +105,13 @@ export default function MainPage() {
   // 지금 마우스가 올라가 있는 물건의 key 입니다.
   const [hovered, setHovered] = useState(null);
 
+  // 교체 그림 파일이 아직 없는 물건들입니다. 이 경우 평소 그림을 그대로 둡니다.
+  const [missingArt, setMissingArt] = useState(() => new Set());
+
+  function markMissing(key) {
+    setMissingArt((keys) => new Set(keys).add(key));
+  }
+
   function handleClick(object) {
     // 아직 캐릭터가 없는데 사진부터 찍으려 하면 이름 입력으로 먼저 보냅니다.
     if (object.needsCharacter && !session.character) {
@@ -115,7 +126,7 @@ export default function MainPage() {
       <div className="desk">
         {OBJECTS.map((object) => {
           // 마우스를 올렸고, 바뀔 그림이 준비되어 있을 때만 평소 그림을 숨깁니다.
-          const swapped = hovered === object.key && Boolean(object.hover);
+          const swapped = hovered === object.key && Boolean(object.hover) && !missingArt.has(object.key);
 
           return (
             <button
@@ -137,12 +148,15 @@ export default function MainPage() {
 
         {/* 마우스를 올렸을 때 나오는 그림 (캐릭터 + 흰 테두리가 함께 그려진 한 장).
             평소 그림보다 커서 버튼 밖으로 나오므로 책상 위에 따로 놓습니다. */}
-        {OBJECTS.filter((object) => object.hover && hovered === object.key).map((object) => (
+        {OBJECTS.filter(
+          (object) => object.hover && hovered === object.key && !missingArt.has(object.key),
+        ).map((object) => (
           <img
             key={object.key}
             className="desk__hover-art"
             src={object.hover.image}
             style={place(object.hover)}
+            onError={() => markMissing(object.key)}
             alt=""
             aria-hidden="true"
           />
