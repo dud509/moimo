@@ -21,8 +21,13 @@
 :root {
   /* ---- 색 (피그마에서 뽑은 정확한 값으로 바꿔주세요) ---- */
   --sky: #c7dbe2; /* 위아래 하늘색 띠 (background.svg 안의 색과 동일) */
-  --cream: #fcf5dd; /* 가운데 크림색 배경 */
-  --dot: #cadeea; /* 물방울 무늬 (지금은 background.svg 안에 들어있습니다) */
+  --cream: #fff9e9; /* 가운데 크림색 배경 (background.svg 에서 측정) */
+  --dot: #c7dbe2; /* 물방울 무늬 (띠와 같은 색) */
+
+  /* 물방울 무늬. background.svg 를 실제로 재서 나온 값입니다.
+     무늬를 바꾸고 싶으면 이 두 숫자만 고치세요. */
+  --dot-gap: 86.5px; /* 물방울 사이 간격 */
+  --dot-size: 17px; /* 물방울 지름 */
   --pink: #f9cdd9; /* 태블릿 테두리 · 핑크 버튼 */
   --pink-deep: #f2b3c4; /* 핑크 눌렀을 때 */
   --mint: #ddeef0; /* 민트 버튼 */
@@ -31,20 +36,15 @@
   --text: #7a6853; /* 갈색 글씨 */
   --white: #ffffff;
 
-  /* ---- 크기 ----
-     띠 높이는 배경 그림(background.svg) 안의 띠와 정확히 겹쳐야 합니다.
-     배경 그림을 새로 내보냈는데 띠 위치가 어긋나면 이 % 를 맞춰 주세요.
-     계산법: 띠 높이 ÷ 그림 전체 높이 × 100
-     지금 값은 background.svg (2560×1440) 안의 띠에서 그대로 뽑았습니다.
-       위  244 ÷ 1440 = 16.94
-       아래  64 ÷ 1440 =  4.44 */
-  /* 테두리 선 두께 */
-  --line-w: 3px;
-  /* 오른쪽 세로 메뉴 이름표 높이 (시안 60 ÷ 2560 × 100) */
-  --menu-label-h: 60px;
-
+  /* ---- 크기 (전부 시안 2560×1440 기준 px) ---- */
+  /* 위아래 하늘색 띠 높이 */
   --header-h: 244px;
   --footer-h: 64px;
+
+  /* 테두리 선 두께 */
+  --line-w: 3px;
+  /* 오른쪽 세로 메뉴 이름표 높이 */
+  --menu-label-h: 60px;
 
   --font-display: 'Ownglyph meetme', system-ui, sans-serif;
   --font-body: 'Ownglyph meetme', system-ui, sans-serif;
@@ -89,9 +89,8 @@ img {
    공통 틀 (하늘색 띠 + 물방울 배경)
    ============================================================ */
 
-/* 배경 그림 한 장이 화면 전체(하늘색 띠 + 크림 바탕 + 물방울)를 담당합니다.
-   frontend/public/ui/background.svg 를 덮어쓰면 바로 바뀝니다.
-   화면 비율이 달라도 띠 위치가 어긋나지 않도록 꽉 채워서 늘립니다. */
+/* 휴대폰 화면(PhotoPage)용 배경입니다.
+   전시장 화면의 배경은 아래 .app-backdrop 이 CSS 로 그립니다. */
 .app {
   height: 100%;
   display: flex;
@@ -116,6 +115,41 @@ img {
   width: 2560px;
   height: 1440px;
   transform: translate(-50%, -50%) scale(var(--fit, 1));
+  /* 배경은 .app-backdrop 이 그립니다. 무대 안팎이 이어져 보이도록
+     물방울까지 CSS 로 그리기 때문에, 여기서는 그림을 쓰지 않습니다. */
+  background-image: none;
+}
+
+/* ★ 창 전체 배경
+   하늘색이 기본이고, 그 위에 크림+물방울 칸을 무대의 몸통 자리에 맞춰 얹습니다.
+   칸의 자리·크기·무늬 간격이 모두 --fit 배율을 따라가므로,
+   창을 어느 방향으로 늘려도 색과 무늬가 그대로 이어집니다. */
+.app-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--sky);
+}
+
+.app-backdrop__field {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* 무대 위쪽 여백 + 하늘색 띠(244) 만큼 내려온 자리에서 시작합니다. */
+  top: calc((100vh - 1440px * var(--fit)) / 2 + 244px * var(--fit));
+  /* 띠 사이 높이 1440 - 244 - 64 = 1132 */
+  height: calc(1132px * var(--fit));
+  background-color: var(--cream);
+  background-image: radial-gradient(
+    circle,
+    var(--dot) calc(var(--dot-size) / 2 * var(--fit) - 0.5px),
+    transparent calc(var(--dot-size) / 2 * var(--fit) + 0.5px)
+  );
+  background-size: calc(var(--dot-gap) * var(--fit)) calc(var(--dot-gap) * var(--fit));
+  /* 시안에서 첫 물방울 중심이 (5, 46) 이라 그 자리에 맞춥니다.
+     (간격의 절반 43.25 를 빼면 무늬 칸의 시작점이 됩니다) */
+  background-position:
+    calc((100vw - 2560px * var(--fit)) / 2 - 38.25px * var(--fit))
+    calc(-241.25px * var(--fit));
 }
 
 .app__header {

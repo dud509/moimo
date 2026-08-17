@@ -23,27 +23,38 @@ export default function Layout({ children, onMenuClick, stage = true }) {
   useStageScale();
 
   return (
-    <div className={`app ${stage ? 'app--stage' : ''}`}>
-      <header className="app__header">
-        <button
-          className="hamburger"
-          type="button"
-          aria-label="메뉴"
-          onClick={onMenuClick}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
+    <>
+      {/* 배경은 창 전체를 채웁니다. 화면 비율이 시안(16:9)과 달라도
+          하늘색은 하늘색으로, 물방울 바탕은 물방울로 이어집니다.
+          안쪽 크림 칸의 자리는 무대 배율(--fit)에 맞춰 CSS 가 계산합니다. */}
+      {stage && (
+        <div className="app-backdrop" aria-hidden="true">
+          <div className="app-backdrop__field" />
+        </div>
+      )}
 
-        <Link to="/" className="app__logo" aria-label="모이모 홈">
-          <img src="/ui/logo.svg" alt="moimo" />
-        </Link>
-      </header>
+      <div className={`app ${stage ? 'app--stage' : ''}`}>
+        <header className="app__header">
+          <button
+            className="hamburger"
+            type="button"
+            aria-label="메뉴"
+            onClick={onMenuClick}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
 
-      <div className="app__body">{children}</div>
+          <Link to="/" className="app__logo" aria-label="모이모 홈">
+            <img src="/ui/logo.svg" alt="moimo" />
+          </Link>
+        </header>
 
-      <footer className="app__footer" />
-    </div>
+        <div className="app__body">{children}</div>
+
+        <footer className="app__footer" />
+      </div>
+    </>
   );
 }
