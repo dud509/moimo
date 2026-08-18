@@ -225,9 +225,16 @@ img {
   place-items: center;
 }
 
+/* 로고를 누르면 메인 화면으로 돌아갑니다.
+   전시장은 터치스크린이라 손가락으로 눌러야 해서, 그림 크기보다
+   넉넉하게 눌리도록 띠 높이 전체와 좌우 여백까지 눌리는 영역으로 잡습니다. */
 .app__logo {
-  display: block;
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 0 80px;
   line-height: 0;
+  cursor: pointer;
 }
 
 .app__logo img {
