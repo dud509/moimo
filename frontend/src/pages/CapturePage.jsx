@@ -1,20 +1,27 @@
 // ============================================================
 // 같이 사진 찍는 화면
 //
-// 태블릿 안에 웹캠 화면이 들어가고, 오른쪽 아래에 모이모가 얹힙니다.
-// 화면에 보이는 그대로 사진이 찍히도록 미리보기와 결과물의
-// 캐릭터 위치를 똑같이 맞춰 두었습니다.
+// 물결 무늬 카메라 프레임(camera-frame.svg) 안에 웹캠 화면이 들어가고,
+// 오른쪽 아래에 모이모가 얹힙니다. 프레임 아래쪽 가운데의 동그란 버튼
+// (camera-button.svg) 을 누르면 3초 뒤에 찍힙니다.
+//
+// 화면에 보이는 그대로 사진이 찍히도록 미리보기와 결과물의 비율·캐릭터
+// 위치를 똑같이 맞춰 두었습니다.
 // (위치를 바꾸려면 이 파일과 character/draw.js 를 함께 고쳐 주세요.)
 // ============================================================
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import Layout from '../components/Layout.jsx';
-import Tablet from '../components/Tablet.jsx';
 import CharacterView from '../components/CharacterView.jsx';
 import { composePhoto } from '../character/draw.js';
+import { onDesk } from '../lib/layout.js';
 import { useSession } from '../SessionContext.jsx';
+
+// 홈 버튼 자리 (다른 화면과 같은 자리입니다)
+const HOME = { x: 550, y: 383, w: 65 };
 
 export default function CapturePage() {
   const { session, setPhoto } = useSession();
@@ -25,7 +32,6 @@ export default function CapturePage() {
 
   const [cameraError, setCameraError] = useState(null);
   const [ready, setReady] = useState(false);
-  const [aspect, setAspect] = useState(16 / 9);
   const [countdown, setCountdown] = useState(null); // 3 → 2 → 1 → null
   const [flash, setFlash] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -93,22 +99,24 @@ export default function CapturePage() {
 
   return (
     <Layout>
-      <Tablet>
-        <div className="capture-screen">
-          <div className="stage" style={{ aspectRatio: String(aspect) }}>
+      <div className="capture">
+        <Link className="home-button" to="/" aria-label="처음으로" style={onDesk(HOME)}>
+          <img src="/ui/home.svg" alt="" />
+        </Link>
+
+        {/* 흰 카드와 물결 테두리(camera-frame.svg)는 배경으로 깔립니다. */}
+        <div className="camera">
+          {/* 웹캠 화면. 프레임 안쪽에 딱 맞게 들어갑니다. */}
+          <div className="camera__view">
             <video
               ref={videoRef}
-              className="stage__video"
+              className="camera__video"
               playsInline
               muted
-              onLoadedMetadata={(event) => {
-                const { videoWidth, videoHeight } = event.currentTarget;
-                if (videoWidth && videoHeight) setAspect(videoWidth / videoHeight);
-                setReady(true);
-              }}
+              onLoadedMetadata={() => setReady(true)}
             />
 
-            <div className="stage__character">
+            <div className="camera__character">
               <CharacterView character={session.character} size="100%" withBackground={false} />
             </div>
 
@@ -116,7 +124,7 @@ export default function CapturePage() {
             {flash && <div className="flash" />}
 
             {cameraError && (
-              <div className="stage__message">
+              <div className="camera__message">
                 <p>{cameraError}</p>
                 <button className="button button--pink" type="button" onClick={startCamera}>
                   다시 연결하기
@@ -125,21 +133,17 @@ export default function CapturePage() {
             )}
           </div>
 
-          <div className="button-row">
-            <button className="button button--mint" type="button" onClick={() => navigate('/character')}>
-              뒤로
-            </button>
-            <button
-              className="button button--pink"
-              type="button"
-              onClick={() => setCountdown(3)}
-              disabled={!ready || busy || countdown !== null || Boolean(cameraError)}
-            >
-              {countdown !== null ? '찍는 중…' : '찰칵!'}
-            </button>
-          </div>
+          {/* 사진 찍기 버튼. 흰 원과 테두리가 camera-button.svg 에 들어있어
+              CSS 로 덧그리지 않고 그림을 그대로 씁니다. */}
+          <button
+            className="shutter"
+            type="button"
+            aria-label="사진 찍기"
+            onClick={() => setCountdown(3)}
+            disabled={!ready || busy || countdown !== null || Boolean(cameraError)}
+          />
         </div>
-      </Tablet>
+      </div>
     </Layout>
   );
 }

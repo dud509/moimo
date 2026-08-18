@@ -50,10 +50,13 @@ export async function composePhoto({ video, character }) {
     }
   }
 
+  // ★ 화면에서 본 그대로 찍히도록, 카메라 프레임 안쪽과 같은 비율로 만듭니다.
+  //   (styles.css 의 .camera__view — 안쪽 1162 × 839)
+  const VIEW_ASPECT = 1162 / 839;
   const WIDTH = 1280;
   const videoW = video.videoWidth || 1280;
   const videoH = video.videoHeight || 720;
-  const photoH = Math.round((WIDTH * videoH) / videoW);
+  const photoH = Math.round(WIDTH / VIEW_ASPECT);
   const BAR_H = 130; // 아래쪽 이름표 칸의 높이
   const HEIGHT = photoH + BAR_H;
 
@@ -63,15 +66,20 @@ export async function composePhoto({ video, character }) {
   const ctx = canvas.getContext('2d');
 
   // 1) 웹캠 화면 (좌우를 뒤집어서 거울처럼 보이게 합니다)
+  //    미리보기와 똑같이 가운데를 잘라 채웁니다 (CSS 의 object-fit: cover 와 같은 방식)
+  const scale = Math.max(WIDTH / videoW, photoH / videoH);
+  const drawW = videoW * scale;
+  const drawH = videoH * scale;
   ctx.save();
   ctx.translate(WIDTH, 0);
   ctx.scale(-1, 1);
-  ctx.drawImage(video, 0, 0, WIDTH, photoH);
+  ctx.drawImage(video, (WIDTH - drawW) / 2, (photoH - drawH) / 2, drawW, drawH);
   ctx.restore();
 
   // 2) 캐릭터를 오른쪽 아래에 얹습니다.
+  //    비율은 styles.css 의 .camera__character 와 같은 값입니다.
   const size = Math.round(photoH * 0.55);
-  drawCharacter(ctx, images, WIDTH - size - 24, photoH - size + 12, size);
+  drawCharacter(ctx, images, WIDTH - size - WIDTH * 0.01875, photoH - size + photoH * 0.013, size);
 
   // 3) 아래쪽 이름표 칸
   ctx.fillStyle = character.background;
