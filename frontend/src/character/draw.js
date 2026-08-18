@@ -4,6 +4,11 @@
 
 import { characterImageUrls } from './generate.js';
 
+// 사진을 오려낼 틀. styles.css 의 .camera__view 마스크와 같은 그림입니다.
+const CAMERA_FRAME = '/ui/camera-frame.svg';
+// 사진 위에 얹히는 테두리·장식. 없으면 건너뜁니다.
+const CAMERA_OVERLAY = '/ui/camera-overlay.svg';
+
 // 같은 그림을 여러 번 불러오지 않도록 기억해 둡니다.
 const imageCache = new Map();
 
@@ -50,9 +55,9 @@ export async function composePhoto({ video, character }) {
     }
   }
 
-  // ★ 화면에서 본 그대로 찍히도록, 카메라 프레임 안쪽과 같은 비율로 만듭니다.
-  //   (styles.css 의 .camera__view — 안쪽 1162 × 839)
-  const VIEW_ASPECT = 1162 / 839;
+  // ★ 화면에서 본 그대로 찍히도록, 카메라 프레임과 같은 비율로 만듭니다.
+  //   (styles.css 의 .camera__view — camera-frame.svg 전체 1214 × 891)
+  const VIEW_ASPECT = 1214 / 891;
   const WIDTH = 1280;
   const videoW = video.videoWidth || 1280;
   const videoH = video.videoHeight || 720;
@@ -65,23 +70,49 @@ export async function composePhoto({ video, character }) {
   canvas.height = HEIGHT;
   const ctx = canvas.getContext('2d');
 
+  // ------------------------------------------------------------
+  // 사진 칸을 따로 그린 뒤 프레임 모양으로 오려냅니다.
+  // 화면에서 본 것과 똑같은 모양(물결 무늬)으로 사진이 나옵니다.
+  // ------------------------------------------------------------
+  const shot = document.createElement('canvas');
+  shot.width = WIDTH;
+  shot.height = photoH;
+  const sctx = shot.getContext('2d');
+
   // 1) 웹캠 화면 (좌우를 뒤집어서 거울처럼 보이게 합니다)
   //    미리보기와 똑같이 가운데를 잘라 채웁니다 (CSS 의 object-fit: cover 와 같은 방식)
   const scale = Math.max(WIDTH / videoW, photoH / videoH);
   const drawW = videoW * scale;
   const drawH = videoH * scale;
-  ctx.save();
-  ctx.translate(WIDTH, 0);
-  ctx.scale(-1, 1);
-  ctx.drawImage(video, (WIDTH - drawW) / 2, (photoH - drawH) / 2, drawW, drawH);
-  ctx.restore();
+  sctx.save();
+  sctx.translate(WIDTH, 0);
+  sctx.scale(-1, 1);
+  sctx.drawImage(video, (WIDTH - drawW) / 2, (photoH - drawH) / 2, drawW, drawH);
+  sctx.restore();
 
   // 2) 캐릭터를 오른쪽 아래에 얹습니다.
   //    비율은 styles.css 의 .camera__character 와 같은 값입니다.
   const size = Math.round(photoH * 0.55);
-  drawCharacter(ctx, images, WIDTH - size - WIDTH * 0.01875, photoH - size + photoH * 0.013, size);
+  drawCharacter(sctx, images, WIDTH - size - WIDTH * 0.01875, photoH - size + photoH * 0.013, size);
 
-  // 3) 아래쪽 이름표 칸
+  // 3) 프레임 모양으로 오려냅니다. (그림이 칠해진 곳만 남습니다)
+  const frame = await loadImage(CAMERA_FRAME);
+  sctx.globalCompositeOperation = 'destination-in';
+  sctx.drawImage(frame, 0, 0, WIDTH, photoH);
+  sctx.globalCompositeOperation = 'source-over';
+
+  // 4) 오려낸 사진을 최종 그림에 얹습니다.
+  ctx.drawImage(shot, 0, 0);
+
+  // 4-1) 테두리·장식 덧그림 (화면에서 본 것과 똑같이 얹습니다)
+  try {
+    const overlay = await loadImage(CAMERA_OVERLAY);
+    ctx.drawImage(overlay, 0, 0, WIDTH, photoH);
+  } catch {
+    // camera-overlay.svg 가 아직 없으면 그냥 넘어갑니다.
+  }
+
+  // 5) 아래쪽 이름표 칸
   ctx.fillStyle = character.background;
   ctx.fillRect(0, photoH, WIDTH, BAR_H);
 
@@ -99,8 +130,8 @@ export async function composePhoto({ video, character }) {
   ctx.fillText(formatDate(new Date()), WIDTH - 48, photoH + BAR_H / 2);
   ctx.globalAlpha = 1;
 
-  // JPEG 로 저장하면 파일 크기가 작아서 저장과 전송이 빠릅니다.
-  return canvas.toDataURL('image/jpeg', 0.92);
+  // 프레임 바깥이 투명해야 물결 모양이 유지되므로 PNG 로 저장합니다.
+  return canvas.toDataURL('image/png');
 }
 
 /**

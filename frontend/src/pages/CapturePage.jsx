@@ -1,9 +1,12 @@
 // ============================================================
 // 같이 사진 찍는 화면
 //
-// 물결 무늬 카메라 프레임(camera-frame.svg) 안에 웹캠 화면이 들어가고,
-// 오른쪽 아래에 모이모가 얹힙니다. 프레임 아래쪽 가운데의 동그란 버튼
-// (camera-button.svg) 을 누르면 3초 뒤에 찍힙니다.
+// 웹캠 화면은 프레임보다 크게 깔리고, camera-frame.svg 모양으로 오려내서
+// 물결 무늬 안쪽만 보입니다. 오른쪽 아래에 모이모가 얹히고,
+// 프레임 아래쪽 가운데의 동그란 버튼(camera-button.svg)을 누르면 3초 뒤에 찍힙니다.
+//
+// camera-overlay.svg (안쪽이 빈 테두리·장식) 를 넣으면 영상 위에 얹혀서
+// 필터처럼 보이고, 찍힌 사진에도 똑같이 들어갑니다.
 //
 // 화면에 보이는 그대로 사진이 찍히도록 미리보기와 결과물의 비율·캐릭터
 // 위치를 똑같이 맞춰 두었습니다.
@@ -23,6 +26,10 @@ import { useSession } from '../SessionContext.jsx';
 // 홈 버튼 자리 (다른 화면과 같은 자리입니다)
 const HOME = { x: 550, y: 383, w: 65 };
 
+// 영상 위에 얹히는 덧그림(테두리·장식). 안쪽이 비어 있어야 영상이 비칩니다.
+// 아직 파일이 없으면 그냥 건너뜁니다.
+const OVERLAY = '/ui/camera-overlay.svg';
+
 export default function CapturePage() {
   const { session, setPhoto } = useSession();
   const navigate = useNavigate();
@@ -35,6 +42,14 @@ export default function CapturePage() {
   const [countdown, setCountdown] = useState(null); // 3 → 2 → 1 → null
   const [flash, setFlash] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [hasOverlay, setHasOverlay] = useState(false);
+
+  // 덧그림 파일이 있는지 한 번만 확인합니다.
+  useEffect(() => {
+    const probe = new Image();
+    probe.onload = () => setHasOverlay(true);
+    probe.src = OVERLAY;
+  }, []);
 
   const startCamera = useCallback(async () => {
     setCameraError(null);
@@ -132,6 +147,9 @@ export default function CapturePage() {
               </div>
             )}
           </div>
+
+          {/* 프레임 위에 얹히는 테두리·장식. 영상을 가리지 않도록 마우스를 통과시킵니다. */}
+          {hasOverlay && <div className="camera__overlay" aria-hidden="true" />}
 
           {/* 사진 찍기 버튼. 흰 원과 테두리가 camera-button.svg 에 들어있어
               CSS 로 덧그리지 않고 그림을 그대로 씁니다. */}
