@@ -141,7 +141,7 @@ export default function MainPage() {
   }
 
   return (
-    <Layout>
+    <Layout desk={false}>
       <div className="desk">
         {/* 물건들은 시안 크기(2560×1132) 상자 안에 놓입니다. */}
         <div className="desk__scene">

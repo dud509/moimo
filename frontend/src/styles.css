@@ -217,6 +217,27 @@ img {
     calc(var(--gap) / 2) calc(var(--gap) / 2);
 }
 
+/* ★ 책상 배경 — 메인 화면 말고 나머지 화면들(이름 입력·결과·사진…)
+
+   메인 화면과 같은 책상 그림을 깔고, 하늘색 띠와 물방울은 끕니다.
+   화면이 넘어가도 배경이 안 바뀌어서 한 자리에 계속 있는 느낌이 됩니다.
+
+   cover 는 "창을 꽉 채우되 비율은 지키고 남는 만큼 잘라낸다" 는 뜻입니다.
+   무대가 창 크기에 딱 맞게 그려지므로, 메인 화면의 잘림과 똑같이 보입니다. */
+.app--stage.app--desk {
+  background: url('/ui/main-bg.svg') center / cover no-repeat;
+}
+
+.app--stage.app--desk .app__header,
+.app--stage.app--desk .app__footer {
+  background: transparent;
+}
+
+.app--stage.app--desk .app__body {
+  background-color: transparent;
+  background-image: none;
+}
+
 .app__header {
   flex: none;
   height: var(--header-h);
