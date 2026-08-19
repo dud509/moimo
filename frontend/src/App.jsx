@@ -1,8 +1,8 @@
 // ============================================================
 // 어떤 주소로 들어오면 어떤 화면을 보여줄지 정하는 파일
 //
-//   /          → 메인 화면 (책상)          · 피그마 Desktop-2
-//   /new       → 메인 화면 새 시안 (비교용)
+//   /          → 메인 화면 (책상)
+//   /old       → 예전 메인 화면 (비교용, 정해지면 지웁니다) · 피그마 Desktop-2
 //   /name      → 이름 입력                 · 피그마 Desktop-7
 //   /character → 캐릭터 결과               · 피그마 Desktop-9
 //   /capture   → 같이 사진 찍기
@@ -27,9 +27,9 @@ import PhotoPage from './pages/PhotoPage.jsx';
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<MainPage />} />
-      {/* 새 시안 비교용. 정해지면 지웁니다. */}
-      <Route path="/new" element={<MainPageNew />} />
+      <Route path="/" element={<MainPageNew />} />
+      {/* 예전 메인 화면. 비교하려고 남겨둔 것이니, 정해지면 이 줄과 파일을 지우면 됩니다. */}
+      <Route path="/old" element={<MainPage />} />
       <Route path="/name" element={<NamePage />} />
       <Route path="/character" element={<CharacterPage />} />
       <Route path="/capture" element={<CapturePage />} />
