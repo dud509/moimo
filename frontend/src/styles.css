@@ -1105,23 +1105,26 @@ img {
    메인 화면 — 새 시안 (비교용, 주소: /new)
    MainPageNew.jsx 에서만 씁니다. 시안이 정해지면 진 쪽을 지우세요.
 
-   여기 있는 숫자는 전부 시안(2560×1440) 기준 그대로입니다.
-   창 크기가 바뀌어도 크기가 변하지 않고, 작은 창에서는 가장자리가 잘립니다.
+   시안 한 장이 창 안에 통째로 들어가도록 줄었다 늘었다 합니다.
+   비율(16:9)은 그대로라 잘리는 곳이 없고, 남는 자리는 크림색으로 둡니다.
+   안에 있는 물건들은 전부 비율(%)로 놓여 있어서 무대와 같이 줄어듭니다.
    ============================================================ */
 
 .new-page {
   position: absolute;
   inset: 0;
+  display: grid;
+  place-items: center;
   overflow: hidden;
   background: var(--cream);
 }
 
-/* 시안 한 장을 화면 한가운데에 고정해 둡니다. */
+/* 창 안에 들어가는 가장 큰 16:9 상자를 잡습니다.
+   가로가 좁으면 가로에, 세로가 낮으면 세로에 맞춰집니다. */
 .new-scene {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  position: relative;
+  width: min(100vw, 100vh * 2560 / 1440);
+  aspect-ratio: 2560 / 1440;
   background: url('/ui/main-bg.svg') center / 100% 100% no-repeat;
 }
 
@@ -1167,10 +1170,16 @@ img {
   position: absolute;
   height: auto;
   pointer-events: none;
+  transition: opacity 0.16s ease;
 }
 
 .new-decor--bob {
   animation: bob 3.2s ease-in-out infinite;
+}
+
+/* 마우스를 올렸을 때. 교체 그림에 캐릭터가 이미 들어있어서 겹치지 않게 비켜줍니다. */
+.new-decor--hidden {
+  opacity: 0;
 }
 
 /* 움직임을 불편해하는 사용자를 위해 애니메이션을 줄입니다. */

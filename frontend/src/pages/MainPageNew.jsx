@@ -8,8 +8,9 @@
 //   · 위아래 하늘색 띠와 로고가 없습니다. 배경 그림 한 장이 화면 전체입니다.
 //   · 누를 수 있는 건 다이어리 하나뿐입니다.
 //     나머지 소품(펜·종이·컵…)은 배경 그림에 같이 그려져 있어 눌리지 않습니다.
-//   · 창 크기가 바뀌어도 크기가 변하지 않습니다.
-//     시안(2560×1440)을 화면 가운데에 고정해 두고, 창이 작으면 가장자리가 잘립니다.
+//   · 시안 한 장이 창 안에 통째로 들어가도록 줄었다 늘었다 합니다.
+//     비율(16:9)은 그대로라 잘리는 곳이 없고, 남는 자리는 크림색으로 둡니다.
+//     그림이 전부 SVG 라서 아무리 키워도 안 흐려집니다.
 // ============================================================
 
 import { useState } from 'react';
@@ -44,9 +45,17 @@ const DECOR = [
   { key: 'mascot2', image: '/ui/mascot2.svg', x: 1683, y: 921, w: 138, bob: true },
 ];
 
-// 피그마 좌표를 그대로 씁니다. 무대가 시안 크기(2560×1440) 라서 계산이 필요 없습니다.
+// 위에 적은 피그마 숫자(px)를 비율(%)로 바꿔 줍니다.
+//
+// 무대가 창 크기에 따라 줄었다 늘었다 하기 때문에, 자리를 px 로 박아두면
+// 무대만 줄고 물건은 안 줄어서 다 어긋납니다. 비율로 두면 같이 줄어듭니다.
+// 그래서 위 목록에는 피그마 숫자를 그대로 적으시면 됩니다.
 function place({ x, y, w }) {
-  return { left: `${x}px`, top: `${y}px`, width: `${w}px` };
+  return {
+    left: `${(x / FRAME.w) * 100}%`,
+    top: `${(y / FRAME.h) * 100}%`,
+    width: `${(w / FRAME.w) * 100}%`,
+  };
 }
 
 export default function MainPageNew() {
@@ -60,7 +69,7 @@ export default function MainPageNew() {
 
   return (
     <div className="new-page">
-      <div className="new-scene" style={{ width: FRAME.w, height: FRAME.h }}>
+      <div className="new-scene">
         <button
           className={`new-diary ${swapped ? 'new-diary--swapped' : ''}`}
           type="button"
@@ -87,10 +96,16 @@ export default function MainPageNew() {
           />
         </div>
 
+        {/* 마우스를 올리면 교체 그림에 캐릭터가 이미 들어있어서,
+            떠 있던 마스코트와 말풍선은 겹치지 않게 사라집니다. */}
         {DECOR.map((item) => (
           <img
             key={item.key}
-            className={`new-decor ${item.bob ? 'new-decor--bob' : ''}`}
+            className={[
+              'new-decor',
+              item.bob ? 'new-decor--bob' : '',
+              swapped ? 'new-decor--hidden' : '',
+            ].join(' ')}
             src={item.image}
             style={place(item)}
             alt=""
