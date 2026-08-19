@@ -1101,6 +1101,78 @@ img {
   }
 }
 
+/* ============================================================
+   메인 화면 — 새 시안 (비교용, 주소: /new)
+   MainPageNew.jsx 에서만 씁니다. 시안이 정해지면 진 쪽을 지우세요.
+
+   여기 있는 숫자는 전부 시안(2560×1440) 기준 그대로입니다.
+   창 크기가 바뀌어도 크기가 변하지 않고, 작은 창에서는 가장자리가 잘립니다.
+   ============================================================ */
+
+.new-page {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--cream);
+}
+
+/* 시안 한 장을 화면 한가운데에 고정해 둡니다. */
+.new-scene {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: url('/ui/main-bg.svg') center / 100% 100% no-repeat;
+}
+
+/* 누를 수 있는 유일한 물건 */
+.new-diary {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.new-diary img {
+  width: 100%;
+  height: auto;
+}
+
+/* 마우스를 올리면 기본 그림은 숨기고 교체 그림만 보입니다. */
+.new-diary--swapped img {
+  visibility: hidden;
+}
+
+.new-diary-hover {
+  position: absolute;
+  line-height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.new-diary-hover img {
+  width: 100%;
+  height: auto;
+}
+
+.new-diary-hover--on {
+  opacity: 1;
+}
+
+/* 배경 위에 떠 있는 그림들 (말풍선·마스코트) */
+.new-decor {
+  position: absolute;
+  height: auto;
+  pointer-events: none;
+}
+
+.new-decor--bob {
+  animation: bob 3.2s ease-in-out infinite;
+}
+
 /* 움직임을 불편해하는 사용자를 위해 애니메이션을 줄입니다. */
 @media (prefers-reduced-motion: reduce) {
   *,
