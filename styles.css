@@ -1,0 +1,236 @@
+/* =========================================================
+   모이모 — 세로로 긴 모바일형 레이아웃
+   핵심 4가지:
+   1) .phone 으로 콘텐츠 폭을 폰 크기로 고정
+   2) overflow-x: hidden 으로 가로 스크롤 차단
+   3) 섹션을 100svh 로 세워 아래로 쌓기
+   4) 모든 다단 배치를 1열로 (grid-template-columns: 1fr)
+   ========================================================= */
+
+/* ---------- 0. 리셋 & 토큰 ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  --phone-width: 430px;      /* 폰 기둥 폭. 390~480px 사이에서 취향껏 조절 */
+  --bg: #0e0e10;
+  --fg: #f4f4f5;
+  --muted: #8b8b93;
+  --line: rgba(255, 255, 255, 0.12);
+  --accent: #ff5c39;
+  --pad: 24px;               /* 좌우 여백 */
+}
+
+html {
+  scroll-behavior: smooth;
+  /* 2) 가로 스크롤 원천 차단 — 세로형 레이아웃에서 제일 자주 깨지는 부분 */
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: #000;          /* 폰 기둥 바깥 배경 (데스크톱에서 보이는 여백) */
+  color: var(--fg);
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont,
+               "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
+}
+
+img, video, canvas, svg { max-width: 100%; height: auto; display: block; }
+
+/* ---------- 1. 세로 기둥 ---------- */
+.phone {
+  width: 100%;
+  max-width: var(--phone-width);
+  margin-inline: auto;       /* 데스크톱에서 가운데 정렬 */
+  min-height: 100svh;
+  background: var(--bg);
+  /* 데스크톱에서 폰처럼 보이도록 하는 장식 (필요 없으면 아래 두 줄 삭제) */
+  box-shadow: 0 0 0 1px var(--line), 0 40px 120px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+/* ---------- 2. 상단 바 (스크롤해도 붙어 있음) ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding-inline: var(--pad);
+  /* 노치/상태바 영역 회피 */
+  padding-top: env(safe-area-inset-top, 0);
+  background: rgba(14, 14, 16, 0.72);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar__logo { font-weight: 700; letter-spacing: 0.02em; }
+
+.topbar__menu {
+  display: grid;
+  gap: 4px;
+  width: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.topbar__menu span { height: 2px; background: var(--fg); border-radius: 2px; }
+
+/* ---------- 3. 섹션: 세로로 쌓이는 단위 ---------- */
+.section {
+  /* 3) svh = small viewport height. 모바일 주소창이 줄었다 늘었다 해도 안 튐 */
+  min-height: 100svh;
+  padding: 88px var(--pad) 72px;
+  display: flex;
+  flex-direction: column;    /* 세로형의 기본값. 절대 row 로 두지 않기 */
+  justify-content: center;
+  gap: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.section--hero { justify-content: flex-end; padding-bottom: 96px; }
+.section--quote { justify-content: center; text-align: center; }
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hero__title {
+  margin: 0;
+  font-size: clamp(38px, 12vw, 52px);   /* 폭에 따라 자동으로 커지고 작아짐 */
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+.hero__title span { color: var(--muted); font-weight: 500; font-size: 0.52em; line-height: 1.5; }
+
+.hero__desc { margin: 0; color: var(--muted); font-size: 15px; }
+
+.scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+.scroll-hint__line {
+  width: 40px;
+  height: 1px;
+  background: var(--muted);
+  transform-origin: left;
+  animation: slide 1.8s ease-in-out infinite;
+}
+@keyframes slide {
+  0%, 100% { transform: scaleX(0.3); opacity: 0.4; }
+  50%      { transform: scaleX(1);   opacity: 1; }
+}
+
+.section__title {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.section__body { margin: 0; font-size: 17px; }
+
+/* ---------- 4. 정보 목록 — 세로 스택 ---------- */
+.meta { margin: 8px 0 0; display: grid; gap: 12px; }
+.meta > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.meta dt { color: var(--muted); font-size: 14px; margin: 0; }
+.meta dd { margin: 0; font-size: 14px; text-align: right; }
+
+/* ---------- 5. 카드: 데스크톱 3열 → 세로 1열 ---------- */
+.stack {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  /* 4) 여기가 '세로로 길게'의 핵심. repeat(3, 1fr) 대신 1fr 한 줄 */
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+
+.card__thumb {
+  aspect-ratio: 4 / 5;       /* 세로로 긴 썸네일이 스크롤 길이를 만듦 */
+  border-radius: 16px;
+  background: linear-gradient(160deg, #1c1c22, #2a2a34);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.card__thumb::after { content: attr(data-label); }
+
+.card__title { margin: 0 0 4px; font-size: 20px; font-weight: 700; }
+.card__desc { margin: 0; color: var(--muted); font-size: 14px; }
+
+blockquote {
+  margin: 0;
+  font-size: clamp(22px, 7vw, 30px);
+  line-height: 1.5;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.btn {
+  align-self: flex-start;
+  display: inline-block;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* ---------- 6. 푸터 ---------- */
+.footer {
+  padding: 32px var(--pad);
+  padding-bottom: calc(32px + env(safe-area-inset-bottom, 0)); /* 홈 인디케이터 회피 */
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+.footer p { margin: 0; }
+
+/* ---------- 7. 스크롤 등장 애니메이션 ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .scroll-hint__line { animation: none; }
+}
+
+/* ---------- 8. 옵션: 한 섹션씩 딱딱 넘기는 스크롤 스냅 ----------
+   쓰고 싶으면 아래 블록의 주석을 해제하세요.
+html { scroll-snap-type: y mandatory; }
+.section { scroll-snap-align: start; scroll-snap-stop: always; }
+------------------------------------------------------------- */

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <!-- 1. 세로형 모바일 레이아웃의 출발점: 이게 없으면 모바일이 데스크톱 폭으로 축소됩니다 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>모이모 — 졸업전시 프로젝트</title>
+  <meta name="description" content="졸업전시 프로젝트 모이모 웹사이트" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- 페이지 전체를 감싸는 '세로 기둥'. 데스크톱에서도 폰 화면처럼 좁게 유지됩니다 -->
+  <div class="phone">
+
+    <header class="topbar">
+      <span class="topbar__logo">moimo</span>
+      <button class="topbar__menu" type="button" aria-label="메뉴 열기">
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+
+    <main>
+      <!-- 섹션 1: 히어로 -->
+      <section class="section section--hero" id="intro">
+        <p class="eyebrow">2026 졸업전시</p>
+        <h1 class="hero__title">모이모<br /><span>흩어진 순간을<br />하나로 모으다</span></h1>
+        <p class="hero__desc">
+          아래로 스크롤해 프로젝트를 둘러보세요.
+        </p>
+        <div class="scroll-hint" aria-hidden="true">
+          <span class="scroll-hint__line"></span>
+          SCROLL
+        </div>
+      </section>
+
+      <!-- 섹션 2: 소개 -->
+      <section class="section reveal" id="about">
+        <h2 class="section__title">About</h2>
+        <p class="section__body">
+          모이모는 사람과 기록을 한자리에 모으는 아카이빙 서비스입니다.
+          모바일에서 읽기 좋도록 모든 콘텐츠를 한 줄로 세워 배치했습니다.
+        </p>
+        <dl class="meta">
+          <div><dt>기간</dt><dd>2026.03 — 2026.11</dd></div>
+          <div><dt>역할</dt><dd>기획 · 디자인 · 개발</dd></div>
+          <div><dt>분류</dt><dd>Web / Archive</dd></div>
+        </dl>
+      </section>
+
+      <!-- 섹션 3: 이미지 스택 — 데스크톱에서 3열이던 걸 1열로 내린 형태 -->
+      <section class="section reveal" id="works">
+        <h2 class="section__title">Works</h2>
+        <ul class="stack">
+          <li class="card">
+            <div class="card__thumb" data-label="01"></div>
+            <h3 class="card__title">아카이브 뷰</h3>
+            <p class="card__desc">기록을 시간순으로 흘려보는 화면.</p>
+          </li>
+          <li class="card">
+            <div class="card__thumb" data-label="02"></div>
+            <h3 class="card__title">모임 만들기</h3>
+            <p class="card__desc">세 번의 탭으로 끝나는 생성 플로우.</p>
+          </li>
+          <li class="card">
+            <div class="card__thumb" data-label="03"></div>
+            <h3 class="card__title">함께 쓰는 기록</h3>
+            <p class="card__desc">여러 명이 같은 페이지를 채웁니다.</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 섹션 4: 한 화면 꽉 채우는 인용 -->
+      <section class="section section--quote reveal" id="quote">
+        <blockquote>
+          “세로로 긴 화면은<br />읽는 순서를 대신 정해준다.”
+        </blockquote>
+      </section>
+
+      <!-- 섹션 5: 연락 -->
+      <section class="section reveal" id="contact">
+        <h2 class="section__title">Contact</h2>
+        <p class="section__body">전시장에서 만나요.</p>
+        <a class="btn" href="mailto:hello@example.com">메일 보내기</a>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>© 2026 moimo. 졸업전시 프로젝트.</p>
+    </footer>
+
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
