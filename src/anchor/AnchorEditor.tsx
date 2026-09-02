@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, PATTERN_COUNT, SLOTS,
-  Z_BODY, Z_PATTERN, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  partAnchor, partUrl, patternUrls, recolor,
+  BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
+  Z_BODY, Z_MORPH, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
+  partAnchor, partUrl, morphUrls, recolor,
   type Anchor, type AnchorTable, type SlotKey,
 } from '../moimo/parts'
 
@@ -62,7 +62,7 @@ export default function AnchorEditor() {
   const [variant, setVariant] = useState<Record<string, number>>(
     () => Object.fromEntries(SLOTS.map((s) => [s.key, 1])),
   )
-  const [pattern, setPattern] = useState(0) // 0 = 무늬 없음
+  const [morph, setMorph] = useState(0) // 0 = 무늬 없음
   const [solo, setSolo] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [saved, setSaved] = useState<string | null>(null)
@@ -258,9 +258,9 @@ export default function AnchorEditor() {
           </div>
           <label className="toggle">
             무늬
-            <select value={pattern} onChange={(e) => setPattern(Number(e.target.value))}>
+            <select value={morph} onChange={(e) => setMorph(Number(e.target.value))}>
               <option value={0}>없음</option>
-              {Array.from({ length: PATTERN_COUNT }, (_, i) => i + 1).map((n) => (
+              {Array.from({ length: MORPH_COUNT }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>{String(n).padStart(2, '0')}</option>
               ))}
             </select>
@@ -286,10 +286,10 @@ export default function AnchorEditor() {
               urls={bodyUrl(body)} fill={color.hex} line={lineColor}
               anchor={DEFAULT_ANCHOR} z={Z_BODY} dim={solo && sel !== null} label={`몸통 ${body}`}
             />
-            {pattern > 0 && (
+            {morph > 0 && (
               <Layer
-                urls={patternUrls(body, pattern)} fill={color.hex} line={lineColor}
-                anchor={DEFAULT_ANCHOR} z={Z_PATTERN} dim={solo && sel !== null} label="무늬"
+                urls={morphUrls(body, morph)} fill={color.hex} line={lineColor}
+                anchor={DEFAULT_ANCHOR} z={Z_MORPH} dim={solo && sel !== null} label="무늬"
               />
             )}
             {SLOTS.map((s) => (

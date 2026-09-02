@@ -12,7 +12,7 @@ import { cleanName, decompose, type Syllable } from './hangul'
 export type MoimoGenes = {
   body: number     // 1..12
   color: number    // 1..6
-  pattern: number  // 0..5  (0 = 무늬 없음)
+  morph: number    // 0..5  (0 = 무늬 없음)
   eye: number      // 1..11
   mouth: number    // 1..9
   cheek: number    // 1..6
@@ -82,7 +82,7 @@ const BODY_SPECIAL: Record<string, number> = { 김: 1, 이: 2, 박: 3 }
 const COLOR_BY_JUNG: Record<string, number> = { ㅣ: 1, ㅏ: 2, ㅓ: 3, ㅗ: 4, ㅜ: 5 }
 
 /** 몸통 무늬 — 성 종성. 받침 없으면 무늬 없음 */
-const PATTERN_BY_JONG: Record<string, number> = { '': 0, ㄱ: 1, ㄴ: 2, ㅁ: 3, ㅇ: 4 }
+const MORPH_BY_JONG: Record<string, number> = { '': 0, ㄱ: 1, ㄴ: 2, ㅁ: 3, ㅇ: 4 }
 
 /** 눈·머리장식 — 초성 */
 const CONSONANT_11: Record<string, number> = {
@@ -106,7 +106,7 @@ export function genesFromParts(p: NameParts): MoimoGenes {
   return {
     body: BODY_SPECIAL[p.surname] ?? pick(BODY_BY_CHO, p.s.cho, 12),
     color: pick(COLOR_BY_JUNG, p.s.jung, 6),
-    pattern: pick(PATTERN_BY_JONG, p.s.jong, 5),
+    morph: pick(MORPH_BY_JONG, p.s.jong, 5),
     eye: pick(CONSONANT_11, p.n1.cho, 11),
     mouth: pick(VOWEL_9, p.n1.jung, 9),
     cheek: pick(JONG_6, p.n1.jong, 6),
@@ -142,7 +142,7 @@ const READOUT: Array<{
 }> = [
   { slot: 'body',    label: '몸통',     src: 's',  place: '초성' },
   { slot: 'color',   label: '몸통 색깔', src: 's',  place: '중성' },
-  { slot: 'pattern', label: '몸통 무늬', src: 's',  place: '종성' },
+  { slot: 'morph',   label: '몸통 무늬', src: 's',  place: '종성' },
   { slot: 'eye',     label: '눈',       src: 'n1', place: '초성' },
   { slot: 'mouth',   label: '입',       src: 'n1', place: '중성' },
   { slot: 'cheek',   label: '볼 장식',  src: 'n1', place: '종성' },
@@ -175,13 +175,13 @@ export function explain(p: NameParts): Reason[] {
 /* ------------------------------------------------------------------ */
 
 export const SLOT_SIZES = {
-  body: 12, color: 6, pattern: 6, eye: 11, mouth: 9, cheek: 6, hair: 11, tail: 9, deco: 6,
+  body: 12, color: 6, morph: 6, eye: 11, mouth: 9, cheek: 6, hair: 11, tail: 9, deco: 6,
 } as const
 
 export const TOTAL_COMBINATIONS = Object.values(SLOT_SIZES).reduce((a, b) => a * b, 1)
 
 /** 유전자를 짧은 코드로 — 도감 검색·공유용 */
 export const encodeGenes = (g: MoimoGenes) =>
-  [g.body, g.color, g.pattern, g.eye, g.mouth, g.cheek, g.hair, g.tail, g.deco]
+  [g.body, g.color, g.morph, g.eye, g.mouth, g.cheek, g.hair, g.tail, g.deco]
     .map((n) => n.toString(36).toUpperCase())
     .join('')

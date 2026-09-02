@@ -22,7 +22,7 @@ export const BODY_COLORS = [
 ] as const
 
 export const BODY_COUNT = 12
-export const PATTERN_COUNT = 5
+export const MORPH_COUNT = 5
 
 /** 몸통에 붙는 파츠. z가 작을수록 뒤 */
 export type SlotKey = 'tail' | 'deco' | 'cheek' | 'eye' | 'mouth' | 'hair'
@@ -45,7 +45,7 @@ export const SLOTS: SlotDef[] = [
 
 /** 몸통 z=2, 무늬 z=3 — 슬롯 사이에 낀다 */
 export const Z_BODY = 2
-export const Z_PATTERN = 3
+export const Z_MORPH = 3
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -53,12 +53,12 @@ export const bodyUrl = (n: number) => `/parts/body/${pad(n)}.svg`
 export const partUrl = (slot: SlotKey, n: number) => `/parts/${slot}/${pad(n)}.svg`
 
 /**
- * 무늬는 몸통 모양마다 따로 그릴 수도, 하나를 몸통에 맞춰 쓸 수도 있다.
- * 몸통별 파일을 먼저 찾고 없으면 공용 파일로 떨어진다.
+ * 무늬(morph)는 몸통 모양마다 따로 그린다 — 12 × 5 = 60장.
+ * 몸통별 파일을 먼저 찾고, 없으면 공용 파일로 떨어진다.
  */
-export const patternUrls = (body: number, pattern: number) => [
-  `/parts/pattern/b${pad(body)}-p${pad(pattern)}.svg`,
-  `/parts/pattern/${pad(pattern)}.svg`,
+export const morphUrls = (body: number, morph: number) => [
+  `/parts/morph/b${pad(body)}-m${pad(morph)}.svg`,
+  `/parts/morph/${pad(morph)}.svg`,
 ]
 
 /* ---------------- 앵커 ---------------- */

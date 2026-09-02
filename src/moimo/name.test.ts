@@ -40,8 +40,8 @@ eq('마 → 기타 몸통12', genesFromName('마민수')!.body, 12)
 eq('김 ㅣ → 색01', genesFromName('김민수')!.color, 1)
 eq('강 ㅏ → 색02', genesFromName('강민수')!.color, 2)
 eq('최 ㅚ → 색06', genesFromName('최민수')!.color, 6)
-eq('김 받침ㅁ → 무늬03', genesFromName('김민수')!.pattern, 3)
-eq('나 받침없음 → 무늬0', genesFromName('나민수')!.pattern, 0)
+eq('김 받침ㅁ → 무늬03', genesFromName('김민수')!.morph, 3)
+eq('나 받침없음 → 무늬0', genesFromName('나민수')!.morph, 0)
 eq('민 ㅁ → 눈05', genesFromName('김민수')!.eye, 5)
 eq('민 ㅣ → 입07', genesFromName('김민수')!.mouth, 7)
 eq('민 받침ㄴ → 볼02', genesFromName('김민수')!.cheek, 2)
@@ -54,7 +54,7 @@ eq('결정론적', encodeGenes(genesFromName('김민수')!), encodeGenes(genesFr
 
 // 가족 닮음
 const kims = ['김민수', '김서연', '김도윤'].map((n) => genesFromName(n)!)
-eq('김씨는 몸통·색·무늬가 같다', kims.map((g) => [g.body, g.color, g.pattern]),
+eq('김씨는 몸통·색·무늬가 같다', kims.map((g) => [g.body, g.color, g.morph]),
    [[1,1,3],[1,1,3],[1,1,3]])
 
 // 범위
@@ -63,7 +63,7 @@ for (const n of NAMES) {
   const g = genesFromName(n)
   if (!g) continue
   const bad = Object.entries(g).filter(([k, v]) =>
-    k === 'pattern' ? (v < 0 || v > 5) : v < 1 || v > ({body:12,color:6,eye:11,mouth:9,cheek:6,hair:11,tail:9,deco:6} as any)[k])
+    k === 'morph' ? (v < 0 || v > 5) : v < 1 || v > ({body:12,color:6,eye:11,mouth:9,cheek:6,hair:11,tail:9,deco:6} as any)[k])
   if (bad.length) { fail++; console.log(`  ✗ ${n} 범위 벗어남`, bad) }
 }
 
