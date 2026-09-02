@@ -6,20 +6,42 @@
 /** 모든 파츠는 이 크기의 정사각 캔버스에 정가운데로 내보낸다 */
 export const CANVAS = 512
 
-/** 파츠 원본의 선 색 — 빌드/런타임에 갈아끼운다 */
-export const LINE_COLOR = '#888989'
-/** 파츠 원본의 채우기 색 */
-export const FILL_COLOR = '#FFFFFF'
+/* ================================================================== *
+ *  색은 여기서 고친다                                                  *
+ * ================================================================== */
 
-/** 몸통 색깔 — 성 중성 */
+/** 화면에 그릴 때의 선 색 */
+export const LINE_COLOR = '#38312A'
+
+/**
+ * 몸통 색깔 — 성 중성.
+ * `line` 을 적어두면 그 몸통일 때만 선 색이 바뀐다.
+ * 어두운 몸통에서 선이 묻히지 않게 하려는 것.
+ */
 export const BODY_COLORS = [
   { jamo: 'ㅣ', name: '파랑', hex: '#E1EEF4' },
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3' },
   { jamo: 'ㅓ', name: '분홍', hex: '#FFD8E2' },
-  { jamo: 'ㅗ', name: '검정', hex: '#231A17' },
+  { jamo: 'ㅗ', name: '검정', hex: '#231A17', line: '#665546' },
   { jamo: 'ㅜ', name: '흰색', hex: '#FFFFFF' },
   { jamo: 'ㅡㅐㅔㅑㅛㅠ', name: '갈색', hex: '#5F5040' },
 ] as const
+
+export type BodyColor = (typeof BODY_COLORS)[number]
+
+/** 이 몸통 색일 때 쓸 선 색 */
+export const lineFor = (c: BodyColor): string => ('line' in c ? c.line : LINE_COLOR)
+
+/* ================================================================== *
+ *  아래는 파츠 원본 파일에 들어 있는 값 — 에셋을 다시 뽑지 않는 한 그대로  *
+ * ================================================================== */
+
+/** 원본 SVG 의 선 색 */
+export const SOURCE_LINE = '#888989'
+/** 원본 SVG 의 채우기 색 */
+export const SOURCE_FILL = '#FFFFFF'
+/** 색을 갈아입지 않는 파츠의 채우기 */
+export const FILL_COLOR = SOURCE_FILL
 
 export const BODY_COUNT = 12
 export const MORPH_COUNT = 5

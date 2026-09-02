@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, Z_MORPH, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  fillFor, partAnchor, partUrl, morphUrls, prepareSvg,
+  fillFor, lineFor, partAnchor, partUrl, morphUrls, prepareSvg,
   type Anchor, type AnchorTable, type SlotKey,
 } from '../moimo/parts'
 
@@ -72,8 +72,7 @@ export default function AnchorEditor() {
   const dragRef = useRef<{ x: number; y: number } | null>(null)
 
   const color = BODY_COLORS[colorIdx]
-  const onDark = colorIdx === 3 || colorIdx === 5
-  const lineColor = onDark ? '#FFFFFF' : LINE_COLOR
+  const lineColor = lineFor(color)
 
   /* --- 앵커 수정 --- */
 
@@ -424,7 +423,7 @@ function PartThumb({
     <button className={`pthumb${on ? ' on' : ''}${tuned ? ' tuned' : ''}`} onClick={onPick} title={`${slot} ${n}`}>
       {missing || !svg
         ? <i className="pthumb-empty" />
-        : <i ref={ref} dangerouslySetInnerHTML={{ __html: prepareSvg(svg, '#FFFFFF', '#6f6f74', uid) }} />}
+        : <i ref={ref} dangerouslySetInnerHTML={{ __html: prepareSvg(svg, '#FFFFFF', LINE_COLOR, uid) }} />}
       <em>{String(n).padStart(2, '0')}</em>
     </button>
   )
@@ -435,5 +434,5 @@ function BodyThumb({ n }: { n: number }) {
   const uid = useId().replace(/:/g, '')
   const { svg, missing } = useSvg(bodyUrl(n))
   if (missing || !svg) return <i className="thumb empty" />
-  return <i className="thumb" dangerouslySetInnerHTML={{ __html: prepareSvg(svg, '#FFFFFF', '#888989', uid) }} />
+  return <i className="thumb" dangerouslySetInnerHTML={{ __html: prepareSvg(svg, '#FFFFFF', LINE_COLOR, uid) }} />
 }
