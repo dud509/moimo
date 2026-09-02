@@ -206,8 +206,13 @@ export function prepareSvg(svg: string, paint: Paint, uid: string): string {
     .replace(/#fff\b/gi, fill)
     .replace(/\b(fill|stroke)="white"/gi, (_m, a: string) => `${a}="${fill}"`)
     .replace(/\b(fill|stroke):\s*white\b/gi, (_m, a: string) => `${a}:${fill}`)
-    // 흰색을 바꾼 뒤에 표시색을 바꾼다 — accent 가 흰색이어도 되도록
+    // 흰색을 바꾼 뒤에 표시색을 바꾼다 — accent 가 흰색이어도 되도록.
+    // 마젠타도 #ff00ff, #f0f, magenta, rgb(255,0,255) 어느 표기로든 나올 수 있다
     .replace(/#ff00ff\b/gi, accent ?? fill)
+    .replace(/#f0f\b/gi, accent ?? fill)
+    .replace(/\b(fill|stroke)="magenta"/gi, (_m, a: string) => `${a}="${accent ?? fill}"`)
+    .replace(/\b(fill|stroke):\s*magenta\b/gi, (_m, a: string) => `${a}:${accent ?? fill}`)
+    .replace(/rgb\(\s*255\s*,\s*0\s*,\s*255\s*\)/gi, accent ?? fill)
     .replace(/#888989\b/gi, line)
     .replace(/\bid="([^"]+)"/g, (_m, id: string) => `id="${id}-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, (_m, id: string) => `url(#${id}-${uid})`)
