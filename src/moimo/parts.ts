@@ -64,14 +64,65 @@ export const patternUrls = (body: number, pattern: number) => [
 /* ---------------- 앵커 ---------------- */
 
 export type Anchor = { x: number; y: number; s: number; r: number }
-export type BodyAnchors = Partial<Record<SlotKey, Anchor>>
-/** key: 몸통 번호 */
-export type AnchorTable = Record<string, BodyAnchors>
+
+/**
+ * 앵커는 세 겹으로 쌓인다.
+ *
+ *   bodies    몸통마다 "이 슬롯은 대체로 여기" — 12 × 6
+ *   parts     파츠마다 "나는 기준점에서 이만큼 위" — 슬롯별 파츠 수만큼
+ *   overrides 그래도 어색한 조합만 따로
+ *
+ * 머리 장식처럼 파츠마다 어울리는 자리가 다른 슬롯은 parts 층이 받아준다.
+ * 12 × 11 = 132개를 일일이 잡는 대신 12 + 11 = 23개만 잡으면 되고,
+ * 남는 몇 개만 overrides 로 손본다.
+ */
+export type AnchorTable = {
+  bodies: Record<string, Partial<Record<SlotKey, Anchor>>>
+  parts: Partial<Record<SlotKey, Record<string, Anchor>>>
+  overrides: Record<string, Anchor>
+}
 
 export const DEFAULT_ANCHOR: Anchor = { x: 0, y: 0, s: 1, r: 0 }
+export const EMPTY_TABLE: AnchorTable = { bodies: {}, parts: {}, overrides: {} }
 
-export function anchorOf(table: AnchorTable, body: number, slot: SlotKey): Anchor {
-  return table[String(body)]?.[slot] ?? DEFAULT_ANCHOR
+export const overrideKey = (body: number, slot: SlotKey, part: number) =>
+  `b${String(body).padStart(2, '0')}:${slot}:${String(part).padStart(2, '0')}`
+
+/** 예전에 저장한 납작한 모양도 읽어준다 */
+export function normalizeTable(raw: unknown): AnchorTable {
+  const t = (raw ?? {}) as Record<string, unknown>
+  if (t.bodies || t.parts || t.overrides) {
+    return {
+      bodies: (t.bodies as AnchorTable['bodies']) ?? {},
+      parts: (t.parts as AnchorTable['parts']) ?? {},
+      overrides: (t.overrides as AnchorTable['overrides']) ?? {},
+    }
+  }
+  return { bodies: t as AnchorTable['bodies'], parts: {}, overrides: {} }
+}
+
+export const bodyAnchor = (t: AnchorTable, body: number, slot: SlotKey): Anchor =>
+  t.bodies[String(body)]?.[slot] ?? DEFAULT_ANCHOR
+
+export const partAnchor = (t: AnchorTable, slot: SlotKey, part: number): Anchor =>
+  t.parts[slot]?.[String(part)] ?? DEFAULT_ANCHOR
+
+/** 몸통 기준점 위에 파츠 보정을 얹는다. 예외가 있으면 그게 이긴다 */
+export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part: number): Anchor {
+  const over = t.overrides[overrideKey(body, slot, part)]
+  if (over) return over
+
+  const b = bodyAnchor(t, body, slot)
+  const p = partAnchor(t, slot, part)
+  const rad = (b.r * Math.PI) / 180
+  const cos = Math.cos(rad)
+  const sin = Math.sin(rad)
+  return {
+    x: b.x + (p.x * cos - p.y * sin) * b.s,
+    y: b.y + (p.x * sin + p.y * cos) * b.s,
+    s: b.s * p.s,
+    r: b.r + p.r,
+  }
 }
 
 /** 파츠 SVG의 흰 채우기와 회색 선을 원하는 색으로 */

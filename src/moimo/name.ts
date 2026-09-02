@@ -38,9 +38,9 @@ export type NameParts = {
   given: string
   /** 성 첫 글자 */
   s: Syllable
-  /** 이름 첫 글자 */
+  /** 이름 앞 글자 */
   n1: Syllable
-  /** 이름 둘째 글자 — 외자 이름이면 n1을 한 번 더 읽는다 */
+  /** 이름 뒤 글자 — 외자 이름이면 n1을 한 번 더 읽는다 */
   n2: Syllable
   /** 외자 이름이라 n2를 메아리로 채웠는지 */
   echoed: boolean
@@ -55,10 +55,11 @@ export function splitName(raw: string): NameParts | null {
   const given = full.slice(surname.length)
   if (!given.length) return null
 
+  // 복성이어도 자모는 첫 글자에서만 읽는다 (남궁민수 → 남)
   const s = decompose(surname[0])!
-  const n1 = decompose(given[0])!
-  // 이름이 세 글자 이상이면 첫 글자와 마지막 글자를 읽는다
+  // 이름은 뒤에서 두 글자 (김민수현 → 수현)
   const echoed = given.length < 2
+  const n1 = decompose(given[echoed ? 0 : given.length - 2])!
   const n2 = echoed ? n1 : decompose(given[given.length - 1])!
 
   return { full, surname, given, s, n1, n2, echoed }

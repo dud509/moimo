@@ -1,9 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, LINE_COLOR, PATTERN_COUNT, SLOTS,
-  Z_BODY, Z_PATTERN, anchorOf, bodyUrl, partUrl, patternUrls, recolor,
+  BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, PATTERN_COUNT, SLOTS,
+  Z_BODY, Z_PATTERN, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
+  partAnchor, partUrl, patternUrls, recolor,
   type Anchor, type AnchorTable, type SlotKey,
 } from '../moimo/parts'
+
+/** 드래그가 어느 층에 쓰일지 */
+type Scope = 'body' | 'part' | 'one'
+
+const SCOPES: { key: Scope; label: string; hint: string }[] = [
+  { key: 'body', label: '몸통 전체', hint: '이 몸통에서 이 슬롯의 기준 자리' },
+  { key: 'part', label: '이 파츠', hint: '이 파츠가 기준점에서 얼마나 벗어나는지 — 모든 몸통에 함께' },
+  { key: 'one', label: '이 조합만', hint: '이 몸통 + 이 파츠 조합만 따로' },
+]
 import { useSvg } from './useSvg'
 import initial from '../data/anchors.json'
 
@@ -44,7 +54,8 @@ function Layer({
 /* ---------------- 편집기 ---------------- */
 
 export default function AnchorEditor() {
-  const [table, setTable] = useState<AnchorTable>(() => JSON.parse(JSON.stringify(initial)))
+  const [table, setTable] = useState<AnchorTable>(() => normalizeTable(initial))
+  const [scope, setScope] = useState<Scope>('body')
   const [body, setBody] = useState(1)
   const [sel, setSel] = useState<SlotKey | null>('eye')
   const [colorIdx, setColorIdx] = useState(1)
@@ -65,19 +76,57 @@ export default function AnchorEditor() {
 
   /* --- 앵커 수정 --- */
 
+  /** 지금 편집 중인 층의 값 */
+  const current = useCallback((slot: SlotKey): Anchor => {
+    if (scope === 'body') return bodyAnchor(table, body, slot)
+    if (scope === 'part') return partAnchor(table, slot, variant[slot])
+    return table.overrides[overrideKey(body, slot, variant[slot])]
+      ?? composeAnchor(table, body, slot, variant[slot])
+  }, [table, body, scope, variant])
+
   const patch = useCallback((slot: SlotKey, d: Partial<Anchor>) => {
     setTable((t) => {
-      const key = String(body)
-      const cur = t[key]?.[slot] ?? DEFAULT_ANCHOR
-      return { ...t, [key]: { ...t[key], [slot]: { ...cur, ...d } } }
+      const next = { ...t, bodies: { ...t.bodies }, parts: { ...t.parts }, overrides: { ...t.overrides } }
+      if (scope === 'body') {
+        const key = String(body)
+        next.bodies[key] = { ...next.bodies[key], [slot]: { ...bodyAnchor(t, body, slot), ...d } }
+      } else if (scope === 'part') {
+        const n = String(variant[slot])
+        next.parts[slot] = { ...next.parts[slot], [n]: { ...partAnchor(t, slot, variant[slot]), ...d } }
+      } else {
+        const k = overrideKey(body, slot, variant[slot])
+        const base = t.overrides[k] ?? composeAnchor(t, body, slot, variant[slot])
+        next.overrides[k] = { ...base, ...d }
+      }
+      return next
     })
     setDirty(true)
-  }, [body])
+  }, [body, scope, variant])
 
-  const reset = (slot: SlotKey) => patch(slot, DEFAULT_ANCHOR)
+  /** 지금 층의 값만 지운다 */
+  const reset = useCallback((slot: SlotKey) => {
+    setTable((t) => {
+      const next = { ...t, bodies: { ...t.bodies }, parts: { ...t.parts }, overrides: { ...t.overrides } }
+      if (scope === 'body') {
+        const key = String(body)
+        const { [slot]: _drop, ...rest } = next.bodies[key] ?? {}
+        next.bodies[key] = rest
+      } else if (scope === 'part') {
+        const { [String(variant[slot])]: _drop, ...rest } = next.parts[slot] ?? {}
+        next.parts[slot] = rest
+      } else {
+        delete next.overrides[overrideKey(body, slot, variant[slot])]
+      }
+      return next
+    })
+    setDirty(true)
+  }, [body, scope, variant])
 
   const copyFrom = (from: number) => {
-    setTable((t) => ({ ...t, [String(body)]: JSON.parse(JSON.stringify(t[String(from)] ?? {})) }))
+    setTable((t) => ({
+      ...t,
+      bodies: { ...t.bodies, [String(body)]: JSON.parse(JSON.stringify(t.bodies[String(from)] ?? {})) },
+    }))
     setDirty(true)
   }
 
@@ -92,7 +141,7 @@ export default function AnchorEditor() {
   const onPointerMove = (e: React.PointerEvent) => {
     const d = dragRef.current
     if (!d || !sel) return
-    const a = anchorOf(table, body, sel)
+    const a = current(sel)
     patch(sel, { x: a.x + (e.clientX - d.x) / DISP, y: a.y + (e.clientY - d.y) / DISP })
     dragRef.current = { x: e.clientX, y: e.clientY }
   }
@@ -102,7 +151,7 @@ export default function AnchorEditor() {
   const onWheel = (e: React.WheelEvent) => {
     if (!sel) return
     e.preventDefault()
-    const a = anchorOf(table, body, sel)
+    const a = current(sel)
     patch(sel, { s: Math.max(0.1, Math.min(4, a.s * Math.exp(-e.deltaY * 0.0012))) })
   }
 
@@ -111,7 +160,7 @@ export default function AnchorEditor() {
       if (!sel) return
       const tag = (e.target as HTMLElement)?.tagName
       if (tag === 'INPUT' || tag === 'SELECT') return
-      const a = anchorOf(table, body, sel)
+      const a = current(sel)
       const step = e.shiftKey ? 10 : 1
       const moves: Record<string, () => void> = {
         ArrowLeft: () => patch(sel, { x: a.x - step }),
@@ -126,11 +175,12 @@ export default function AnchorEditor() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [sel, table, body, patch])
+  }, [sel, current, patch])
 
   /* --- 저장 --- */
 
   const save = async () => {
+    void EMPTY_TABLE
     try {
       const res = await fetch('/__anchors', {
         method: 'POST',
@@ -153,7 +203,8 @@ export default function AnchorEditor() {
     window.setTimeout(() => setSaved(null), 3000)
   }
 
-  const doneCount = Object.values(table).filter((b) => Object.keys(b ?? {}).length).length
+  const doneCount = Object.values(table.bodies).filter((b) => Object.keys(b ?? {}).length).length
+  const overrideCount = Object.keys(table.overrides).length
 
   /* --- 그리기 --- */
 
@@ -162,12 +213,12 @@ export default function AnchorEditor() {
       {/* 왼쪽: 몸통 */}
       <aside className="col bodies">
         <h1>앵커 편집기</h1>
-        <p className="sub">몸통 {doneCount}/{BODY_COUNT} 잡음</p>
+        <p className="sub">몸통 {doneCount}/{BODY_COUNT} 잡음{overrideCount ? ` · 예외 ${overrideCount}` : ''}</p>
         <div className="body-list">
           {Array.from({ length: BODY_COUNT }, (_, i) => i + 1).map((n) => (
             <button
               key={n}
-              className={`body-btn${n === body ? ' on' : ''}${Object.keys(table[String(n)] ?? {}).length ? ' done' : ''}`}
+              className={`body-btn${n === body ? ' on' : ''}${Object.keys(table.bodies[String(n)] ?? {}).length ? ' done' : ''}`}
               onClick={() => setBody(n)}
             >
               <BodyThumb n={n} />
@@ -195,6 +246,16 @@ export default function AnchorEditor() {
             <input type="checkbox" checked={solo} onChange={(e) => setSolo(e.target.checked)} />
             선택만 진하게
           </label>
+          <div className="scopes">
+            {SCOPES.map((s) => (
+              <button
+                key={s.key}
+                className={`scope${scope === s.key ? ' on' : ''}`}
+                onClick={() => setScope(s.key)}
+                title={s.hint}
+              >{s.label}</button>
+            ))}
+          </div>
           <label className="toggle">
             무늬
             <select value={pattern} onChange={(e) => setPattern(Number(e.target.value))}>
@@ -237,7 +298,7 @@ export default function AnchorEditor() {
                 urls={partUrl(s.key, variant[s.key])}
                 fill="#FFFFFF"
                 line={lineColor}
-                anchor={anchorOf(table, body, s.key)}
+                anchor={composeAnchor(table, body, s.key, variant[s.key])}
                 z={s.z}
                 dim={solo && sel !== null && sel !== s.key}
                 label={s.label}
@@ -247,7 +308,7 @@ export default function AnchorEditor() {
               <div
                 className="sel-box"
                 style={{
-                  transform: `translate(${anchorOf(table, body, sel).x}px, ${anchorOf(table, body, sel).y}px) rotate(${anchorOf(table, body, sel).r}deg) scale(${anchorOf(table, body, sel).s})`,
+                  transform: `translate(${composeAnchor(table, body, sel, variant[sel]).x}px, ${composeAnchor(table, body, sel, variant[sel]).y}px) rotate(${composeAnchor(table, body, sel, variant[sel]).r}deg) scale(${composeAnchor(table, body, sel, variant[sel]).s})`,
                 }}
               />
             )}
@@ -255,7 +316,10 @@ export default function AnchorEditor() {
         </div>
 
         <p className="hint">
-          무대에서 <b>드래그</b>로 이동 · <b>휠</b>로 크기 · <b>←↑↓→</b> 1px(Shift 10px) · <b>[ ]</b> 회전
+          <b>드래그</b> 이동 · <b>휠</b> 크기 · <b>←↑↓→</b> 1px(Shift 10px) · <b>[ ]</b> 회전
+          <br />
+          지금 고치는 것: <b>{SCOPES.find((s) => s.key === scope)!.label}</b>
+          {' — '}{SCOPES.find((s) => s.key === scope)!.hint}
         </p>
       </main>
 
@@ -265,13 +329,13 @@ export default function AnchorEditor() {
           <select onChange={(e) => { const v = Number(e.target.value); if (v) copyFrom(v) }} value={0}>
             <option value={0}>다른 몸통에서 복사…</option>
             {Array.from({ length: BODY_COUNT }, (_, i) => i + 1)
-              .filter((n) => n !== body && Object.keys(table[String(n)] ?? {}).length)
+              .filter((n) => n !== body && Object.keys(table.bodies[String(n)] ?? {}).length)
               .map((n) => <option key={n} value={n}>몸통 {String(n).padStart(2, '0')}</option>)}
           </select>
         </div>
 
         {SLOTS.map((s) => {
-          const a = anchorOf(table, body, s.key)
+          const a = current(s.key)
           const on = sel === s.key
           return (
             <div key={s.key} className={`slot${on ? ' on' : ''}`} onClick={() => setSel(s.key)}>
