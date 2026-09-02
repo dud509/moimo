@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_볼장식" data-name="볼장식" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <g id="_수염" data-name="수염">
+    <g>
+      <line x1="338.72" y1="274.59" x2="350.98" y2="273.64" fill="none" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+      <line x1="350.98" y1="282.47" x2="338.72" y2="281.52" fill="none" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+    </g>
+    <g>
+      <line x1="173.28" y1="274.59" x2="161.02" y2="273.64" fill="none" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+      <line x1="161.02" y1="282.47" x2="173.28" y2="281.52" fill="none" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+    </g>
+  </g>
+</svg>

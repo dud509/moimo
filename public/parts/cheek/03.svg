@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_볼장식" data-name="볼장식" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="radial-gradient" cx="704.85" cy="459.29" fx="704.85" fy="459.29" r="13.9" gradientTransform="translate(-452.58 -51.59) scale(1.12 .73)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fbd8d6"/>
+      <stop offset=".15" stop-color="#fbd8d6" stop-opacity=".99"/>
+      <stop offset=".28" stop-color="#fbd8d6" stop-opacity=".94"/>
+      <stop offset=".4" stop-color="#fbd8d6" stop-opacity=".87"/>
+      <stop offset=".52" stop-color="#fbd8d6" stop-opacity=".77"/>
+      <stop offset=".63" stop-color="#fbd8d6" stop-opacity=".64"/>
+      <stop offset=".75" stop-color="#fbd8d6" stop-opacity=".48"/>
+      <stop offset=".86" stop-color="#fbd8d6" stop-opacity=".3"/>
+      <stop offset=".96" stop-color="#fbd8d6" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#fbd8d6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-2" cx="562.3" cy="459.32" fx="562.3" fy="459.32" r="13.9" gradientTransform="translate(-452.58 -51.58) scale(1.12 .73)" xlink:href="#radial-gradient"/>
+  </defs>
+  <g id="_그라_볼터치" data-name="그라 볼터치">
+    <path d="M351.19,283.58c-.01,6.16-6.96,10.13-15.51,10.11-8.56-.02-15.49-4.01-15.47-10.17.01-6.16,6.96-10.13,15.51-10.11,8.56.02,15.49,4.01,15.47,10.17Z" fill="url(#radial-gradient)"/>
+    <path d="M191.8,283.55c-.01,6.16-6.96,10.13-15.51,10.11-8.56-.02-15.49-4.01-15.47-10.17.01-6.16,6.96-10.13,15.51-10.11,8.56.02,15.49,4.01,15.47,10.17Z" fill="url(#radial-gradient-2)"/>
+  </g>
+</svg>

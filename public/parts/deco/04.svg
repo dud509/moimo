@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_몸통장식" data-name="몸통장식" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <path d="M246.82,312.28l-2.89-.09c-7.29-.11-13.81-.33-19.7-.63l-4.41-.14c9.76,10.93,28.14,10.32,28.14,10.32l1.73-2.65s-3.14-4.15-2.87-6.8Z" fill="#fff"/>
+  <path d="M265.43,312.28l-1.74.06c.11,3.42-2.54,5.74-2.54,5.74l2.08,2.95s26.55.59,29.25-9.6l-2.09.07c-7.23.41-15.47.68-24.95.79Z" fill="#fff"/>
+  <g>
+    <path d="M249.17,324.96s-3.53.88-6.15,4.25-1.32,9.85-1.32,9.85c0,0,13.68-.27,13.79-7.75" fill="#fff" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+    <path d="M254.01,327.11c-.14,2.72,3.79,8.54,7.63,9.86,5.75,1.98,9.1,1.77,9.1,1.77,0,0,1.35-6.41-1.32-9.85-2.61-3.37-5.97-2.94-5.97-2.94" fill="#fff" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+    <path d="M261.14,317.4s2.65-2.84,2.54-7.03" fill="none" stroke="#888989" stroke-linejoin="round" stroke-width="3.88"/>
+    <path d="M263.22,321.01s26.55.73,29.25-11.76" fill="none" stroke="#888989" stroke-linejoin="round" stroke-width="4"/>
+    <path d="M249.68,318.55s-3.14-4.99-2.87-8.18" fill="none" stroke="#888989" stroke-linejoin="round" stroke-width="4"/>
+    <path d="M247.96,321.74s-18.37.73-28.14-12.41" fill="none" stroke="#888989" stroke-linejoin="round" stroke-width="4"/>
+    <path d="M251.27,317.47c-1.54.27-2.72,1.72-2.93,3.46-.31,2.5-.44,5.87,1.16,6.25,2.76.67,10.52.73,11.41,0,.75-.62,2.89-5.79,1.05-8.6-.44-.67-6.72-1.82-10.68-1.11Z" fill="#fff" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+  </g>
+</svg>
