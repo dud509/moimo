@@ -3,7 +3,7 @@ import {
   BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, Z_MORPH, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
   fillFor, lineFor, partAnchor, partUrl, morphUrls, prepareSvg, warnIfNothingToTint,
-  type Anchor, type AnchorTable, type SlotKey,
+  type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
 
 /** 드래그가 어느 층에 쓰일지 */
@@ -22,11 +22,10 @@ const DISP = 0.86 // 화면에 512 캔버스를 얼마로 줄여 보여줄지
 /* ---------------- 한 겹 ---------------- */
 
 function Layer({
-  urls, fill, line, anchor, z, dim, label, warn,
+  urls, paint, anchor, z, dim, label, warn,
 }: {
   urls: string | string[]
-  fill: string
-  line: string
+  paint: Paint
   anchor: Anchor
   z: number
   dim: boolean
@@ -35,7 +34,7 @@ function Layer({
 }) {
   const uid = useId().replace(/:/g, '')
   const { svg, missing } = useSvg(urls)
-  const html = useMemo(() => (svg ? prepareSvg(svg, fill, line, uid) : ''), [svg, fill, line, uid])
+  const html = useMemo(() => (svg ? prepareSvg(svg, paint, uid) : ''), [svg, paint, uid])
 
   useEffect(() => { if (svg) warn?.(svg) }, [svg, warn])
 
@@ -286,12 +285,12 @@ export default function AnchorEditor() {
             </div>
 
             <Layer
-              urls={bodyUrl(body)} fill={color.hex} line={lineColor}
+              urls={bodyUrl(body)} paint={{ fill: color.hex, line: lineColor, accent: color.accent }}
               anchor={DEFAULT_ANCHOR} z={Z_BODY} dim={solo && sel !== null} label={`몸통 ${body}`}
             />
             {morph > 0 && (
               <Layer
-                urls={morphUrls(body, morph)} fill={color.hex} line={lineColor}
+                urls={morphUrls(body, morph)} paint={{ fill: color.hex, line: lineColor, accent: color.accent }}
                 anchor={DEFAULT_ANCHOR} z={Z_MORPH} dim={solo && sel !== null} label="무늬"
               />
             )}
@@ -299,8 +298,11 @@ export default function AnchorEditor() {
               <Layer
                 key={s.key}
                 urls={partUrl(s.key, variant[s.key])}
-                fill={fillFor(s.key, variant[s.key], color.hex)}
-                line={lineColor}
+                paint={{
+                  fill: fillFor(s.key, variant[s.key], color.hex),
+                  line: lineColor,
+                  accent: color.accent,
+                }}
                 warn={(raw) => warnIfNothingToTint(s.key, variant[s.key], raw)}
                 anchor={composeAnchor(table, body, s.key, variant[s.key])}
                 z={s.z}
@@ -427,7 +429,7 @@ function PartThumb({
     <button className={`pthumb${on ? ' on' : ''}${tuned ? ' tuned' : ''}`} onClick={onPick} title={`${slot} ${n}`}>
       {missing || !svg
         ? <i className="pthumb-empty" />
-        : <i ref={ref} dangerouslySetInnerHTML={{ __html: prepareSvg(svg, '#FFFFFF', LINE_COLOR, uid) }} />}
+        : <i ref={ref} dangerouslySetInnerHTML={{ __html: prepareSvg(svg, { fill: '#FFFFFF', line: LINE_COLOR }, uid) }} />}
       <em>{String(n).padStart(2, '0')}</em>
     </button>
   )
@@ -438,5 +440,5 @@ function BodyThumb({ n }: { n: number }) {
   const uid = useId().replace(/:/g, '')
   const { svg, missing } = useSvg(bodyUrl(n))
   if (missing || !svg) return <i className="thumb empty" />
-  return <i className="thumb" dangerouslySetInnerHTML={{ __html: prepareSvg(svg, '#FFFFFF', LINE_COLOR, uid) }} />
+  return <i className="thumb" dangerouslySetInnerHTML={{ __html: prepareSvg(svg, { fill: '#FFFFFF', line: LINE_COLOR }, uid) }} />
 }

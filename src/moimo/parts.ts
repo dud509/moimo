@@ -15,16 +15,18 @@ export const LINE_COLOR = '#38312A'
 
 /**
  * 몸통 색깔 — 성 중성.
- * `line` 을 적어두면 그 몸통일 때만 선 색이 바뀐다.
- * 어두운 몸통에서 선이 묻히지 않게 하려는 것.
+ *
+ *   hex     몸통 전체 색
+ *   accent  몸통 안에서 따로 노는 부분의 색 (배·얼굴판 같은 곳)
+ *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
  */
 export const BODY_COLORS = [
-  { jamo: 'ㅣ', name: '파랑', hex: '#E1EEF4' },
-  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3' },
-  { jamo: 'ㅓ', name: '분홍', hex: '#FFD8E2' },
-  { jamo: 'ㅗ', name: '검정', hex: '#231A17', line: '#665546' },
-  { jamo: 'ㅜ', name: '흰색', hex: '#FFFFFF' },
-  { jamo: 'ㅡㅐㅔㅑㅛㅠ', name: '갈색', hex: '#5F5040' },
+  { jamo: 'ㅣ', name: '파랑', hex: '#E1EEF4', accent: '#FFFFFF' },
+  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF' },
+  { jamo: 'ㅓ', name: '분홍', hex: '#FFD8E2', accent: '#FFFFFF' },
+  { jamo: 'ㅗ', name: '검정', hex: '#231A17', accent: '#FFF4F3', line: '#665546' },
+  { jamo: 'ㅜ', name: '흰색', hex: '#FFFFFF', accent: '#FFF4F3' },
+  { jamo: 'ㅡㅐㅔㅑㅛㅠ', name: '갈색', hex: '#5F5040', accent: '#FFF4F3' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
@@ -40,6 +42,12 @@ export const lineFor = (c: BodyColor): string => ('line' in c ? c.line : LINE_CO
 export const SOURCE_LINE = '#888989'
 /** 원본 SVG 의 채우기 색 */
 export const SOURCE_FILL = '#FFFFFF'
+/**
+ * 원본 SVG 에서 "여기는 몸통 색 말고 따로" 라고 표시해둔 색.
+ * 일러스트레이터에서 그 부분만 이 마젠타로 칠해 내보내면,
+ * 화면에서는 몸통 색에 맞는 accent 로 바뀐다. 팔레트에 없는 색이라 헷갈리지 않는다.
+ */
+export const SOURCE_ACCENT = '#FF00FF'
 /** 색을 갈아입지 않는 파츠의 채우기 */
 export const FILL_COLOR = SOURCE_FILL
 
@@ -188,13 +196,18 @@ export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part:
  *    일러스트레이터가 뽑은 id("_몸통", "radial-gradient")가 파일마다 같아서
  *    그대로 두면 그라디언트가 엉뚱한 파츠를 가리킨다.
  */
-export function prepareSvg(svg: string, fill: string, line: string, uid: string): string {
+export type Paint = { fill: string; line: string; accent?: string }
+
+export function prepareSvg(svg: string, paint: Paint, uid: string): string {
+  const { fill, line, accent } = paint
   return svg
     // 흰색은 #ffffff, #fff, white 어느 표기로 나와도 잡는다
     .replace(/#ffffff\b/gi, fill)
     .replace(/#fff\b/gi, fill)
     .replace(/\b(fill|stroke)="white"/gi, (_m, a: string) => `${a}="${fill}"`)
     .replace(/\b(fill|stroke):\s*white\b/gi, (_m, a: string) => `${a}:${fill}`)
+    // 흰색을 바꾼 뒤에 표시색을 바꾼다 — accent 가 흰색이어도 되도록
+    .replace(/#ff00ff\b/gi, accent ?? fill)
     .replace(/#888989\b/gi, line)
     .replace(/\bid="([^"]+)"/g, (_m, id: string) => `id="${id}-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, (_m, id: string) => `url(#${id}-${uid})`)
