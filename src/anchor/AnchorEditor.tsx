@@ -315,6 +315,24 @@ export default function AnchorEditor() {
           </div>
         </div>
 
+        {sel && (
+          <div className="strip">
+            <span className="strip-label">{SLOTS.find((s) => s.key === sel)!.label}</span>
+            <div className="strip-scroll">
+              {Array.from({ length: SLOTS.find((s) => s.key === sel)!.count }, (_, i) => i + 1).map((n) => (
+                <PartThumb
+                  key={n}
+                  slot={sel}
+                  n={n}
+                  on={variant[sel] === n}
+                  tuned={Boolean(table.parts[sel]?.[String(n)])}
+                  onPick={() => setVariant((v) => ({ ...v, [sel]: n }))}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         <p className="hint">
           <b>드래그</b> 이동 · <b>휠</b> 크기 · <b>←↑↓→</b> 1px(Shift 10px) · <b>[ ]</b> 회전
           <br />
@@ -374,6 +392,21 @@ export default function AnchorEditor() {
         </div>
       </aside>
     </div>
+  )
+}
+
+/* 아래 띠에 늘어놓는 파츠 하나 */
+function PartThumb({
+  slot, n, on, tuned, onPick,
+}: { slot: SlotKey; n: number; on: boolean; tuned: boolean; onPick: () => void }) {
+  const { svg, missing } = useSvg(partUrl(slot, n))
+  return (
+    <button className={`pthumb${on ? ' on' : ''}${tuned ? ' tuned' : ''}`} onClick={onPick} title={`${slot} ${n}`}>
+      {missing || !svg
+        ? <i className="pthumb-empty" />
+        : <i dangerouslySetInnerHTML={{ __html: recolor(svg, '#FFFFFF', '#6f6f74') }} />}
+      <em>{String(n).padStart(2, '0')}</em>
+    </button>
   )
 }
 
