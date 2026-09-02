@@ -296,7 +296,7 @@ export default function AnchorEditor() {
               <Layer
                 key={s.key}
                 urls={partUrl(s.key, variant[s.key])}
-                fill={fillFor(s, color.hex)}
+                fill={fillFor(s.key, variant[s.key], color.hex)}
                 line={lineColor}
                 anchor={composeAnchor(table, body, s.key, variant[s.key])}
                 z={s.z}
