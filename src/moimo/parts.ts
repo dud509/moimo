@@ -129,40 +129,46 @@ export const morphUrls = (body: number, morph: number) => [
 export type Anchor = { x: number; y: number; s: number; r: number }
 
 /**
- * 앵커는 세 겹으로 쌓인다.
+ * 앵커는 네 겹으로 쌓인다. 아래로 갈수록 좁은 범위만 손댄다.
  *
- *   bodies    몸통마다 "이 슬롯은 대체로 여기" — 12 × 6
- *   parts     파츠마다 "나는 기준점에서 이만큼 위" — 슬롯별 파츠 수만큼
- *   overrides 그래도 어색한 조합만 따로
+ *   slots      12종 몸통이 함께 쓰는 기준 자리 — "눈은 여기"
+ *   bodies     그 몸통에서만 기준에서 얼마나 벗어나는지 — "03 만 조금 위로"
+ *   parts      그 번호의 파츠만 — "리본은 더 위에"
+ *   overrides  그래도 어색한 한 조합만
  *
- * 머리 장식처럼 파츠마다 어울리는 자리가 다른 슬롯은 parts 층이 받아준다.
- * 12 × 11 = 132개를 일일이 잡는 대신 12 + 11 = 23개만 잡으면 되고,
- * 남는 몇 개만 overrides 로 손본다.
+ * slots 를 한 번 잡으면 12종이 다 따라오고, 어긋나는 몸통만 bodies 로 살짝
+ * 민다. bodies 와 parts 는 기준에 더해지는 보정이라, 값이 비어 있으면 기준 그대로다.
  */
 export type AnchorTable = {
+  slots: Partial<Record<SlotKey, Anchor>>
   bodies: Record<string, Partial<Record<SlotKey, Anchor>>>
   parts: Partial<Record<SlotKey, Record<string, Anchor>>>
   overrides: Record<string, Anchor>
 }
 
 export const DEFAULT_ANCHOR: Anchor = { x: 0, y: 0, s: 1, r: 0 }
-export const EMPTY_TABLE: AnchorTable = { bodies: {}, parts: {}, overrides: {} }
+export const EMPTY_TABLE: AnchorTable = { slots: {}, bodies: {}, parts: {}, overrides: {} }
 
 export const overrideKey = (body: number, slot: SlotKey, part: number) =>
   `b${String(body).padStart(2, '0')}:${slot}:${String(part).padStart(2, '0')}`
 
-/** 예전에 저장한 납작한 모양도 읽어준다 */
+/** 예전에 저장한 모양도 읽어준다 */
 export function normalizeTable(raw: unknown): AnchorTable {
   const t = (raw ?? {}) as Record<string, unknown>
-  if (t.bodies || t.parts || t.overrides) {
+  if (t.slots || t.bodies || t.parts || t.overrides) {
     return {
+      slots: (t.slots as AnchorTable['slots']) ?? {},
       bodies: (t.bodies as AnchorTable['bodies']) ?? {},
       parts: (t.parts as AnchorTable['parts']) ?? {},
       overrides: (t.overrides as AnchorTable['overrides']) ?? {},
     }
   }
-  return { bodies: t as AnchorTable['bodies'], parts: {}, overrides: {} }
+  // 가장 초기 모양 — 몸통별 값만 있던 때
+  return { slots: {}, bodies: t as AnchorTable['bodies'], parts: {}, overrides: {} }
 }
+
+export const slotAnchor = (t: AnchorTable, slot: SlotKey): Anchor =>
+  t.slots[slot] ?? DEFAULT_ANCHOR
 
 export const bodyAnchor = (t: AnchorTable, body: number, slot: SlotKey): Anchor =>
   t.bodies[String(body)]?.[slot] ?? DEFAULT_ANCHOR
@@ -170,21 +176,18 @@ export const bodyAnchor = (t: AnchorTable, body: number, slot: SlotKey): Anchor 
 export const partAnchor = (t: AnchorTable, slot: SlotKey, part: number): Anchor =>
   t.parts[slot]?.[String(part)] ?? DEFAULT_ANCHOR
 
-/** 몸통 기준점 위에 파츠 보정을 얹는다. 예외가 있으면 그게 이긴다 */
+/** 기준 위에 몸통 보정과 파츠 보정을 더한다. 예외가 있으면 그게 이긴다 */
 export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part: number): Anchor {
   const over = t.overrides[overrideKey(body, slot, part)]
   if (over) return over
-
+  const a = slotAnchor(t, slot)
   const b = bodyAnchor(t, body, slot)
-  const p = partAnchor(t, slot, part)
-  const rad = (b.r * Math.PI) / 180
-  const cos = Math.cos(rad)
-  const sin = Math.sin(rad)
+  const c = partAnchor(t, slot, part)
   return {
-    x: b.x + (p.x * cos - p.y * sin) * b.s,
-    y: b.y + (p.x * sin + p.y * cos) * b.s,
-    s: b.s * p.s,
-    r: b.r + p.r,
+    x: a.x + b.x + c.x,
+    y: a.y + b.y + c.y,
+    s: a.s * b.s * c.s,
+    r: a.r + b.r + c.r,
   }
 }
 

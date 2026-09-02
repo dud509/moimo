@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, Z_MORPH, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  fillFor, lineFor, partAnchor, partUrl, morphUrls, prepareSvg, warnIfNothingToTint,
+  fillFor, lineFor, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, warnIfNothingToTint,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
 
@@ -10,8 +10,8 @@ import {
 type Scope = 'body' | 'every' | 'part' | 'one'
 
 const SCOPES: { key: Scope; label: string; hint: string }[] = [
-  { key: 'body',  label: '이 몸통',   hint: '이 몸통에서만 이 슬롯의 자리를 잡아요' },
-  { key: 'every', label: '모든 몸통', hint: '12종 몸통을 한꺼번에 같은 만큼 움직여요 (각자의 차이는 유지)' },
+  { key: 'every', label: '기준 (모든 몸통)', hint: '12종이 함께 쓰는 자리 — 여기부터 잡으세요' },
+  { key: 'body',  label: '이 몸통만',      hint: '기준에서 이 몸통만 살짝 밀어요' },
   { key: 'part',  label: '이 파츠',   hint: '이 번호의 파츠만 — 다른 번호는 안 따라와요' },
   { key: 'one',   label: '이 조합만', hint: '이 몸통 + 이 파츠 조합에만' },
 ]
@@ -59,7 +59,7 @@ function Layer({
 
 export default function AnchorEditor() {
   const [table, setTable] = useState<AnchorTable>(() => normalizeTable(initial))
-  const [scope, setScope] = useState<Scope>('body')
+  const [scope, setScope] = useState<Scope>('every')
   const [body, setBody] = useState(1)
   const [sel, setSel] = useState<SlotKey | null>('eye')
   const [colorIdx, setColorIdx] = useState(1)
@@ -81,7 +81,8 @@ export default function AnchorEditor() {
 
   /** 지금 편집 중인 층의 값 */
   const current = useCallback((slot: SlotKey): Anchor => {
-    if (scope === 'body' || scope === 'every') return bodyAnchor(table, body, slot)
+    if (scope === 'every') return slotAnchor(table, slot)
+    if (scope === 'body') return bodyAnchor(table, body, slot)
     if (scope === 'part') return partAnchor(table, slot, variant[slot])
     return table.overrides[overrideKey(body, slot, variant[slot])]
       ?? composeAnchor(table, body, slot, variant[slot])
@@ -94,21 +95,7 @@ export default function AnchorEditor() {
         const key = String(body)
         next.bodies[key] = { ...next.bodies[key], [slot]: { ...bodyAnchor(t, body, slot), ...d } }
       } else if (scope === 'every') {
-        // 지금 몸통이 움직인 만큼을 12종 전부에 똑같이 더한다.
-        // 몸통마다 이미 잡아둔 차이는 그대로 남는다.
-        const base = bodyAnchor(t, body, slot)
-        const dx = (d.x ?? base.x) - base.x
-        const dy = (d.y ?? base.y) - base.y
-        const ds = base.s ? (d.s ?? base.s) / base.s : 1
-        const dr = (d.r ?? base.r) - base.r
-        for (let i = 1; i <= BODY_COUNT; i++) {
-          const k = String(i)
-          const cur = bodyAnchor(t, i, slot)
-          next.bodies[k] = {
-            ...next.bodies[k],
-            [slot]: { x: cur.x + dx, y: cur.y + dy, s: cur.s * ds, r: cur.r + dr },
-          }
-        }
+        next.slots = { ...next.slots, [slot]: { ...slotAnchor(t, slot), ...d } }
       } else if (scope === 'part') {
         const n = String(variant[slot])
         next.parts[slot] = { ...next.parts[slot], [n]: { ...partAnchor(t, slot, variant[slot]), ...d } }
@@ -131,10 +118,8 @@ export default function AnchorEditor() {
         const { [slot]: _drop, ...rest } = next.bodies[key] ?? {}
         next.bodies[key] = rest
       } else if (scope === 'every') {
-        for (let i = 1; i <= BODY_COUNT; i++) {
-          const { [slot]: _drop, ...rest } = next.bodies[String(i)] ?? {}
-          next.bodies[String(i)] = rest
-        }
+        const { [slot]: _drop, ...rest } = next.slots
+        next.slots = rest
       } else if (scope === 'part') {
         const { [String(variant[slot])]: _drop, ...rest } = next.parts[slot] ?? {}
         next.parts[slot] = rest
@@ -227,7 +212,8 @@ export default function AnchorEditor() {
     window.setTimeout(() => setSaved(null), 3000)
   }
 
-  const doneCount = Object.values(table.bodies).filter((b) => Object.keys(b ?? {}).length).length
+  const baseCount = Object.keys(table.slots).length
+  const tweakCount = Object.values(table.bodies).filter((b) => Object.keys(b ?? {}).length).length
   const overrideCount = Object.keys(table.overrides).length
 
   /* --- 그리기 --- */
@@ -237,7 +223,11 @@ export default function AnchorEditor() {
       {/* 왼쪽: 몸통 */}
       <aside className="col bodies">
         <h1>앵커 편집기</h1>
-        <p className="sub">몸통 {doneCount}/{BODY_COUNT} 잡음{overrideCount ? ` · 예외 ${overrideCount}` : ''}</p>
+        <p className="sub">
+          기준 {baseCount}/{SLOTS.length}
+          {tweakCount ? ` · 보정한 몸통 ${tweakCount}` : ''}
+          {overrideCount ? ` · 예외 ${overrideCount}` : ''}
+        </p>
         <div className="body-list">
           {Array.from({ length: BODY_COUNT }, (_, i) => i + 1).map((n) => (
             <button
