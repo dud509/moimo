@@ -32,16 +32,22 @@ export type SlotDef = {
   label: string
   count: number
   z: number
+  /** 흰 채우기를 몸통 색으로 갈아입는 파츠 — 꼬리는 몸의 일부라 몸통을 따라간다 */
+  tinted?: boolean
 }
 
 export const SLOTS: SlotDef[] = [
-  { key: 'tail',  label: '꼬리',     count: 9,  z: 1 },
+  { key: 'tail',  label: '꼬리',     count: 9,  z: 1, tinted: true },
   { key: 'deco',  label: '몸통장식', count: 6,  z: 4 },
   { key: 'cheek', label: '볼장식',   count: 6,  z: 5 },
   { key: 'eye',   label: '눈',       count: 11, z: 6 },
   { key: 'mouth', label: '입',       count: 9,  z: 6 },
   { key: 'hair',  label: '머리장식', count: 11, z: 7 },
 ]
+
+/** 이 파츠를 어떤 색으로 채울지 */
+export const fillFor = (slot: SlotDef, bodyHex: string) =>
+  slot.tinted ? bodyHex : FILL_COLOR
 
 /** 몸통 z=2, 무늬 z=3 — 슬롯 사이에 낀다 */
 export const Z_BODY = 2

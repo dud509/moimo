@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, Z_MORPH, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  partAnchor, partUrl, morphUrls, prepareSvg,
+  fillFor, partAnchor, partUrl, morphUrls, prepareSvg,
   type Anchor, type AnchorTable, type SlotKey,
 } from '../moimo/parts'
 
@@ -297,7 +297,7 @@ export default function AnchorEditor() {
               <Layer
                 key={s.key}
                 urls={partUrl(s.key, variant[s.key])}
-                fill="#FFFFFF"
+                fill={fillFor(s, color.hex)}
                 line={lineColor}
                 anchor={composeAnchor(table, body, s.key, variant[s.key])}
                 z={s.z}
