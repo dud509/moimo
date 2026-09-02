@@ -179,7 +179,7 @@ export function Info({ count, onClose, onReset }: { count: number; onClose: () =
           <li><b>모이모 누르기</b> — 이름과 유전자 보기</li>
         </ul>
 
-        <p className="credit">졸업전시 프로젝트 · 모이모 마을</p>
+        <p className="credit">졸업전시 프로젝트 · 모이모 월드</p>
 
         <div className="danger">
           {confirm ? (

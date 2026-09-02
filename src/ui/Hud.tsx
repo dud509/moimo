@@ -26,7 +26,7 @@ export function TopBar({ count, onHelp }: { count: number; onHelp: () => void })
     <header className="topbar">
       <div className="brand">
         <span className="brand-mark">모이모</span>
-        <span className="brand-sub">MOIMO VILLAGE</span>
+        <span className="brand-sub">MOIMO WORLD</span>
       </div>
       <div className="counter">
         <span className="counter-label">지금 모여 있는 모이모</span>
