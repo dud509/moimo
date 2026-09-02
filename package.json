@@ -4,10 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --open /anchors.html",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "esbuild src/moimo/name.test.ts --bundle --platform=node --format=esm --outfile=node_modules/.tmp/name.test.mjs --log-level=error && node node_modules/.tmp/name.test.mjs"
+    "test": "esbuild src/moimo/name.test.ts --bundle --platform=node --format=esm --outfile=node_modules/.tmp/name.test.mjs --log-level=error && node node_modules/.tmp/name.test.mjs",
+    "site": "vite --open /"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -31,7 +31,13 @@ function anchorSave(): Plugin {
 
 export default defineConfig({
   plugins: [react(), anchorSave()],
-  server: { host: true, port: 5173 },
+  server: {
+    host: true,
+    // 예전 프로젝트(5173)와 겹치지 않는 포트.
+    // strictPort 를 켜두면 포트가 차 있을 때 조용히 옮겨가지 않고 에러를 낸다.
+    port: 5273,
+    strictPort: true,
+  },
   build: {
     rollupOptions: {
       input: {

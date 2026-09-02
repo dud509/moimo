@@ -153,7 +153,11 @@ public/parts/
 npm install
 npm run dev
 ```
-그리고 브라우저에서 **http://localhost:5173/anchors.html**
+브라우저가 **http://localhost:5273/anchors.html** 로 알아서 열린다.
+
+> 포트가 **5273**인 건 예전 프로젝트(5173)와 겹치지 않게 하려는 것이다.
+> 5273도 차 있으면 조용히 다른 포트로 옮겨가지 않고 에러를 낸다.
+> 마을 화면은 `npm run site`.
 
 - 왼쪽에서 몸통 12종 중 하나를 고른다
 - 오른쪽에서 슬롯(눈·입·볼·머리·꼬리·몸통장식)을 고른다
