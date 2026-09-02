@@ -78,6 +78,17 @@ export const TINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
   eye: [11],
 }
 
+/** 몸통 색으로 갈아입힐 흰 영역이 정말 있는지 — 없으면 개발 중에 알려준다 */
+export function warnIfNothingToTint(slot: SlotKey, part: number, svg: string) {
+  if (!isTinted(slot, part)) return
+  if (/#ffffff\b|#fff\b|(fill|stroke)="white"|(fill|stroke):\s*white/i.test(svg)) return
+  console.warn(
+    `[모이모] ${slot} ${String(part).padStart(2, '0')} 은 TINTED 에 적혀 있지만 ` +
+    `파일 안에 흰 영역이 없어 몸통 색이 입혀지지 않습니다. ` +
+    `일러스트레이터에서 흰자를 #FFFFFF 로 칠해 다시 내보내세요.`,
+  )
+}
+
 export const isTinted = (slot: SlotKey, part: number): boolean => {
   const rule = TINTED[slot]
   return rule === 'all' || (Array.isArray(rule) && rule.includes(part))
@@ -179,8 +190,12 @@ export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part:
  */
 export function prepareSvg(svg: string, fill: string, line: string, uid: string): string {
   return svg
-    .replace(/#FFFFFF|#ffffff|#FFF\b|#fff\b/g, fill)
-    .replace(/#888989/gi, line)
+    // 흰색은 #ffffff, #fff, white 어느 표기로 나와도 잡는다
+    .replace(/#ffffff\b/gi, fill)
+    .replace(/#fff\b/gi, fill)
+    .replace(/\b(fill|stroke)="white"/gi, (_m, a: string) => `${a}="${fill}"`)
+    .replace(/\b(fill|stroke):\s*white\b/gi, (_m, a: string) => `${a}:${fill}`)
+    .replace(/#888989\b/gi, line)
     .replace(/\bid="([^"]+)"/g, (_m, id: string) => `id="${id}-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, (_m, id: string) => `url(#${id}-${uid})`)
     .replace(/\b(xlink:href|href)="#([^"]+)"/g, (_m, a: string, id: string) => `${a}="#${id}-${uid}"`)

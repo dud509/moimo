@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, Z_MORPH, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  fillFor, lineFor, partAnchor, partUrl, morphUrls, prepareSvg,
+  fillFor, lineFor, partAnchor, partUrl, morphUrls, prepareSvg, warnIfNothingToTint,
   type Anchor, type AnchorTable, type SlotKey,
 } from '../moimo/parts'
 
@@ -22,7 +22,7 @@ const DISP = 0.86 // 화면에 512 캔버스를 얼마로 줄여 보여줄지
 /* ---------------- 한 겹 ---------------- */
 
 function Layer({
-  urls, fill, line, anchor, z, dim, label,
+  urls, fill, line, anchor, z, dim, label, warn,
 }: {
   urls: string | string[]
   fill: string
@@ -31,10 +31,13 @@ function Layer({
   z: number
   dim: boolean
   label: string
+  warn?: (svg: string) => void
 }) {
   const uid = useId().replace(/:/g, '')
   const { svg, missing } = useSvg(urls)
   const html = useMemo(() => (svg ? prepareSvg(svg, fill, line, uid) : ''), [svg, fill, line, uid])
+
+  useEffect(() => { if (svg) warn?.(svg) }, [svg, warn])
 
   const style: React.CSSProperties = {
     zIndex: z,
@@ -298,6 +301,7 @@ export default function AnchorEditor() {
                 urls={partUrl(s.key, variant[s.key])}
                 fill={fillFor(s.key, variant[s.key], color.hex)}
                 line={lineColor}
+                warn={(raw) => warnIfNothingToTint(s.key, variant[s.key], raw)}
                 anchor={composeAnchor(table, body, s.key, variant[s.key])}
                 z={s.z}
                 dim={solo && sel !== null && sel !== s.key}
