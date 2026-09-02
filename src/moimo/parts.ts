@@ -125,9 +125,19 @@ export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part:
   }
 }
 
-/** 파츠 SVG의 흰 채우기와 회색 선을 원하는 색으로 */
-export function recolor(svg: string, fill: string, line: string): string {
+/**
+ * 파츠 SVG 를 화면에 심을 수 있게 손본다.
+ *
+ * 1. 흰 채우기와 회색 선을 원하는 색으로 바꾼다.
+ * 2. id 에 꼬리표를 붙인다 — 한 페이지에 파츠를 수십, 수백 개 심는데
+ *    일러스트레이터가 뽑은 id("_몸통", "radial-gradient")가 파일마다 같아서
+ *    그대로 두면 그라디언트가 엉뚱한 파츠를 가리킨다.
+ */
+export function prepareSvg(svg: string, fill: string, line: string, uid: string): string {
   return svg
     .replace(/#FFFFFF|#ffffff|#FFF\b|#fff\b/g, fill)
-    .replace(/#888989|#888/gi, line)
+    .replace(/#888989/gi, line)
+    .replace(/\bid="([^"]+)"/g, (_m, id: string) => `id="${id}-${uid}"`)
+    .replace(/url\(#([^)]+)\)/g, (_m, id: string) => `url(#${id}-${uid})`)
+    .replace(/\b(xlink:href|href)="#([^"]+)"/g, (_m, a: string, id: string) => `${a}="#${id}-${uid}"`)
 }

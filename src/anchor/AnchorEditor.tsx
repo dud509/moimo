@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, Z_MORPH, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  partAnchor, partUrl, morphUrls, recolor,
+  partAnchor, partUrl, morphUrls, prepareSvg,
   type Anchor, type AnchorTable, type SlotKey,
 } from '../moimo/parts'
 
@@ -32,8 +32,9 @@ function Layer({
   dim: boolean
   label: string
 }) {
+  const uid = useId().replace(/:/g, '')
   const { svg, missing } = useSvg(urls)
-  const html = useMemo(() => (svg ? recolor(svg, fill, line) : ''), [svg, fill, line])
+  const html = useMemo(() => (svg ? prepareSvg(svg, fill, line, uid) : ''), [svg, fill, line, uid])
 
   const style: React.CSSProperties = {
     zIndex: z,
@@ -399,12 +400,31 @@ export default function AnchorEditor() {
 function PartThumb({
   slot, n, on, tuned, onPick,
 }: { slot: SlotKey; n: number; on: boolean; tuned: boolean; onPick: () => void }) {
+  const uid = useId().replace(/:/g, '')
   const { svg, missing } = useSvg(partUrl(slot, n))
+  const ref = useRef<HTMLElement>(null)
+
+  // 파츠는 512 캔버스 한구석만 차지해서 그냥 줄이면 거의 안 보인다.
+  // 실제로 그려진 만큼만 잘라서 띠에 채운다.
+  useEffect(() => {
+    const el = ref.current?.querySelector('svg')
+    if (!el) return
+    try {
+      const bb = (el as unknown as SVGGraphicsElement).getBBox()
+      if (bb.width < 1 || bb.height < 1) return
+      const pad = Math.max(bb.width, bb.height) * 0.12
+      el.setAttribute('viewBox', `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`)
+      el.setAttribute('preserveAspectRatio', 'xMidYMid meet')
+    } catch {
+      /* 못 재면 원본 그대로 */
+    }
+  }, [svg])
+
   return (
     <button className={`pthumb${on ? ' on' : ''}${tuned ? ' tuned' : ''}`} onClick={onPick} title={`${slot} ${n}`}>
       {missing || !svg
         ? <i className="pthumb-empty" />
-        : <i dangerouslySetInnerHTML={{ __html: recolor(svg, '#FFFFFF', '#6f6f74') }} />}
+        : <i ref={ref} dangerouslySetInnerHTML={{ __html: prepareSvg(svg, '#FFFFFF', '#6f6f74', uid) }} />}
       <em>{String(n).padStart(2, '0')}</em>
     </button>
   )
@@ -412,7 +432,8 @@ function PartThumb({
 
 /* 왼쪽 목록의 작은 몸통 미리보기 */
 function BodyThumb({ n }: { n: number }) {
+  const uid = useId().replace(/:/g, '')
   const { svg, missing } = useSvg(bodyUrl(n))
   if (missing || !svg) return <i className="thumb empty" />
-  return <i className="thumb" dangerouslySetInnerHTML={{ __html: svg }} />
+  return <i className="thumb" dangerouslySetInnerHTML={{ __html: prepareSvg(svg, '#FFFFFF', '#888989', uid) }} />
 }
