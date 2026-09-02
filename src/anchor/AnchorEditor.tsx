@@ -7,12 +7,13 @@ import {
 } from '../moimo/parts'
 
 /** 드래그가 어느 층에 쓰일지 */
-type Scope = 'body' | 'part' | 'one'
+type Scope = 'body' | 'every' | 'part' | 'one'
 
 const SCOPES: { key: Scope; label: string; hint: string }[] = [
-  { key: 'body', label: '몸통 전체', hint: '이 몸통에서 이 슬롯의 기준 자리' },
-  { key: 'part', label: '이 파츠', hint: '이 파츠가 기준점에서 얼마나 벗어나는지 — 모든 몸통에 함께' },
-  { key: 'one', label: '이 조합만', hint: '이 몸통 + 이 파츠 조합만 따로' },
+  { key: 'body',  label: '이 몸통',   hint: '이 몸통에서만 이 슬롯의 자리를 잡아요' },
+  { key: 'every', label: '모든 몸통', hint: '12종 몸통을 한꺼번에 같은 만큼 움직여요 (각자의 차이는 유지)' },
+  { key: 'part',  label: '이 파츠',   hint: '이 번호의 파츠만 — 다른 번호는 안 따라와요' },
+  { key: 'one',   label: '이 조합만', hint: '이 몸통 + 이 파츠 조합에만' },
 ]
 import { useSvg } from './useSvg'
 import initial from '../data/anchors.json'
@@ -80,7 +81,7 @@ export default function AnchorEditor() {
 
   /** 지금 편집 중인 층의 값 */
   const current = useCallback((slot: SlotKey): Anchor => {
-    if (scope === 'body') return bodyAnchor(table, body, slot)
+    if (scope === 'body' || scope === 'every') return bodyAnchor(table, body, slot)
     if (scope === 'part') return partAnchor(table, slot, variant[slot])
     return table.overrides[overrideKey(body, slot, variant[slot])]
       ?? composeAnchor(table, body, slot, variant[slot])
@@ -92,6 +93,22 @@ export default function AnchorEditor() {
       if (scope === 'body') {
         const key = String(body)
         next.bodies[key] = { ...next.bodies[key], [slot]: { ...bodyAnchor(t, body, slot), ...d } }
+      } else if (scope === 'every') {
+        // 지금 몸통이 움직인 만큼을 12종 전부에 똑같이 더한다.
+        // 몸통마다 이미 잡아둔 차이는 그대로 남는다.
+        const base = bodyAnchor(t, body, slot)
+        const dx = (d.x ?? base.x) - base.x
+        const dy = (d.y ?? base.y) - base.y
+        const ds = base.s ? (d.s ?? base.s) / base.s : 1
+        const dr = (d.r ?? base.r) - base.r
+        for (let i = 1; i <= BODY_COUNT; i++) {
+          const k = String(i)
+          const cur = bodyAnchor(t, i, slot)
+          next.bodies[k] = {
+            ...next.bodies[k],
+            [slot]: { x: cur.x + dx, y: cur.y + dy, s: cur.s * ds, r: cur.r + dr },
+          }
+        }
       } else if (scope === 'part') {
         const n = String(variant[slot])
         next.parts[slot] = { ...next.parts[slot], [n]: { ...partAnchor(t, slot, variant[slot]), ...d } }
@@ -113,6 +130,11 @@ export default function AnchorEditor() {
         const key = String(body)
         const { [slot]: _drop, ...rest } = next.bodies[key] ?? {}
         next.bodies[key] = rest
+      } else if (scope === 'every') {
+        for (let i = 1; i <= BODY_COUNT; i++) {
+          const { [slot]: _drop, ...rest } = next.bodies[String(i)] ?? {}
+          next.bodies[String(i)] = rest
+        }
       } else if (scope === 'part') {
         const { [String(variant[slot])]: _drop, ...rest } = next.parts[slot] ?? {}
         next.parts[slot] = rest
