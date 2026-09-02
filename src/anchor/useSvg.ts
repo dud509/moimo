@@ -14,7 +14,8 @@ export function useSvg(urls: string | string[] | null): { svg: string | null; mi
     ;(async () => {
       for (const url of list) {
         try {
-          const res = await fetch(url)
+          // 개발 중에는 파츠를 갈아끼워도 예전 파일이 캐시에서 나오지 않게 한다
+          const res = await fetch(url, import.meta.env.DEV ? { cache: 'no-store' } : undefined)
           if (!res.ok) continue
           const text = await res.text()
           if (!text.trim().startsWith('<')) continue

@@ -29,8 +29,25 @@ function anchorSave(): Plugin {
   }
 }
 
+/** 파츠 SVG 를 갈아끼우면 페이지를 새로 고친다 (public/ 은 Vite 가 안 봐준다) */
+function watchParts(): Plugin {
+  return {
+    name: 'moimo-watch-parts',
+    configureServer(server) {
+      const dir = resolve(__dirname, 'public/parts')
+      server.watcher.add(dir)
+      server.watcher.on('all', (_event, file) => {
+        if (file.startsWith(dir)) {
+          server.config.logger.info(`  파츠 변경 감지 → 새로 고침  ${file.slice(dir.length + 1)}`)
+          server.ws.send({ type: 'full-reload' })
+        }
+      })
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react(), anchorSave()],
+  plugins: [react(), anchorSave(), watchParts()],
   server: {
     host: true,
     // 예전 프로젝트(5173)와 겹치지 않는 포트.
