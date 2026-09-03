@@ -10,10 +10,10 @@ import {
 type Scope = 'body' | 'every' | 'part' | 'one'
 
 const SCOPES: { key: Scope; label: string; hint: string }[] = [
-  { key: 'every', label: '기준 (모든 몸통)', hint: '12종이 함께 쓰는 자리 — 여기부터 잡으세요' },
-  { key: 'body',  label: '이 몸통만',      hint: '기준에서 이 몸통만 살짝 밀어요' },
-  { key: 'part',  label: '이 파츠',   hint: '이 번호의 파츠만 — 다른 번호는 안 따라와요' },
-  { key: 'one',   label: '이 조합만', hint: '이 몸통 + 이 파츠 조합에만' },
+  { key: 'every', label: '기준 (모든 몸통)', hint: '몸통 12종 × 이 슬롯의 파츠 전부' },
+  { key: 'body',  label: '이 몸통만',       hint: '이 몸통 하나 × 이 슬롯의 파츠 전부' },
+  { key: 'part',  label: '이 파츠',         hint: '몸통 12종 × 이 파츠 하나' },
+  { key: 'one',   label: '이 조합만',       hint: '이 몸통 하나 × 이 파츠 하나' },
 ]
 import { useSvg } from './useSvg'
 import initial from '../data/anchors.json'
@@ -486,8 +486,16 @@ export default function AnchorEditor() {
             <>
               <b>드래그</b> 이동 · <b>휠</b> 크기 · <b>←↑↓→</b> 1px(Shift 10px) · <b>[ ]</b> 회전
               <br />
-              지금 고치는 것: <b>{SCOPES.find((s) => s.key === scope)!.label}</b>
-              {' — '}{SCOPES.find((s) => s.key === scope)!.hint}
+              지금 움직이는 것:{' '}
+              <b>
+                {scope === 'body' || scope === 'one' ? `몸통 ${String(body).padStart(2, '0')}` : '몸통 12종'}
+                {' × '}
+                {sel
+                  ? scope === 'part' || scope === 'one'
+                    ? `${SLOTS.find((s) => s.key === sel)!.label} ${String(variant[sel]).padStart(2, '0')}`
+                    : `${SLOTS.find((s) => s.key === sel)!.label} 전부`
+                  : '—'}
+              </b>
             </>
           ) : (
             <>어긋난 칸을 누르면 그리로 옮겨가요. 고치고 다시 <b>모아보기</b>로 확인하세요.</>
