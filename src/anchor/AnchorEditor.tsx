@@ -170,6 +170,7 @@ export default function AnchorEditor() {
   const [sheet, setSheet] = useState<'off' | 'bodies' | 'parts'>('off')
   const [dirty, setDirty] = useState(false)
   const [saved, setSaved] = useState<string | null>(null)
+  const [confirmWipe, setConfirmWipe] = useState(false)
 
   const stageRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ x: number; y: number } | null>(null)
@@ -548,6 +549,24 @@ export default function AnchorEditor() {
         })}
 
         <div className="save-bar">
+          {confirmWipe ? (
+            <div className="wipe-ask">
+              <span>잡아둔 좌표를 전부 지울까요?</span>
+              <button className="mini" onClick={() => setConfirmWipe(false)}>아니요</button>
+              <button
+                className="mini danger"
+                onClick={() => {
+                  setTable({ ...EMPTY_TABLE, slots: {}, bodies: {}, parts: {}, overrides: {} })
+                  setConfirmWipe(false)
+                  setDirty(true)
+                }}
+              >
+                전부 지우기
+              </button>
+            </div>
+          ) : (
+            <button className="mini wipe" onClick={() => setConfirmWipe(true)}>좌표 모두 초기화</button>
+          )}
           {saved && <span className="saved">{saved}</span>}
           <button className={`save${dirty ? ' dirty' : ''}`} onClick={save}>
             {dirty ? '저장하기 •' : '저장하기'}

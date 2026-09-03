@@ -180,3 +180,9 @@ button { cursor: pointer; }
   width: 7px; height: 7px; border-radius: 50%;
   background: #6cc08a; box-shadow: 0 0 0 2px #fff;
 }
+
+.mini.wipe { width: 100%; margin-bottom: 6px; }
+.mini.danger { background: #e05656; border-color: #e05656; color: #fff; }
+.wipe-ask { display: grid; grid-template-columns: 1fr auto auto; gap: 5px; align-items: center; margin-bottom: 6px; }
+.wipe-ask span { font-size: 11px; font-weight: 700; color: var(--ink); }
+.wipe-ask .mini { grid-column: auto; padding: 5px 9px; }
