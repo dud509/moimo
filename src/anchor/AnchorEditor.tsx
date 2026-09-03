@@ -55,6 +55,69 @@ function Layer({
   return <div className="layer" style={style} dangerouslySetInnerHTML={{ __html: html }} />
 }
 
+/* 몸통 + 무늬 + 파츠를 한 벌 쌓은 것. 무대와 모아보기가 같이 쓴다 */
+function Figure({
+  body, variant, morph, color, table, soloSlot, warnTint,
+}: {
+  body: number
+  variant: Record<string, number>
+  morph: number
+  color: (typeof BODY_COLORS)[number]
+  table: AnchorTable
+  soloSlot?: SlotKey | null
+  warnTint?: boolean
+}) {
+  const line = lineFor(color)
+  const paint = { fill: color.hex, line, accent: color.accent }
+  return (
+    <>
+      <Layer
+        urls={bodyUrl(body)} paint={paint} anchor={DEFAULT_ANCHOR} z={Z_BODY}
+        dim={soloSlot != null} label={`몸통 ${body}`}
+      />
+      {morph > 0 && (
+        <Layer
+          urls={morphUrls(body, morph)} paint={paint} anchor={DEFAULT_ANCHOR} z={Z_MORPH}
+          dim={soloSlot != null} label="무늬"
+        />
+      )}
+      {SLOTS.map((s) => (
+        <Layer
+          key={s.key}
+          urls={partUrl(s.key, variant[s.key])}
+          paint={{ fill: fillFor(s.key, variant[s.key], color.hex), line, accent: color.accent }}
+          anchor={composeAnchor(table, body, s.key, variant[s.key])}
+          z={s.z}
+          dim={soloSlot != null && soloSlot !== s.key}
+          label={s.label}
+          warn={warnTint ? (raw) => warnIfNothingToTint(s.key, variant[s.key], raw) : undefined}
+        />
+      ))}
+    </>
+  )
+}
+
+/** 모아보기 한 칸 */
+function Cell({
+  size, label, on, onPick, children,
+}: {
+  size: number; label: string; on: boolean; onPick: () => void; children: React.ReactNode
+}) {
+  return (
+    <button className={`cell${on ? ' on' : ''}`} onClick={onPick} style={{ width: size }}>
+      <div className="cell-art" style={{ width: size, height: size }}>
+        <div style={{
+          position: 'absolute', width: CANVAS, height: CANVAS,
+          transform: `scale(${size / CANVAS})`, transformOrigin: '0 0',
+        }}>
+          {children}
+        </div>
+      </div>
+      <span>{label}</span>
+    </button>
+  )
+}
+
 /* ---------------- 편집기 ---------------- */
 
 export default function AnchorEditor() {
@@ -68,6 +131,7 @@ export default function AnchorEditor() {
   )
   const [morph, setMorph] = useState(0) // 0 = 무늬 없음
   const [solo, setSolo] = useState(false)
+  const [sheet, setSheet] = useState<'off' | 'bodies' | 'parts'>('off')
   const [dirty, setDirty] = useState(false)
   const [saved, setSaved] = useState<string | null>(null)
 
@@ -75,7 +139,6 @@ export default function AnchorEditor() {
   const dragRef = useRef<{ x: number; y: number } | null>(null)
 
   const color = BODY_COLORS[colorIdx]
-  const lineColor = lineFor(color)
 
   /* --- 앵커 수정 --- */
 
@@ -261,6 +324,17 @@ export default function AnchorEditor() {
             선택만 진하게
           </label>
           <div className="scopes">
+            <button className={`scope${sheet === 'off' ? ' on' : ''}`} onClick={() => setSheet('off')}>한 마리</button>
+            <button className={`scope${sheet === 'bodies' ? ' on' : ''}`} onClick={() => setSheet('bodies')}>몸통 12종</button>
+            <button
+              className={`scope${sheet === 'parts' ? ' on' : ''}`}
+              onClick={() => setSheet('parts')}
+              disabled={!sel}
+            >
+              {sel ? `${SLOTS.find((s) => s.key === sel)!.label} 전종` : '파츠 전종'}
+            </button>
+          </div>
+          <div className="scopes">
             {SCOPES.map((s) => (
               <button
                 key={s.key}
@@ -281,6 +355,39 @@ export default function AnchorEditor() {
           </label>
         </div>
 
+        {sheet !== 'off' ? (
+          <div className="sheet-grid">
+            {sheet === 'bodies'
+              ? Array.from({ length: BODY_COUNT }, (_, i) => i + 1).map((n) => (
+                  <Cell
+                    key={n}
+                    size={150}
+                    label={`몸통 ${String(n).padStart(2, '0')}`}
+                    on={n === body}
+                    onPick={() => setBody(n)}
+                  >
+                    <Figure body={n} variant={variant} morph={morph} color={color} table={table} />
+                  </Cell>
+                ))
+              : sel && Array.from({ length: SLOTS.find((s) => s.key === sel)!.count }, (_, i) => i + 1).map((n) => (
+                  <Cell
+                    key={n}
+                    size={150}
+                    label={`${SLOTS.find((s) => s.key === sel)!.label} ${String(n).padStart(2, '0')}`}
+                    on={n === variant[sel]}
+                    onPick={() => setVariant((v) => ({ ...v, [sel]: n }))}
+                  >
+                    <Figure
+                      body={body}
+                      variant={{ ...variant, [sel]: n }}
+                      morph={morph}
+                      color={color}
+                      table={table}
+                    />
+                  </Cell>
+                ))}
+          </div>
+        ) : (
         <div
           className="stage"
           ref={stageRef}
@@ -296,32 +403,16 @@ export default function AnchorEditor() {
               <i className="gv" /><i className="gh" />
             </div>
 
-            <Layer
-              urls={bodyUrl(body)} paint={{ fill: color.hex, line: lineColor, accent: color.accent }}
-              anchor={DEFAULT_ANCHOR} z={Z_BODY} dim={solo && sel !== null} label={`몸통 ${body}`}
+            <Figure
+              body={body}
+              variant={variant}
+              morph={morph}
+              color={color}
+              table={table}
+              soloSlot={solo && sel ? sel : null}
+              warnTint
             />
-            {morph > 0 && (
-              <Layer
-                urls={morphUrls(body, morph)} paint={{ fill: color.hex, line: lineColor, accent: color.accent }}
-                anchor={DEFAULT_ANCHOR} z={Z_MORPH} dim={solo && sel !== null} label="무늬"
-              />
-            )}
-            {SLOTS.map((s) => (
-              <Layer
-                key={s.key}
-                urls={partUrl(s.key, variant[s.key])}
-                paint={{
-                  fill: fillFor(s.key, variant[s.key], color.hex),
-                  line: lineColor,
-                  accent: color.accent,
-                }}
-                warn={(raw) => warnIfNothingToTint(s.key, variant[s.key], raw)}
-                anchor={composeAnchor(table, body, s.key, variant[s.key])}
-                z={s.z}
-                dim={solo && sel !== null && sel !== s.key}
-                label={s.label}
-              />
-            ))}
+
             {sel && (
               <div
                 className="sel-box"
@@ -332,8 +423,9 @@ export default function AnchorEditor() {
             )}
           </div>
         </div>
+        )}
 
-        {sel && (
+        {sel && sheet === 'off' && (
           <div className="strip">
             <span className="strip-label">{SLOTS.find((s) => s.key === sel)!.label}</span>
             <div className="strip-scroll">
@@ -352,10 +444,16 @@ export default function AnchorEditor() {
         )}
 
         <p className="hint">
-          <b>드래그</b> 이동 · <b>휠</b> 크기 · <b>←↑↓→</b> 1px(Shift 10px) · <b>[ ]</b> 회전
-          <br />
-          지금 고치는 것: <b>{SCOPES.find((s) => s.key === scope)!.label}</b>
-          {' — '}{SCOPES.find((s) => s.key === scope)!.hint}
+          {sheet === 'off' ? (
+            <>
+              <b>드래그</b> 이동 · <b>휠</b> 크기 · <b>←↑↓→</b> 1px(Shift 10px) · <b>[ ]</b> 회전
+              <br />
+              지금 고치는 것: <b>{SCOPES.find((s) => s.key === scope)!.label}</b>
+              {' — '}{SCOPES.find((s) => s.key === scope)!.hint}
+            </>
+          ) : (
+            <>어긋난 칸을 누르면 그리로 옮겨가요. 고치고 다시 <b>모아보기</b>로 확인하세요.</>
+          )}
         </p>
       </main>
 
