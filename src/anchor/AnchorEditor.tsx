@@ -55,6 +55,41 @@ function Layer({
   return <div className="layer" style={style} dangerouslySetInnerHTML={{ __html: html }} />
 }
 
+/** 지금 이 파츠가 어느 층에서 얼마씩 받아 그 자리에 있는지 */
+function LayerReadout({
+  table, body, slot, part,
+}: { table: AnchorTable; body: number; slot: SlotKey; part: number }) {
+  const over = table.overrides[overrideKey(body, slot, part)]
+  const rows: { label: string; a: Anchor; set: boolean }[] = [
+    { label: '기준', a: slotAnchor(table, slot), set: Boolean(table.slots[slot]) },
+    { label: '이 몸통', a: bodyAnchor(table, body, slot), set: Boolean(table.bodies[String(body)]?.[slot]) },
+    { label: '이 파츠', a: partAnchor(table, slot, part), set: Boolean(table.parts[slot]?.[String(part)]) },
+  ]
+  const total = composeAnchor(table, body, slot, part)
+  const num = (v: number) => (Math.round(v * 100) / 100).toString()
+
+  return (
+    <div className="readout">
+      {rows.map((r) => (
+        <div key={r.label} className={`rrow${r.set ? ' set' : ''}`}>
+          <span>{r.label}</span>
+          <b>{r.set ? `${num(r.a.x)}, ${num(r.a.y)}${r.a.s !== 1 ? ` ×${num(r.a.s)}` : ''}` : '—'}</b>
+        </div>
+      ))}
+      {over && (
+        <div className="rrow set warn">
+          <span>이 조합만</span>
+          <b>{num(over.x)}, {num(over.y)} (위를 덮음)</b>
+        </div>
+      )}
+      <div className="rrow total">
+        <span>합계</span>
+        <b>{num(total.x)}, {num(total.y)}{total.s !== 1 ? ` ×${num(total.s)}` : ''}</b>
+      </div>
+    </div>
+  )
+}
+
 /* 몸통 + 무늬 + 파츠를 한 벌 쌓은 것. 무대와 모아보기가 같이 쓴다 */
 function Figure({
   body, variant, morph, color, table, soloSlot, warnTint,
@@ -99,12 +134,13 @@ function Figure({
 
 /** 모아보기 한 칸 */
 function Cell({
-  size, label, on, onPick, children,
+  size, label, on, tuned, onPick, children,
 }: {
-  size: number; label: string; on: boolean; onPick: () => void; children: React.ReactNode
+  size: number; label: string; on: boolean; tuned?: boolean
+  onPick: () => void; children: React.ReactNode
 }) {
   return (
-    <button className={`cell${on ? ' on' : ''}`} onClick={onPick} style={{ width: size }}>
+    <button className={`cell${on ? ' on' : ''}${tuned ? ' tuned' : ''}`} onClick={onPick} style={{ width: size }}>
       <div className="cell-art" style={{ width: size, height: size }}>
         <div style={{
           position: 'absolute', width: CANVAS, height: CANVAS,
@@ -295,7 +331,7 @@ export default function AnchorEditor() {
           {Array.from({ length: BODY_COUNT }, (_, i) => i + 1).map((n) => (
             <button
               key={n}
-              className={`body-btn${n === body ? ' on' : ''}${Object.keys(table.bodies[String(n)] ?? {}).length ? ' done' : ''}`}
+              className={`body-btn${n === body ? ' on' : ''}${sel && table.bodies[String(n)]?.[sel] ? ' done' : ''}`}
               onClick={() => setBody(n)}
             >
               <BodyThumb n={n} />
@@ -363,6 +399,7 @@ export default function AnchorEditor() {
                     key={n}
                     size={150}
                     label={`몸통 ${String(n).padStart(2, '0')}`}
+                    tuned={Boolean(sel && table.bodies[String(n)]?.[sel])}
                     on={n === body}
                     onPick={() => setBody(n)}
                   >
@@ -374,6 +411,7 @@ export default function AnchorEditor() {
                     key={n}
                     size={150}
                     label={`${SLOTS.find((s) => s.key === sel)!.label} ${String(n).padStart(2, '0')}`}
+                    tuned={Boolean(table.parts[sel]?.[String(n)])}
                     on={n === variant[sel]}
                     onPick={() => setVariant((v) => ({ ...v, [sel]: n }))}
                   >
@@ -496,6 +534,7 @@ export default function AnchorEditor() {
                 ))}
                 <button className="mini" onClick={(e) => { e.stopPropagation(); reset(s.key) }}>초기화</button>
               </div>
+              {on && <LayerReadout table={table} body={body} slot={s.key} part={variant[s.key]} />}
             </div>
           )
         })}

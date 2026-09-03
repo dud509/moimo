@@ -160,3 +160,23 @@ button { cursor: pointer; }
 .cell span { font-size: 11px; font-weight: 800; color: var(--soft); }
 .cell.on span { color: var(--accent); }
 .scope:disabled { opacity: .4; cursor: default; }
+
+/* 층별 값 */
+.readout {
+  margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--line);
+  display: grid; gap: 2px;
+}
+.rrow { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; }
+.rrow span { color: #b3aab9; font-weight: 700; }
+.rrow b { color: #c3bcc9; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rrow.set span { color: var(--soft); }
+.rrow.set b { color: var(--ink); }
+.rrow.warn b { color: #d08a2a; }
+.rrow.total { margin-top: 3px; padding-top: 4px; border-top: 1px solid var(--line); }
+.rrow.total span, .rrow.total b { color: var(--accent); font-weight: 800; }
+
+.cell.tuned .cell-art::after {
+  content: ''; position: absolute; top: 5px; right: 5px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #6cc08a; box-shadow: 0 0 0 2px #fff;
+}
