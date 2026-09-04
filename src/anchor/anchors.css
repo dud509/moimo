@@ -186,3 +186,6 @@ button { cursor: pointer; }
 .wipe-ask { display: grid; grid-template-columns: 1fr auto auto; gap: 5px; align-items: center; margin-bottom: 6px; }
 .wipe-ask span { font-size: 11px; font-weight: 700; color: var(--ink); }
 .wipe-ask .mini { grid-column: auto; padding: 5px 9px; }
+
+.layer .half { position: absolute; inset: 0; }
+.layer .half svg { width: 100%; height: 100%; display: block; }

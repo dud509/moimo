@@ -52,6 +52,26 @@ function Layer({
       </div>
     )
   }
+
+  // 좌우로 벌려야 하는 파츠는 한가운데서 갈라 양쪽을 따로 민다.
+  // 늘리는 게 아니라 밀어내는 것이라 모양이 찌부되지 않는다.
+  const spread = anchor.spread ?? 0
+  if (spread !== 0) {
+    return (
+      <div className="layer" style={style}>
+        <div
+          className="half"
+          style={{ clipPath: 'inset(0 50% 0 0)', transform: `translateX(${-spread}px)` }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+        <div
+          className="half"
+          style={{ clipPath: 'inset(0 0 0 50%)', transform: `translateX(${spread}px)` }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </div>
+    )
+  }
   return <div className="layer" style={style} dangerouslySetInnerHTML={{ __html: html }} />
 }
 
@@ -69,8 +89,9 @@ function LayerReadout({
   const num = (v: number) => (Math.round(v * 100) / 100).toString()
   const scaleText = (a: Anchor) => {
     const sy = syOf(a)
-    if (a.s === 1 && sy === 1) return ''
-    return a.s === sy ? ` ×${num(a.s)}` : ` 가로×${num(a.s)} 세로×${num(sy)}`
+    const sp = a.spread ? ` 벌림${num(a.spread)}` : ''
+    if (a.s === 1 && sy === 1) return sp
+    return (a.s === sy ? ` ×${num(a.s)}` : ` 가로×${num(a.s)} 세로×${num(sy)}`) + sp
   }
 
   return (
@@ -539,13 +560,13 @@ export default function AnchorEditor() {
                 </div>
               </div>
               <div className="fields">
-                {([['x', 'X'], ['y', 'Y'], ['s', '가로'], ['sy', '세로'], ['r', '회전']] as const).map(([k, lbl]) => (
+                {([['x', 'X'], ['y', 'Y'], ['s', '가로'], ['sy', '세로'], ['r', '회전'], ['spread', '벌림']] as const).map(([k, lbl]) => (
                   <label key={k}>
                     <span>{lbl}</span>
                     <input
                       type="number"
                       step={k === 's' || k === 'sy' ? 0.01 : 1}
-                      value={Math.round((k === 'sy' ? syOf(a) : a[k]) * 100) / 100}
+                      value={Math.round((k === 'sy' ? syOf(a) : k === 'spread' ? (a.spread ?? 0) : a[k]) * 100) / 100}
                       onChange={(e) => patch(s.key, { [k]: Number(e.target.value) })}
                       onFocus={() => setSel(s.key)}
                     />

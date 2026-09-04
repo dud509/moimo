@@ -131,7 +131,15 @@ export const morphUrls = (body: number, morph: number) => [
  * sy 를 비워두면 s 를 따라가 가로세로가 같이 늘어난다.
  * 양쪽 귀에 거는 날개처럼 폭만 맞춰야 하는 파츠 때문에 나뉘어 있다.
  */
-export type Anchor = { x: number; y: number; s: number; r: number; sy?: number }
+export type Anchor = {
+  x: number; y: number; s: number; r: number
+  sy?: number
+  /**
+   * 좌우 벌림. 파츠를 한가운데서 갈라 양쪽으로 이 값만큼 밀어낸다.
+   * 양쪽 귀에 거는 날개처럼, 늘리면 찌부되고 폭만 넓혀야 하는 파츠를 위한 것.
+   */
+  spread?: number
+}
 
 /** 세로 배율 — 안 정했으면 가로를 따라간다 */
 export const syOf = (a: Anchor) => a.sy ?? a.s
@@ -197,6 +205,7 @@ export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part:
     s: a.s * b.s * c.s,
     sy: syOf(a) * syOf(b) * syOf(c),
     r: a.r + b.r + c.r,
+    spread: (a.spread ?? 0) + (b.spread ?? 0) + (c.spread ?? 0),
   }
 }
 
