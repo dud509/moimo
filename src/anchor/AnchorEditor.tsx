@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, Z_MORPH, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  fillFor, lineFor, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, warnIfNothingToTint,
+  fillFor, lineFor, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, warnIfNothingToTint,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
 
@@ -42,7 +42,7 @@ function Layer({
   const style: React.CSSProperties = {
     zIndex: z,
     opacity: dim ? 0.28 : 1,
-    transform: `translate(${anchor.x}px, ${anchor.y}px) rotate(${anchor.r}deg) scale(${anchor.s})`,
+    transform: `translate(${anchor.x}px, ${anchor.y}px) rotate(${anchor.r}deg) scale(${anchor.s}, ${syOf(anchor)})`,
   }
 
   if (missing) {
@@ -67,13 +67,18 @@ function LayerReadout({
   ]
   const total = composeAnchor(table, body, slot, part)
   const num = (v: number) => (Math.round(v * 100) / 100).toString()
+  const scaleText = (a: Anchor) => {
+    const sy = syOf(a)
+    if (a.s === 1 && sy === 1) return ''
+    return a.s === sy ? ` ×${num(a.s)}` : ` 가로×${num(a.s)} 세로×${num(sy)}`
+  }
 
   return (
     <div className="readout">
       {rows.map((r) => (
         <div key={r.label} className={`rrow${r.set ? ' set' : ''}`}>
           <span>{r.label}</span>
-          <b>{r.set ? `${num(r.a.x)}, ${num(r.a.y)}${r.a.s !== 1 ? ` ×${num(r.a.s)}` : ''}` : '—'}</b>
+          <b>{r.set ? `${num(r.a.x)}, ${num(r.a.y)}${scaleText(r.a)}` : '—'}</b>
         </div>
       ))}
       {over && (
@@ -84,7 +89,7 @@ function LayerReadout({
       )}
       <div className="rrow total">
         <span>합계</span>
-        <b>{num(total.x)}, {num(total.y)}{total.s !== 1 ? ` ×${num(total.s)}` : ''}</b>
+        <b>{num(total.x)}, {num(total.y)}{scaleText(total)}</b>
       </div>
     </div>
   )
@@ -261,7 +266,12 @@ export default function AnchorEditor() {
     if (!sel) return
     e.preventDefault()
     const a = current(sel)
-    patch(sel, { s: Math.max(0.1, Math.min(4, a.s * Math.exp(-e.deltaY * 0.0012))) })
+    const k = Math.exp(-e.deltaY * 0.0012)
+    const clamp = (v: number) => Math.max(0.1, Math.min(4, v))
+    // Shift 를 누르면 가로만 — 양쪽 귀에 거는 날개처럼 폭만 맞출 때
+    patch(sel, e.shiftKey
+      ? { s: clamp(a.s * k) }
+      : { s: clamp(a.s * k), sy: clamp(syOf(a) * k) })
   }
 
   useEffect(() => {
@@ -456,7 +466,7 @@ export default function AnchorEditor() {
               <div
                 className="sel-box"
                 style={{
-                  transform: `translate(${composeAnchor(table, body, sel, variant[sel]).x}px, ${composeAnchor(table, body, sel, variant[sel]).y}px) rotate(${composeAnchor(table, body, sel, variant[sel]).r}deg) scale(${composeAnchor(table, body, sel, variant[sel]).s})`,
+                  transform: `translate(${composeAnchor(table, body, sel, variant[sel]).x}px, ${composeAnchor(table, body, sel, variant[sel]).y}px) rotate(${composeAnchor(table, body, sel, variant[sel]).r}deg) scale(${composeAnchor(table, body, sel, variant[sel]).s}, ${syOf(composeAnchor(table, body, sel, variant[sel]))})`,
                 }}
               />
             )}
@@ -485,7 +495,7 @@ export default function AnchorEditor() {
         <p className="hint">
           {sheet === 'off' ? (
             <>
-              <b>드래그</b> 이동 · <b>휠</b> 크기 · <b>←↑↓→</b> 1px(Shift 10px) · <b>[ ]</b> 회전
+              <b>드래그</b> 이동 · <b>휠</b> 크기(<b>Shift+휠</b> 가로만) · <b>←↑↓→</b> 1px(Shift 10px) · <b>[ ]</b> 회전
               <br />
               지금 움직이는 것:{' '}
               <b>
@@ -529,13 +539,13 @@ export default function AnchorEditor() {
                 </div>
               </div>
               <div className="fields">
-                {([['x', 'X'], ['y', 'Y'], ['s', '크기'], ['r', '회전']] as const).map(([k, lbl]) => (
+                {([['x', 'X'], ['y', 'Y'], ['s', '가로'], ['sy', '세로'], ['r', '회전']] as const).map(([k, lbl]) => (
                   <label key={k}>
                     <span>{lbl}</span>
                     <input
                       type="number"
-                      step={k === 's' ? 0.01 : 1}
-                      value={Math.round(a[k] * 100) / 100}
+                      step={k === 's' || k === 'sy' ? 0.01 : 1}
+                      value={Math.round((k === 'sy' ? syOf(a) : a[k]) * 100) / 100}
                       onChange={(e) => patch(s.key, { [k]: Number(e.target.value) })}
                       onFocus={() => setSel(s.key)}
                     />
