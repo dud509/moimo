@@ -1,6 +1,12 @@
+/**
+ * 자리를 지키는 임시 무늬를 뽑는다.
+ *   node scripts/gen-morph.mjs
+ * 그린 파일로 덮어쓰면 그대로 바뀌므로, 이 스크립트를 다시 돌릴 필요는 없다.
+ */
 import { readFileSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = 'new URL('../public/parts', import.meta.url).pathname'
+const ROOT = fileURLToPath(new URL('../public/parts', import.meta.url))
 const pad = (n) => String(n).padStart(2, '0')
 
 /** 몸통 파일에서 채워진 영역만 골라 실루엣 삼는다 */
