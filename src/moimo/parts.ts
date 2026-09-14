@@ -23,10 +23,10 @@ export const LINE_COLOR = '#38312A'
 export const BODY_COLORS = [
   { jamo: 'ㅣ', name: '파랑', hex: '#E1EEF4', accent: '#FFFFFF' },
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF' },
-  { jamo: 'ㅓ', name: '분홍', hex: '#FFD8E2', accent: '#FFFFFF' },
-  { jamo: 'ㅗ', name: '검정', hex: '#231A17', accent: '#FFF4F3', line: '#665546' },
-  { jamo: 'ㅜ', name: '흰색', hex: '#FFFFFF', accent: '#FFF4F3' },
-  { jamo: 'ㅡㅐㅔㅑㅛㅠ', name: '갈색', hex: '#5F5040', accent: '#FFF4F3' },
+  { jamo: 'ㅓ', name: '분홍', hex: '#fff0f4', accent: '#FFFFFF' },
+  { jamo: 'ㅗ', name: '검정', hex: '#231A17', accent: '#fff0f0', line: '#665546' },
+  { jamo: 'ㅜ', name: '흰색', hex: '#FFFFFF', accent: '#fff0f0' },
+  { jamo: 'ㅡㅐㅔㅑㅛㅠ', name: '갈색', hex: '#5F5040', accent: '#fff0f0' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]

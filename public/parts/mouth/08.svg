@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="_입" data-name="입" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <path id="_세모입" data-name="세모입" d="M256,286.48c.85,0,4.26-6.55,5.56-9.84h-11.12c1.37,3.28,4.71,9.84,5.56,9.84Z" fill="#888989" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <path d="M268.69,277.9c0,3.4-5.36,2.41-12.69,2.41s-12.69.98-12.69-2.41,5.36-4.49,12.69-4.49,12.69,1.1,12.69,4.49Z" fill="#fff" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+  <path d="M256,287.49c7.33,0,12.69-1.1,12.69-4.49s-5.36-2.41-12.69-2.41" fill="#fff" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+  <path d="M256,280.58c-7.33,0-12.69-.98-12.69,2.41s5.36,4.49,12.69,4.49" fill="#fff" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
 </svg>

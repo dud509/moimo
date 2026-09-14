@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg id="_입" data-name="입" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <g id="_웃는3입" data-name="웃는3입">
-    <path d="M247.63,280.65s.66,14.4,8.31,14.4,8.31-14.4,8.31-14.4" fill="none" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
-    <g id="_3입" data-name="3입">
-      <path d="M274.68,276.28s-3.32,3.58-9.84,3.58c-3.11,0-7.31-1.29-8.89-2.2" fill="none" stroke="#888989" stroke-linecap="round" stroke-miterlimit="10" stroke-width="4"/>
-      <path d="M255.95,277.66c-1.57.91-6.5,2.2-9.59,2.2-6.48,0-9.03-3.57-9.03-3.57" fill="none" stroke="#888989" stroke-linecap="round" stroke-miterlimit="10" stroke-width="4"/>
-    </g>
+  <path d="M255.94,295.04c-7.65,0-8.31-14.39-8.31-14.39l-1.27-.79c3.09,0,8.02-1.29,9.59-2.2,1.48.86,5.28,2.05,8.31,2.19v.8s-.67,14.39-8.32,14.39Z" fill="#fbdde0"/>
+  <g>
+    <path d="M247.63,280.65s.66,14.39,8.31,14.39,8.31-14.39,8.31-14.39" fill="none" stroke="#888989" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+    <path d="M274.68,276.28s-3.32,3.58-9.84,3.58c-.19,0-.38,0-.58-.01-3.03-.14-6.83-1.33-8.31-2.19" fill="none" stroke="#888989" stroke-linecap="round" stroke-miterlimit="10" stroke-width="4"/>
+    <path d="M255.95,277.66c-1.57.91-6.5,2.2-9.59,2.2-6.49,0-9.04-3.57-9.04-3.57" fill="none" stroke="#888989" stroke-linecap="round" stroke-miterlimit="10" stroke-width="4"/>
   </g>
 </svg>
