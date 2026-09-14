@@ -185,3 +185,17 @@ export const encodeGenes = (g: MoimoGenes) =>
   [g.body, g.color, g.morph, g.eye, g.mouth, g.cheek, g.hair, g.tail, g.deco]
     .map((n) => n.toString(36).toUpperCase())
     .join('')
+
+/* ------------------------------------------------------------------ */
+/* 이웃 이름 — 마을을 비어 보이지 않게 채울 때만 쓴다                    */
+/* ------------------------------------------------------------------ */
+
+const SURNAMES = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '류', '전']
+const GIVEN_1 = ['민', '서', '지', '하', '예', '수', '준', '유', '도', '시', '주', '건', '은', '채', '연', '재', '다', '가', '나', '소']
+const GIVEN_2 = ['준', '연', '우', '윤', '아', '진', '현', '원', '빈', '경', '호', '람', '온', '영', '희', '린', '겸', '율', '후', '솔']
+
+/** 이름 하나를 지어준다 */
+export function randomKoreanName(rnd: () => number = Math.random): string {
+  const pick = <T,>(a: readonly T[]) => a[Math.floor(rnd() * a.length)]
+  return pick(SURNAMES) + pick(GIVEN_1) + pick(GIVEN_2)
+}
