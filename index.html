@@ -13,6 +13,36 @@
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      아래 모듈이 아예 못 뜨는 경우(전송 실패, 캐시 어긋남, 문법 오류)에는
+      앱 안의 오류 화면도 같이 죽어 하얀 화면만 남는다. 그래서 여기서 먼저 받아둔다.
+    -->
+    <script>
+      (function () {
+        function show(title, detail) {
+          var root = document.getElementById('root')
+          if (!root || root.childElementCount) return
+          root.innerHTML =
+            '<div style="max-width:760px;margin:0 auto;padding:48px 24px;' +
+            'font-family:Pretendard,-apple-system,sans-serif;color:#38312A">' +
+            '<h1 style="font-size:22px;margin:0 0 10px">' + title + '</h1>' +
+            '<pre style="padding:14px 16px;border-radius:14px;background:#F5EBD0;' +
+            'font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-all">' +
+            String(detail).replace(/</g, '&lt;') + '</pre>' +
+            '<p style="font-size:13px;color:#9C907F;line-height:1.7">' +
+            '터미널에서 <b>rm -rf node_modules/.vite</b> 후 서버를 다시 켜보세요.</p></div>'
+        }
+        window.addEventListener('error', function (e) {
+          show('시작하지 못했어요', (e.error && e.error.stack) || e.message || (e.filename + ':' + e.lineno))
+        }, true)
+        window.addEventListener('unhandledrejection', function (e) {
+          show('시작하지 못했어요', (e.reason && (e.reason.stack || e.reason.message)) || String(e.reason))
+        })
+        setTimeout(function () {
+          show('화면이 뜨지 않았어요', '자바스크립트가 실행되지 않았습니다.')
+        }, 8000)
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
