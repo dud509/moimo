@@ -219,6 +219,16 @@ export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part:
  */
 export type Paint = { fill: string; line: string; accent?: string }
 
+/**
+ * 받아온 것이 정말 SVG 인지.
+ *
+ * 개발 서버는 없는 파일을 요청하면 404 가 아니라 index.html 을 200 으로 준다.
+ * "<" 로 시작하는지만 보면 그 HTML 을 파츠로 알고 집어넣게 된다.
+ */
+export function isSvgText(text: string): boolean {
+  return /^\s*(<\?xml[^>]*\?>\s*)?(<!--[\s\S]*?-->\s*)*(<!DOCTYPE\s+svg[^>]*>\s*)?<svg[\s>]/i.test(text)
+}
+
 export function prepareSvg(svg: string, paint: Paint, uid: string): string {
   const { fill, line, accent } = paint
   return svg

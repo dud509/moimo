@@ -7,7 +7,7 @@
 
 import {
   BODY_COLORS, CANVAS, SLOTS, Z_BODY, Z_MORPH,
-  bodyUrl, composeAnchor, fillFor, lineFor, morphUrls, partUrl, prepareSvg, syOf,
+  bodyUrl, composeAnchor, fillFor, isSvgText, lineFor, morphUrls, partUrl, prepareSvg, syOf,
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
@@ -120,7 +120,7 @@ export async function loadParts(): Promise<PartsCache> {
         const res = await fetch(url)
         if (!res.ok) return
         const text = await res.text()
-        if (text.trim().startsWith('<')) cache.set(url, text)
+        if (isSvgText(text)) cache.set(url, text)
       } catch {
         /* 없는 파츠는 그냥 건너뛴다 */
       }

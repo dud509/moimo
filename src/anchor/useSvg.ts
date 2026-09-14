@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { isSvgText } from '../moimo/parts'
 
 const cache = new Map<string, string | null>()
 
@@ -18,7 +19,8 @@ export function useSvg(urls: string | string[] | null): { svg: string | null; mi
           const res = await fetch(url, import.meta.env.DEV ? { cache: 'no-store' } : undefined)
           if (!res.ok) continue
           const text = await res.text()
-          if (!text.trim().startsWith('<')) continue
+          // 없는 파일에는 개발 서버가 index.html 을 돌려주므로 내용을 확인한다
+          if (!isSvgText(text)) continue
           if (alive) { cache.set(key, text); bump((n) => n + 1) }
           return
         } catch { /* 다음 후보로 */ }
