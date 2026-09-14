@@ -109,12 +109,29 @@ export function seedResidents(count: number): Resident[] {
 const KEY = 'moimo.world.v1'
 const SEED_COUNT = 220
 
+const SLOT_KEYS = ['body', 'color', 'morph', 'eye', 'mouth', 'cheek', 'hair', 'tail', 'deco'] as const
+
+/** 저장된 주민 한 명이 쓸 만한 모양인지 */
+function usable(r: unknown): r is Resident {
+  if (!r || typeof r !== 'object') return false
+  const v = r as Record<string, unknown>
+  if (typeof v.id !== 'string' || typeof v.name !== 'string') return false
+  if (typeof v.x !== 'number' || typeof v.y !== 'number') return false
+  const g = v.genes as Record<string, unknown> | undefined
+  if (!g) return false
+  return SLOT_KEYS.every((k) => typeof g[k] === 'number' && Number.isFinite(g[k] as number))
+}
+
 export function loadWorld(): Resident[] {
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length) return parsed as Resident[]
+      if (Array.isArray(parsed)) {
+        // 예전 형식이 섞여 있어도 쓸 수 있는 것만 살린다
+        const ok = parsed.filter(usable)
+        if (ok.length) return ok
+      }
     }
   } catch {
     /* 저장소를 못 읽어도 마을은 열려야 한다 */
