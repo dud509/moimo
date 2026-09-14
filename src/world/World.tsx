@@ -4,7 +4,7 @@ import {
 import { composeMoimo, moimoDataUri, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { ItemArt } from './Items'
-import { ITEMS, WORLD, CENTER, type ItemId, type Resident } from './world'
+import { ITEMS, WORLD, CENTER, type ItemId, type Resident } from './model'
 
 export type Camera = { tx: number; ty: number; scale: number }
 export type WorldHandle = {

@@ -4,7 +4,7 @@ import type { AnchorTable } from '../moimo/parts'
 import { composeMoimo, moimoDataUri, type PartsCache } from '../moimo/compose'
 import { TOTAL_COMBINATIONS, explain, genesFromName, splitName } from '../moimo/name'
 import { MoimoImg } from './World'
-import type { Resident } from './world'
+import type { Resident } from './model'
 
 type Common = { cache: PartsCache; table: AnchorTable; onClose: () => void }
 

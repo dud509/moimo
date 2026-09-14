@@ -7,7 +7,7 @@ import { Album, Camera as CameraPanel, Card, Glass, Jar } from './world/Panels'
 import {
   ITEMS, WORLD, loadWorld, residentFromName, resetWorld, saveWorld,
   type ItemId, type Resident,
-} from './world/world'
+} from './world/model'
 import './styles.css'
 
 export default function App() {

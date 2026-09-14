@@ -1,5 +1,5 @@
 import { LINE_COLOR } from '../moimo/parts'
-import type { ItemId } from './world'
+import type { ItemId } from './model'
 
 const L = { stroke: LINE_COLOR, strokeWidth: 5, strokeLinejoin: 'round' as const, strokeLinecap: 'round' as const, fill: 'none' }
 const T = { ...L, strokeWidth: 3.2 }
