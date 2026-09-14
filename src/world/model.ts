@@ -4,7 +4,7 @@ import { genesFromName, randomKoreanName, splitName, type MoimoGenes } from '../
  *  마을 인구는 여기서 조절한다                                          *
  * ================================================================== */
 
-/** 처음 열었을 때 심어둘 이웃 수 — 마을이 비어 보이지 않을 만큼만 */
+/** 13인치(1440×900) 화면에 심어둘 이웃 수. 화면이 넓으면 그만큼 더 심는다 */
 export const SEED_COUNT = 90
 
 /**
@@ -16,8 +16,13 @@ export const MAX_RESIDENTS = 260
 
 /* ================================================================== */
 
-export const WORLD = { w: 2600, h: 1700 }
-export const CENTER = { x: 1300, y: 880 }
+/**
+ * 마을의 크기. 화면에 한 번에 다 들어오지 않고 끌어서 돌아다닌다.
+ * 27인치(2560px)에서도 둘레가 비지 않으려면 기본 배율 × 이 폭이
+ * 화면보다 커야 한다 — 3600 × 0.75 = 2700.
+ */
+export const WORLD = { w: 3600, h: 2400 }
+export const CENTER = { x: 1800, y: 1200 }
 
 export type ItemId = 'jar' | 'camera' | 'album' | 'glass'
 
@@ -34,10 +39,10 @@ export type Item = {
 }
 
 export const ITEMS: Item[] = [
-  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', x: 1300, y: 860,  w: 300, keepout: 210 },
-  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', x: 560,  y: 470,  w: 250, keepout: 165 },
-  { id: 'album',  name: '앨범',         tag: '기록과 방명록', x: 2040, y: 500,  w: 250, keepout: 165 },
-  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', x: 780,  y: 1330, w: 230, keepout: 150 },
+  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', x: 1800, y: 1180, w: 300, keepout: 210 },
+  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', x: 870,  y: 640,  w: 250, keepout: 165 },
+  { id: 'album',  name: '앨범',         tag: '기록과 방명록', x: 2760, y: 690,  w: 250, keepout: 165 },
+  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', x: 1110, y: 1840, w: 230, keepout: 150 },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -137,7 +142,17 @@ function usable(r: unknown): r is Resident {
   return SLOT_KEYS.every((k) => typeof g[k] === 'number' && Number.isFinite(g[k] as number))
 }
 
-export function loadWorld(): Resident[] {
+/**
+ * 이 화면에 몇 명을 심을지.
+ * 27인치에서 90명만 심으면 가운데만 북적이고 둘레가 휑하다.
+ * 넓이에 비례해 늘리되 상한은 넘기지 않는다.
+ */
+export function seedCountFor(vw: number, vh: number): number {
+  const k = (vw * vh) / (1440 * 900)
+  return Math.round(Math.min(MAX_RESIDENTS, Math.max(40, SEED_COUNT * k)))
+}
+
+export function loadWorld(seeds = SEED_COUNT): Resident[] {
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
@@ -151,7 +166,7 @@ export function loadWorld(): Resident[] {
   } catch {
     /* 저장소를 못 읽어도 마을은 열려야 한다 */
   }
-  return seedResidents(SEED_COUNT)
+  return seedResidents(seeds)
 }
 
 export function saveWorld(list: Resident[]) {

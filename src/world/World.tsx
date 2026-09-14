@@ -12,8 +12,11 @@ export type WorldHandle = {
   camera: () => Camera
 }
 
-const MIN_SCALE = 0.26
+/** 아무리 줄여도 이 아래로는 안 간다 */
+const FLOOR_SCALE = 0.26
 const MAX_SCALE = 2.2
+/** 처음 열었을 때의 배율 — 화면 크기와 무관하게 같은 크기로 보이도록 고정 */
+const HOME_SCALE = 0.75
 const MOIMO_PX = 104
 
 /* ------------------------------------------------------------------ */
@@ -66,6 +69,16 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     onCamera?.({ ...c })
   }, [onCamera])
 
+  /**
+   * 화면을 빈틈없이 덮는 배율.
+   * 27인치처럼 넓은 화면에서 마을이 가운데 작게 떠 있고 둘레가 비는 것을 막는다.
+   */
+  const cover = useCallback(() => {
+    const el = boxRef.current
+    if (!el) return FLOOR_SCALE
+    return Math.max(FLOOR_SCALE, el.clientWidth / WORLD.w, el.clientHeight / WORLD.h)
+  }, [])
+
   const clamp = useCallback((c: Camera): Camera => {
     const el = boxRef.current
     if (!el) return c
@@ -82,36 +95,42 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   const flyTo = useCallback((wx: number, wy: number, scale?: number) => {
     const el = boxRef.current
     if (!el) return
-    const s = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale ?? camRef.current.scale))
+    const s = Math.min(MAX_SCALE, Math.max(cover(), scale ?? camRef.current.scale))
     camRef.current = clamp({ scale: s, tx: el.clientWidth / 2 - wx * s, ty: el.clientHeight / 2 - wy * s })
     setGlide(true)
     apply()
     window.setTimeout(() => setGlide(false), 900)
-  }, [apply, clamp])
+  }, [apply, clamp, cover])
 
   useImperativeHandle(ref, () => ({ flyTo, camera: () => ({ ...camRef.current }) }), [flyTo])
 
   useEffect(() => {
     const el = boxRef.current
     if (!el) return
+    const s = Math.max(HOME_SCALE, cover())
     camRef.current = clamp({
-      scale: 0.6,
-      tx: el.clientWidth / 2 - CENTER.x * 0.6,
-      ty: el.clientHeight / 2 - CENTER.y * 0.6,
+      scale: s,
+      tx: el.clientWidth / 2 - CENTER.x * s,
+      ty: el.clientHeight / 2 - CENTER.y * s,
     })
     apply()
-    const onResize = () => { camRef.current = clamp(camRef.current); apply() }
+    // 창 크기가 바뀌면 다시 덮을 만큼 당긴다
+    const onResize = () => {
+      const c = camRef.current
+      camRef.current = clamp({ ...c, scale: Math.max(c.scale, cover()) })
+      apply()
+    }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
-  }, [apply, clamp])
+  }, [apply, clamp, cover])
 
   const zoomAt = useCallback((sx: number, sy: number, factor: number) => {
     const c = camRef.current
-    const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, c.scale * factor))
+    const next = Math.min(MAX_SCALE, Math.max(cover(), c.scale * factor))
     const k = next / c.scale
     camRef.current = clamp({ scale: next, tx: sx - (sx - c.tx) * k, ty: sy - (sy - c.ty) * k })
     apply()
-  }, [apply, clamp])
+  }, [apply, clamp, cover])
 
   const onWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault()
@@ -138,7 +157,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
       const [a, b] = [...pinch.current.values()]
       const rect = boxRef.current!.getBoundingClientRect()
       const dist = Math.hypot(a.x - b.x, a.y - b.y)
-      const target = Math.min(MAX_SCALE, Math.max(MIN_SCALE, pinchStart.current.scale * (dist / pinchStart.current.dist)))
+      const target = Math.min(MAX_SCALE, Math.max(cover(), pinchStart.current.scale * (dist / pinchStart.current.dist)))
       zoomAt((a.x + b.x) / 2 - rect.left, (a.y + b.y) / 2 - rect.top, target / camRef.current.scale)
       return
     }

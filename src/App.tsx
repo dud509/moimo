@@ -5,14 +5,14 @@ import anchorsJson from './data/anchors.json'
 import { World, type Camera, type WorldHandle } from './world/World'
 import { Album, Camera as CameraPanel, Card, Glass, Jar } from './world/Panels'
 import {
-  ITEMS, WORLD, loadWorld, residentFromName, resetWorld, saveWorld, trimWorld,
+  ITEMS, WORLD, loadWorld, residentFromName, resetWorld, saveWorld, seedCountFor, trimWorld,
   type ItemId, type Resident,
 } from './world/model'
 import './styles.css'
 
 export default function App() {
   const [cache, setCache] = useState<PartsCache | null>(null)
-  const [residents, setResidents] = useState<Resident[]>(() => trimWorld(loadWorld()))
+  const [residents, setResidents] = useState<Resident[]>(() => trimWorld(loadWorld(seedCountFor(window.innerWidth, window.innerHeight))))
   const [panel, setPanel] = useState<ItemId | null>(null)
   const [selected, setSelected] = useState<Resident | null>(null)
   const [arrived, setArrived] = useState<string | null>(null)
@@ -110,7 +110,7 @@ export default function App() {
           className="ghost"
           onClick={() => {
             resetWorld()
-            setResidents(loadWorld())
+            setResidents(loadWorld(seedCountFor(window.innerWidth, window.innerHeight)))
             say('마을을 처음 상태로 되돌렸어요')
           }}
         >
