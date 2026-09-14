@@ -24,7 +24,7 @@ export const MAX_RESIDENTS = 260
 export const WORLD = { w: 3600, h: 2400 }
 export const CENTER = { x: 1800, y: 1200 }
 
-export type ItemId = 'jar' | 'camera' | 'album' | 'glass'
+export type ItemId = 'jar' | 'camera' | 'album' | 'glass' | 'music'
 
 export type Item = {
   id: ItemId
@@ -43,6 +43,7 @@ export const ITEMS: Item[] = [
   { id: 'camera', name: '카메라',       tag: '같이 사진찍기', x: 870,  y: 640,  w: 250, keepout: 165 },
   { id: 'album',  name: '앨범',         tag: '기록과 방명록', x: 2760, y: 690,  w: 250, keepout: 165 },
   { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', x: 1110, y: 1840, w: 230, keepout: 150 },
+  { id: 'music',  name: '플레이어',     tag: '노래 켜기',     x: 2700, y: 1800, w: 220, keepout: 150 },
 ]
 
 /* ------------------------------------------------------------------ */

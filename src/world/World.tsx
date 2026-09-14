@@ -37,6 +37,8 @@ export const MoimoImg = memo(function MoimoImg({
 
 type Props = {
   residents: Resident[]
+  /** 노래가 흐르는 중인지 — 플레이어 오브제가 반짝인다 */
+  playing?: boolean
   cache: PartsCache
   table: AnchorTable
   onItem: (id: ItemId) => void
@@ -50,7 +52,7 @@ type Props = {
 }
 
 export const World = forwardRef<WorldHandle, Props>(function World(
-  { residents, cache, table, onItem, onResident, arrivedId, showNames, hits, onCamera },
+  { residents, cache, table, onItem, onResident, arrivedId, showNames, hits, onCamera, playing },
   ref,
 ) {
   const boxRef = useRef<HTMLDivElement>(null)
@@ -197,7 +199,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
         {ITEMS.map((it) => (
           <button
             key={it.id}
-            className="item"
+            className={`item${it.id === 'music' && playing ? ' singing' : ''}`}
             style={{ left: it.x, top: it.y, width: it.w, height: it.w }}
             onClick={() => { if (!drag.current) onItem(it.id) }}
           >
@@ -206,7 +208,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             </svg>
             <span className="item-label">
               <b>{it.name}</b>
-              <i>{it.tag}</i>
+              <i>{it.id === 'music' && playing ? '노래 끄기' : it.tag}</i>
             </span>
           </button>
         ))}

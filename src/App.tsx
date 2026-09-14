@@ -22,6 +22,8 @@ export default function App() {
   const [, setCamera] = useState<Camera>({ tx: 0, ty: 0, scale: 0.6 })
 
   const worldRef = useRef<WorldHandle>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [playing, setPlaying] = useState(false)
   const table = useMemo<AnchorTable>(() => normalizeTable(anchorsJson), [])
 
   useEffect(() => { loadParts().then(setCache) }, [])
@@ -47,12 +49,36 @@ export default function App() {
     })
   }, [say])
 
+  /** 마을 노래를 켜고 끈다. 파일이 없으면 그 사실을 알린다 */
+  const toggleMusic = useCallback(() => {
+    let a = audioRef.current
+    if (!a) {
+      a = new Audio('/sound/moimo.mp3')
+      a.loop = true
+      a.volume = 0.45
+      a.addEventListener('ended', () => setPlaying(false))
+      audioRef.current = a
+    }
+    if (playing) {
+      a.pause()
+      setPlaying(false)
+      say('노래를 껐어요')
+      return
+    }
+    a.play().then(
+      () => { setPlaying(true); say('마을에 노래가 흐릅니다') },
+      () => say('public/sound/moimo.mp3 을 넣어주세요'),
+    )
+  }, [playing, say])
+
   const openItem = useCallback((id: ItemId) => {
+    // 플레이어는 시트를 열지 않고 그 자리에서 켜고 끈다
+    if (id === 'music') { toggleMusic(); return }
     const it = ITEMS.find((x) => x.id === id)!
     setSelected(null)
     worldRef.current?.flyTo(it.x, it.y - 40, Math.max(0.75, worldRef.current.camera().scale))
     window.setTimeout(() => setPanel(id), 360)
-  }, [])
+  }, [toggleMusic])
 
   const focus = useCallback((r: Resident) => {
     setPanel(null)
@@ -84,6 +110,7 @@ export default function App() {
         cache={cache}
         table={table}
         arrivedId={arrived}
+        playing={playing}
         showNames={showNames}
         hits={hits}
         onItem={openItem}
@@ -104,7 +131,9 @@ export default function App() {
 
       <nav className="dock">
         {ITEMS.map((it) => (
-          <button key={it.id} onClick={() => openItem(it.id)}>{it.name}</button>
+          <button key={it.id} onClick={() => openItem(it.id)}>
+            {it.id === 'music' ? (playing ? '노래 끄기' : '노래 켜기') : it.name}
+          </button>
         ))}
         <button
           className="ghost"

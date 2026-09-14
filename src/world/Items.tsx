@@ -84,6 +84,27 @@ export function ItemArt({ id }: { id: ItemId }) {
         </>
       )
 
+    case 'music':
+      return (
+        <>
+          <ellipse cx={100} cy={186} rx={52} ry={9} fill={LINE_COLOR} opacity={0.08} />
+          {/* 본체 */}
+          <path {...L} d="M56 44h88a16 16 0 0 1 16 16v112a16 16 0 0 1-16 16H56a16 16 0 0 1-16-16V60a16 16 0 0 1 16-16Z" fill="#FFF3D9" />
+          {/* 화면 */}
+          <path {...L} d="M58 62h84v54H58Z" fill="#CFE6F5" />
+          <path {...T} d="M70 82h34M70 96h58" opacity={0.6} />
+          {/* 조작 휠 */}
+          <circle {...L} cx={100} cy={148} r={26} fill="#FFE6A8" />
+          <circle {...T} cx={100} cy={148} r={9} fill="#FFF3D9" />
+          {/* 떠오르는 음표 */}
+          <g {...T} fill="none">
+            <path d="M168 66v-28l20-6v28" />
+            <ellipse cx={163} cy={68} rx={7} ry={5.5} transform="rotate(-18 163 68)" fill={LINE_COLOR} stroke="none" />
+            <ellipse cx={183} cy={62} rx={7} ry={5.5} transform="rotate(-18 183 62)" fill={LINE_COLOR} stroke="none" />
+          </g>
+        </>
+      )
+
     default: // glass
       return (
         <>

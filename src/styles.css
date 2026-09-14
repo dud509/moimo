@@ -317,3 +317,8 @@ button { cursor: pointer; }
 }
 .crash button.ghost { background: var(--paper); color: var(--ink); }
 .crash-tip { margin: 18px 0 10px; font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
+
+/* 노래가 흐르는 동안 플레이어가 살짝 흔들린다 */
+@keyframes sway { 0%, 100% { transform: translate(-50%, -86%) rotate(-1.6deg) } 50% { transform: translate(-50%, -88%) rotate(1.6deg) } }
+.item.singing { animation: sway 1.9s ease-in-out infinite; }
+.item.singing:hover { animation-play-state: paused; }
