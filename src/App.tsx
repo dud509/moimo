@@ -5,14 +5,14 @@ import anchorsJson from './data/anchors.json'
 import { World, type Camera, type WorldHandle } from './world/World'
 import { Album, Camera as CameraPanel, Card, Glass, Jar } from './world/Panels'
 import {
-  ITEMS, WORLD, loadWorld, residentFromName, resetWorld, saveWorld,
+  ITEMS, WORLD, loadWorld, residentFromName, resetWorld, saveWorld, trimWorld,
   type ItemId, type Resident,
 } from './world/model'
 import './styles.css'
 
 export default function App() {
   const [cache, setCache] = useState<PartsCache | null>(null)
-  const [residents, setResidents] = useState<Resident[]>(() => loadWorld())
+  const [residents, setResidents] = useState<Resident[]>(() => trimWorld(loadWorld()))
   const [panel, setPanel] = useState<ItemId | null>(null)
   const [selected, setSelected] = useState<Resident | null>(null)
   const [arrived, setArrived] = useState<string | null>(null)
@@ -43,7 +43,7 @@ export default function App() {
       }, 60)
       window.setTimeout(() => setArrived((id) => (id === r.id ? null : id)), 2400)
       say(`${r.name} 도착! 마을이 한 명 더 북적여요`)
-      return [...prev, r]
+      return trimWorld([...prev, r])
     })
   }, [say])
 

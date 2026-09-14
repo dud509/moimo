@@ -1,5 +1,21 @@
 import { genesFromName, randomKoreanName, splitName, type MoimoGenes } from '../moimo/name'
 
+/* ================================================================== *
+ *  마을 인구는 여기서 조절한다                                          *
+ * ================================================================== */
+
+/** 처음 열었을 때 심어둘 이웃 수 — 마을이 비어 보이지 않을 만큼만 */
+export const SEED_COUNT = 90
+
+/**
+ * 한 화면에 둘 수 있는 최대 인원.
+ * 넘으면 심어둔 이웃부터 조용히 자리를 비켜준다 —
+ * 사람이 만든 모이모는 끝까지 남는다.
+ */
+export const MAX_RESIDENTS = 260
+
+/* ================================================================== */
+
 export const WORLD = { w: 2600, h: 1700 }
 export const CENTER = { x: 1300, y: 880 }
 
@@ -107,7 +123,6 @@ export function seedResidents(count: number): Resident[] {
 /* ------------------------------------------------------------------ */
 
 const KEY = 'moimo.world.v1'
-const SEED_COUNT = 220
 
 const SLOT_KEYS = ['body', 'color', 'morph', 'eye', 'mouth', 'cheek', 'hair', 'tail', 'deco'] as const
 
@@ -145,6 +160,18 @@ export function saveWorld(list: Resident[]) {
 
 export function resetWorld() {
   try { localStorage.removeItem(KEY) } catch { /* noop */ }
+}
+
+/**
+ * 상한을 넘으면 심어둔 이웃부터 내보낸다.
+ * 바깥쪽(나중에 심은 쪽)부터 비우므로 가운데 밀도는 그대로 남는다.
+ */
+export function trimWorld(list: Resident[]): Resident[] {
+  if (list.length <= MAX_RESIDENTS) return list
+  const made = list.filter((r) => r.mine)
+  const seeds = list.filter((r) => !r.mine)
+  if (made.length >= MAX_RESIDENTS) return made.slice(made.length - MAX_RESIDENTS)
+  return [...seeds.slice(0, MAX_RESIDENTS - made.length), ...made]
 }
 
 /** 이름만 있으면 주민이 된다 */
