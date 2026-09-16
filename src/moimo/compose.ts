@@ -6,7 +6,7 @@
  */
 
 import {
-  BODY_COLORS, CANVAS, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_TAIL, REGION_MORPH,
+  BODY_COLORS, CANVAS, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, REGION_MORPH,
   SLOTS, Z_BODY, Z_MORPH, edgeFor,
   bodyUrl, composeAnchor, fillFor, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor,
   type AnchorTable, type SlotKey,
@@ -144,7 +144,8 @@ export function bodyPieces(opts: {
           `<clipPath id="skin-${uid}">${sil}</clipPath>` +
           `<clipPath id="head-${uid}"><rect x="0" y="0" width="${CANVAS}" height="${H}"/></clipPath>` +
           `<clipPath id="torso-${uid}"><rect x="0" y="${H}" width="${CANVAS}" height="${CANVAS - H}"/></clipPath>` +
-          `<filter id="blur-${uid}" x="-25%" y="-25%" width="150%" height="150%">` +
+          `<filter id="blur-${uid}" x="-30%" y="-30%" width="160%" height="160%">` +
+          `<feMorphology operator="dilate" radius="${MORPH_SPREAD}"/>` +
           `<feGaussianBlur stdDeviation="${MORPH_BLUR}"/></filter>` +
           `<mask id="veil-${uid}"><g filter="url(#blur-${uid})">${veil}</g></mask>` +
           `</defs>` +
@@ -184,7 +185,8 @@ export function bodyPieces(opts: {
         svg:
           `<defs>${halfDef}` +
           `<clipPath id="es${i}-${uid}">${skin}</clipPath>` +
-          `<filter id="eb${i}-${uid}" x="-25%" y="-25%" width="150%" height="150%">` +
+          `<filter id="eb${i}-${uid}" x="-30%" y="-30%" width="160%" height="160%">` +
+          `<feMorphology operator="dilate" radius="${MORPH_SPREAD}"/>` +
           `<feGaussianBlur stdDeviation="${MORPH_BLUR}"/></filter>` +
           `<mask id="ev${i}-${uid}"><g filter="url(#eb${i}-${uid})">${veil}</g></mask>` +
           `</defs>` +
