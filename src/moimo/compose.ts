@@ -25,6 +25,33 @@ function innards(svg: string): string {
 
 const C = CANVAS / 2
 
+/**
+ * 몸통 파일에서 채워진 영역만 골라 무늬를 가둘 테두리로 삼는다.
+ *
+ * 무늬 한 장을 열두 몸통이 같이 쓰게 하려는 것이다. 넉넉하게 그린 도형을
+ * 그 몸통의 실루엣으로 잘라내면, 같은 그림이 몸통마다 제 모양을 얻는다.
+ */
+function splitBody(svg: string): { fills: string; lines: string } {
+  const fills: string[] = []
+  const lines: string[] = []
+  const re = /<(path|polyline|polygon|circle|ellipse|rect|line)\b[^>]*\/>/gi
+  let m: RegExpExecArray | null
+  while ((m = re.exec(svg))) (/fill="none"/i.test(m[0]) ? lines : fills).push(m[0])
+  return { fills: fills.join(''), lines: lines.join('') }
+}
+
+function silhouette(bodySvg: string): string {
+  const out: string[] = []
+  const re = /<(path|circle|ellipse|rect|polygon)\b[^>]*\/>/gi
+  let m: RegExpExecArray | null
+  while ((m = re.exec(bodySvg))) {
+    const tag = m[0]
+    if (!/fill="(#fff|#ffffff|white)"/i.test(tag)) continue
+    out.push(tag.replace(/\s(fill|stroke|stroke-[a-z]+|opacity)="[^"]*"/gi, ''))
+  }
+  return out.join('')
+}
+
 function layer(inner: string, a: ReturnType<typeof composeAnchor>, uid: string): string {
   const t = `translate(${C + a.x} ${C + a.y}) rotate(${a.r}) scale(${a.s} ${syOf(a)}) translate(${-C} ${-C})`
   const spread = a.spread ?? 0
@@ -60,12 +87,31 @@ export function composeMoimo(
   }
 
   const flat = { x: 0, y: 0, s: 1, r: 0 }
+  const paint = (raw: string, z: number) =>
+    prepareSvg(raw, { fill: color.hex, line, accent: color.accent }, `${uid}${z}`)
 
-  push(Z_BODY, bodyUrl(genes.body), color.hex, flat)
+  const bodyRaw = cache.get(bodyUrl(genes.body))
+  const morphUrl = genes.morph > 0
+    ? morphUrls(genes.body, genes.morph).find((u) => cache.has(u))
+    : undefined
+  const morphRaw = morphUrl ? cache.get(morphUrl) : undefined
 
-  if (genes.morph > 0) {
-    const url = morphUrls(genes.body, genes.morph).find((u) => cache.has(u))
-    if (url) push(Z_MORPH, url, color.hex, flat)
+  // 무늬가 있으면 몸통을 면과 선으로 갈라 그 사이에 끼운다.
+  // 통째로 얹으면 무늬가 몸통의 안쪽 선까지 덮어 버린다.
+  const split = bodyRaw && morphRaw ? splitBody(innards(paint(bodyRaw, Z_BODY))) : null
+  const sil = bodyRaw && morphRaw ? silhouette(bodyRaw) : ''
+
+  if (split && split.lines && sil) {
+    pieces.push({ z: Z_BODY, svg: split.fills })
+    pieces.push({
+      z: Z_MORPH,
+      svg: `<defs><clipPath id="skin-${uid}">${sil}</clipPath></defs>` +
+           `<g clip-path="url(#skin-${uid})">${innards(paint(morphRaw!, Z_MORPH))}</g>`,
+    })
+    pieces.push({ z: Z_MORPH + 0.5, svg: split.lines })
+  } else {
+    push(Z_BODY, bodyUrl(genes.body), color.hex, flat)
+    if (morphUrl) push(Z_MORPH, morphUrl, color.hex, flat)
   }
 
   for (const s of SLOTS) {
