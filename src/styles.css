@@ -322,3 +322,7 @@ button { cursor: pointer; }
 @keyframes sway { 0%, 100% { transform: translate(-50%, -86%) rotate(-1.6deg) } 50% { transform: translate(-50%, -88%) rotate(1.6deg) } }
 .item.singing { animation: sway 1.9s ease-in-out infinite; }
 .item.singing:hover { animation-play-state: paused; }
+
+/* 확대했을 때 쓰는 촘촘한 판 */
+.hi-res { display: block; position: relative; }
+.hi-res img { position: absolute; top: 0; left: 0; }
