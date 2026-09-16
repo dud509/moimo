@@ -7,7 +7,7 @@
 
 import {
   BODY_COLORS, CANVAS, SLOTS, Z_BODY, Z_MORPH,
-  bodyUrl, composeAnchor, fillFor, isSvgText, lineFor, morphUrls, partUrl, prepareSvg, syOf,
+  WOBBLE, bodyUrl, composeAnchor, fillFor, isSvgText, lineFor, morphUrls, partUrl, prepareSvg, syOf,
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
@@ -48,24 +48,33 @@ export function composeMoimo(
   const line = lineFor(color)
   const uid = `m${genes.body}${genes.color}${genes.morph}${genes.eye}${genes.mouth}${genes.cheek}${genes.hair}${genes.tail}${genes.deco}`
 
+  // 모이모마다 흔들림의 결이 달라지도록 씨를 유전자에서 뽑는다
+  const seed =
+    genes.body * 7 + genes.color * 13 + genes.morph * 17 + genes.eye * 23 +
+    genes.mouth * 29 + genes.cheek * 31 + genes.hair * 37 + genes.tail * 41 + genes.deco * 43
+
   const pieces: { z: number; svg: string }[] = []
 
-  const push = (z: number, url: string, fill: string, anchor: ReturnType<typeof composeAnchor>) => {
+  const push = (
+    z: number, url: string, fill: string,
+    anchor: ReturnType<typeof composeAnchor>, slot: SlotKey | 'body' | 'morph',
+  ) => {
     const raw = cache.get(url)
     if (!raw) return
+    const inner = layer(innards(prepareSvg(raw, { fill, line, accent: color.accent }, uid + z)), anchor, uid)
     pieces.push({
       z,
-      svg: layer(innards(prepareSvg(raw, { fill, line, accent: color.accent }, uid + z)), anchor, uid),
+      svg: WOBBLE.slots.includes(slot) ? `<g filter="url(#wob-${uid})">${inner}</g>` : inner,
     })
   }
 
   const flat = { x: 0, y: 0, s: 1, r: 0 }
 
-  push(Z_BODY, bodyUrl(genes.body), color.hex, flat)
+  push(Z_BODY, bodyUrl(genes.body), color.hex, flat, 'body')
 
   if (genes.morph > 0) {
     const url = morphUrls(genes.body, genes.morph).find((u) => cache.has(u))
-    if (url) push(Z_MORPH, url, color.hex, flat)
+    if (url) push(Z_MORPH, url, color.hex, flat, 'morph')
   }
 
   for (const s of SLOTS) {
@@ -75,16 +84,26 @@ export function composeMoimo(
       partUrl(s.key as SlotKey, n),
       fillFor(s.key as SlotKey, n, color.hex),
       composeAnchor(table, genes.body, s.key as SlotKey, n),
+      s.key as SlotKey,
     )
   }
 
   pieces.sort((a, b) => a.z - b.z)
+
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS} ${CANVAS}">` +
     `<defs>` +
     `<clipPath id="half-l-${uid}"><rect x="0" y="0" width="${C}" height="${CANVAS}"/></clipPath>` +
     `<clipPath id="half-r-${uid}"><rect x="${C}" y="0" width="${C}" height="${CANVAS}"/></clipPath>` +
+    (WOBBLE.slots.length
+      ? `<filter id="wob-${uid}" x="-14%" y="-14%" width="128%" height="128%" ` +
+        `color-interpolation-filters="sRGB">` +
+        `<feTurbulence type="fractalNoise" baseFrequency="${WOBBLE.frequency}" ` +
+        `numOctaves="${WOBBLE.octaves}" seed="${seed}" result="n"/>` +
+        `<feDisplacementMap in="SourceGraphic" in2="n" scale="${WOBBLE.scale}" ` +
+        `xChannelSelector="R" yChannelSelector="G"/></filter>`
+      : '') +
     `</defs>` +
     pieces.map((p) => p.svg).join('') +
     `</svg>`
