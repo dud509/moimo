@@ -26,6 +26,10 @@ function innards(svg: string): string {
 
 const C = CANVAS / 2
 
+/** 무늬 덩어리를 두르는 선 */
+const EDGE = (line: string) =>
+  `stroke="${line}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"`
+
 /** 이 몸통에 그 부위 표시가 실제로 있는가 */
 function split_has(bodyRaw: string | undefined, r: { 부위: keyof typeof MARKS }): boolean {
   return Boolean(bodyRaw && MARKS[r.부위].test(bodyRaw))
@@ -120,12 +124,14 @@ export function bodyPieces(opts: {
     const inner = innards(
       prepareSvg(morphRaw, { fill, line, accent, morph: mark }, `${uid}${Z_MORPH}`),
     )
+    // 무늬 덩어리에 선을 두른다. 색만 바뀌면 얼룩처럼 보이고,
+    // 테두리가 있어야 의도한 모양으로 읽힌다
     out.push({
       z: Z_MORPH,
       svg: sil
         ? `<defs><clipPath id="skin-${uid}">${sil}</clipPath></defs>` +
-          `<g clip-path="url(#skin-${uid})">${inner}</g>`
-        : inner,
+          `<g clip-path="url(#skin-${uid})" ${EDGE(line)}>${inner}</g>`
+        : `<g ${EDGE(line)}>${inner}</g>`,
     })
   }
 
@@ -134,13 +140,13 @@ export function bodyPieces(opts: {
     const tags = (split.marks[r.부위] ?? []).join('')
     if (!tags) return
     const lit = prepareSvg(tags, { fill, line, accent, ear: mark }, `${uid}r${i}`)
-    if (!r.쪽) { out.push({ z: Z_MORPH + 0.25, svg: lit }); return }
+    if (!r.쪽) { out.push({ z: Z_MORPH + 0.25, svg: `<g ${EDGE(line)}>${lit}</g>` }); return }
     const id = `${r.쪽 === '왼' ? 'l' : 'r'}${i}-${uid}`
     const x = r.쪽 === '왼' ? 0 : C
     out.push({
       z: Z_MORPH + 0.25,
       svg: `<defs><clipPath id="${id}"><rect x="${x}" y="0" width="${C}" height="${CANVAS}"/></clipPath></defs>` +
-           `<g clip-path="url(#${id})">${lit}</g>`,
+           `<g clip-path="url(#${id})" ${EDGE(line)}>${lit}</g>`,
     })
   })
 
