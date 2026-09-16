@@ -121,6 +121,7 @@ export function bodyPieces(opts: {
   // 몸통을 면과 선으로 갈라 무늬를 그 사이에 끼운다.
   // 통째로 얹으면 무늬가 몸통의 안쪽 선까지 덮어 버린다
   out.push({ z: Z_BODY, svg: paint(split.fills, Z_BODY) })
+  const skin = silhouette(bodyRaw!)
 
   // 무늬 파일은 표시와 별개로 늘 함께 그린다
   if (morphRaw) {
@@ -168,14 +169,35 @@ export function bodyPieces(opts: {
   regions.forEach((r, i) => {
     const tags = (split.marks[r.부위] ?? []).join('')
     if (!tags) return
-    const lit = prepareSvg(tags, { fill, line, accent, ear: mark }, `${uid}r${i}`)
-    if (!r.쪽) { out.push({ z: Z_MORPH + 0.25, svg: `<g ${edge(line, howEdge)}>${lit}</g>` }); return }
     const id = `${r.쪽 === '왼' ? 'l' : 'r'}${i}-${uid}`
     const x = r.쪽 === '왼' ? 0 : C
+    const halfDef = r.쪽
+      ? `<clipPath id="${id}"><rect x="${x}" y="0" width="${C}" height="${CANVAS}"/></clipPath>`
+      : ''
+    const half = r.쪽 ? ` clip-path="url(#${id})"` : ''
+
+    if (howEdge === 'soft' && skin) {
+      // 귀도 무늬와 같은 방식으로 번지게 한다
+      const veil = prepareSvg(tags, { fill: '#FFFFFF', line: '#FFFFFF', accent: '#FFFFFF', ear: '#FFFFFF' }, `${uid}rv${i}`)
+      out.push({
+        z: Z_MORPH + 0.25,
+        svg:
+          `<defs>${halfDef}` +
+          `<clipPath id="es${i}-${uid}">${skin}</clipPath>` +
+          `<filter id="eb${i}-${uid}" x="-25%" y="-25%" width="150%" height="150%">` +
+          `<feGaussianBlur stdDeviation="${MORPH_BLUR}"/></filter>` +
+          `<mask id="ev${i}-${uid}"><g filter="url(#eb${i}-${uid})">${veil}</g></mask>` +
+          `</defs>` +
+          `<g clip-path="url(#es${i}-${uid})"><g${half} mask="url(#ev${i}-${uid})">` +
+          `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="${mark}"/></g></g>`,
+      })
+      return
+    }
+    const lit = prepareSvg(tags, { fill, line, accent, ear: mark }, `${uid}r${i}`)
     out.push({
       z: Z_MORPH + 0.25,
-      svg: `<defs><clipPath id="${id}"><rect x="${x}" y="0" width="${C}" height="${CANVAS}"/></clipPath></defs>` +
-           `<g clip-path="url(#${id})" ${edge(line, howEdge)}>${lit}</g>`,
+      svg: (halfDef ? `<defs>${halfDef}</defs>` : '') +
+           `<g${half} ${edge(line, howEdge)}>${lit}</g>`,
     })
   })
 
