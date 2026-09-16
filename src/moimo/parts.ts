@@ -21,12 +21,12 @@ export const LINE_COLOR = '#38312A'
  *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
  */
 export const BODY_COLORS = [
-  { jamo: 'ㅣ받침', name: '파랑', hex: '#E1EEF4', accent: '#FFFFFF' },
-  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF' },
-  { jamo: 'ㅓ', name: '분홍', hex: '#fff0f4', accent: '#FFFFFF' },
-  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79' },
-  { jamo: 'ㅣ', name: '흰색', hex: '#FFFFFF', accent: '#fff0f0' },
-  { jamo: '나머지', name: '연보라', hex: '#E8E3F3', accent: '#FFFFFF' },
+  { jamo: 'ㅣ받침', name: '파랑', hex: '#E1EEF4', accent: '#FFFFFF', mark: '#A9CEE2' },
+  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF', mark: '#F0DDA2' },
+  { jamo: 'ㅓ', name: '분홍', hex: '#fff0f4', accent: '#FFFFFF', mark: '#F7C6D5' },
+  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79', mark: '#6B584B' },
+  { jamo: 'ㅣ', name: '흰색', hex: '#FFFFFF', accent: '#fff0f0', mark: '#C6E2D8' },
+  { jamo: '나머지', name: '연보라', hex: '#E8E3F3', accent: '#FFFFFF', mark: '#C3B7DF' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
@@ -40,7 +40,27 @@ export const lineFor = (c: BodyColor): string => ('line' in c ? c.line : LINE_CO
  * 따로 정하지 않으면 강조색을 쓴다. 몸통 색마다 다르게 두고 싶으면
  * 그 줄에 `mark: '#...'` 를 붙인다.
  */
-export const markFor = (c: BodyColor): string => ('mark' in c ? (c as { mark: string }).mark : c.accent)
+export const markFor = (c: BodyColor): string => c.mark
+
+/** 무늬가 없을 때만 쓰는 흰 바탕과 그 선·강조색 */
+const PLAIN_WHITE = '#FFFFFF'
+const PLAIN_ACCENT = '#FFF4F3'
+
+/**
+ * 이 몸통 색과 무늬로 어떤 색들을 쓸지.
+ *
+ * 무늬가 없으면 이름이 정한 색이 몸 전체를 칠한다. 무늬가 있으면 바탕은
+ * 희게 두고 그 색은 무늬로 간다. 한 마리가 두 색을 갖지 않게 하려는 것이다.
+ */
+export function toneFor(c: BodyColor, morph: number) {
+  const plain = morph === 0
+  return {
+    fill: plain ? c.hex : PLAIN_WHITE,
+    line: plain ? lineFor(c) : LINE_COLOR,
+    accent: plain ? c.accent : PLAIN_ACCENT,
+    mark: markFor(c),
+  }
+}
 
 /* ================================================================== *
  *  아래는 파츠 원본 파일에 들어 있는 값 — 에셋을 다시 뽑지 않는 한 그대로  *

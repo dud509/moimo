@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  fillFor, lineFor, markFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf,
+  fillFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
   warnIfNothingToTint,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
@@ -160,7 +160,7 @@ function Figure({
   soloSlot?: SlotKey | null
   warnTint?: boolean
 }) {
-  const line = lineFor(color)
+  const { fill, line, accent, mark } = toneFor(color, morph)
   return (
     <>
       <BodyStack body={body} morph={morph} color={color} dim={soloSlot != null} />
@@ -169,8 +169,8 @@ function Figure({
           key={s.key}
           urls={partUrl(s.key, variant[s.key])}
           paint={{
-            fill: fillFor(s.key, variant[s.key], s.key === 'tail' && MORPH_TAIL.has(morph) ? markFor(color) : color.hex),
-            line, accent: color.accent,
+            fill: fillFor(s.key, variant[s.key], s.key === 'tail' && MORPH_TAIL.has(morph) ? mark : fill),
+            line, accent,
           }}
           anchor={composeAnchor(table, body, s.key, variant[s.key])}
           z={s.z}

@@ -7,7 +7,7 @@
 
 import {
   BODY_COLORS, CANVAS, MARKS, MORPH_TAIL, REGION_MORPH, SLOTS, Z_BODY, Z_MORPH,
-  bodyUrl, composeAnchor, fillFor, isSvgText, lineFor, markFor, morphUrls, partUrl, prepareSvg, syOf,
+  bodyUrl, composeAnchor, fillFor, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor,
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
@@ -95,11 +95,10 @@ export function bodyPieces(opts: {
   uid: string
 }): { z: number; svg: string }[] {
   const { bodyRaw, morphRaw, morph, color, uid } = opts
-  const line = lineFor(color)
-  const mark = markFor(color)
+  const { fill, line, accent, mark } = toneFor(color, morph)
   const out: { z: number; svg: string }[] = []
   const paint = (raw: string, z: number) =>
-    prepareSvg(raw, { fill: color.hex, line, accent: color.accent }, `${uid}${z}`)
+    prepareSvg(raw, { fill, line, accent }, `${uid}${z}`)
 
   const regions = (REGION_MORPH[morph] ?? []).filter((r) => split_has(bodyRaw, r))
   const split = bodyRaw ? splitBody(bodyRaw) : null
@@ -119,7 +118,7 @@ export function bodyPieces(opts: {
   if (morphRaw) {
     const sil = silhouette(bodyRaw!)
     const inner = innards(
-      prepareSvg(morphRaw, { fill: color.hex, line, accent: color.accent, morph: mark }, `${uid}${Z_MORPH}`),
+      prepareSvg(morphRaw, { fill, line, accent, morph: mark }, `${uid}${Z_MORPH}`),
     )
     out.push({
       z: Z_MORPH,
@@ -134,7 +133,7 @@ export function bodyPieces(opts: {
   regions.forEach((r, i) => {
     const tags = (split.marks[r.부위] ?? []).join('')
     if (!tags) return
-    const lit = prepareSvg(tags, { fill: color.hex, line, accent: color.accent, ear: mark }, `${uid}r${i}`)
+    const lit = prepareSvg(tags, { fill, line, accent, ear: mark }, `${uid}r${i}`)
     if (!r.쪽) { out.push({ z: Z_MORPH + 0.25, svg: lit }); return }
     const id = `${r.쪽 === '왼' ? 'l' : 'r'}${i}-${uid}`
     const x = r.쪽 === '왼' ? 0 : C
@@ -158,8 +157,7 @@ export function composeMoimo(
   table: AnchorTable,
 ): string {
   const color = BODY_COLORS[genes.color - 1] ?? BODY_COLORS[0]
-  const line = lineFor(color)
-  const mark = markFor(color)
+  const { fill: bodyHex, line, accent, mark } = toneFor(color, genes.morph)
   const uid = `m${genes.body}${genes.color}${genes.morph}${genes.eye}${genes.mouth}${genes.cheek}${genes.hair}${genes.tail}${genes.deco}`
 
   const pieces: { z: number; svg: string }[] = []
@@ -169,7 +167,7 @@ export function composeMoimo(
     if (!raw) return
     pieces.push({
       z,
-      svg: layer(innards(prepareSvg(raw, { fill, line, accent: color.accent }, uid + z)), anchor, uid),
+      svg: layer(innards(prepareSvg(raw, { fill, line, accent }, uid + z)), anchor, uid),
     })
   }
 
@@ -183,14 +181,14 @@ export function composeMoimo(
   pieces.push(...bodyPieces({ bodyRaw, morphRaw, morph: genes.morph, color, uid }))
 
   // 꼬리는 몸통에 이어 붙은 것이라, 무늬가 몸통 바깥을 덮으면 함께 칠한다
-  const bodyTone = MORPH_TAIL.has(genes.morph) ? mark : color.hex
+  const bodyTone = MORPH_TAIL.has(genes.morph) ? mark : bodyHex
 
   for (const s of SLOTS) {
     const n = genes[s.key as keyof MoimoGenes] as number
     push(
       s.z,
       partUrl(s.key as SlotKey, n),
-      fillFor(s.key as SlotKey, n, s.key === 'tail' ? bodyTone : color.hex),
+      fillFor(s.key as SlotKey, n, s.key === 'tail' ? bodyTone : bodyHex),
       composeAnchor(table, genes.body, s.key as SlotKey, n),
     )
   }
