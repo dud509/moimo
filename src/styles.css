@@ -131,6 +131,8 @@ button { cursor: pointer; }
   padding: 20px 22px; pointer-events: none; gap: 16px;
 }
 .brand { pointer-events: auto; }
+/* 로고 그림 — public/world/logo.png 를 놓으면 글자 대신 쓰인다 */
+.brand-art { display: block; height: 52px; width: auto; user-select: none; }
 .brand-mark {
   display: block; font-size: 27px; font-weight: 900; letter-spacing: -0.02em;
   text-shadow: 0 2px 0 var(--cream), 0 0 14px var(--cream);

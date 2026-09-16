@@ -10,6 +10,31 @@ import {
 } from './world/model'
 import './styles.css'
 
+/**
+ * 로고. `public/world/logo.png` 를 놓으면 그 그림을 쓰고,
+ * 없으면 글자로 나온다. 배경 그림에 로고를 그려 넣었다면
+ * 아래 `HIDE_BRAND` 를 true 로 두어 아예 지울 수 있다.
+ */
+const HIDE_BRAND = false
+
+function Brand() {
+  const [png, setPng] = useState(true)
+  if (HIDE_BRAND) return <div className="brand" />
+  if (png) {
+    return (
+      <div className="brand">
+        <img className="brand-art" src="/world/logo.png" alt="모이모" onError={() => setPng(false)} draggable={false} />
+      </div>
+    )
+  }
+  return (
+    <div className="brand">
+      <span className="brand-mark">모이모</span>
+      <span className="brand-sub">MOIMO WORLD</span>
+    </div>
+  )
+}
+
 export default function App() {
   const [cache, setCache] = useState<PartsCache | null>(null)
   const [residents, setResidents] = useState<Resident[]>(() => trimWorld(loadWorld(seedCountFor(window.innerWidth, window.innerHeight))))
@@ -119,10 +144,7 @@ export default function App() {
       />
 
       <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark">모이모</span>
-          <span className="brand-sub">MOIMO WORLD</span>
-        </div>
+        <Brand />
         <div className="counter">
           <span>지금 모여 있는 모이모</span>
           <b>{residents.length.toLocaleString('ko-KR')}</b>
