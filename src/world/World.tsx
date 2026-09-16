@@ -1,7 +1,7 @@
 import {
   forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState,
 } from 'react'
-import { composeMoimo, moimoDataUri, type PartsCache } from '../moimo/compose'
+import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { ItemArt } from './Items'
 import { ITEMS, WORLD, CENTER, type ItemId, type Resident } from './model'
@@ -22,35 +22,27 @@ const MOIMO_PX = 104
 /* ------------------------------------------------------------------ */
 
 export const MoimoImg = memo(function MoimoImg({
-  resident, cache, table, size = MOIMO_PX, res = 1, className,
+  resident, cache, table, size = MOIMO_PX, className,
 }: {
   resident: Resident; cache: PartsCache; table: AnchorTable
   size?: number
-  /** 몇 배로 더 촘촘히 그릴지 — 확대했을 때 가장자리가 부서지지 않게 */
-  res?: number
   className?: string
 }) {
-  const src = useMemo(
-    () => moimoDataUri(composeMoimo(resident.genes, cache, table)),
+  // SVG 를 그림 파일로 구워 걸면 브라우저가 '놓인 크기'로 한 번 비트맵을 만들어 둔다.
+  // 확대하면 그 비트맵을 늘리게 되고, 수십 마리분이 한꺼번에 화면에 얹히면
+  // 가장자리가 부서지거나 가로줄이 생긴다. 그래서 벡터인 채로 그대로 심는다.
+  const html = useMemo(
+    () => composeMoimo(resident.genes, cache, table),
     [resident.genes, cache, table],
   )
-
-  if (res <= 1) {
-    return <img className={className} src={src} width={size} height={size} alt={resident.name} draggable={false} />
-  }
-  // 브라우저는 <img> 속 SVG 를 '놓인 크기'로 한 번 구워두고, 그 뒤 화면을 확대하면
-  // 구워둔 그림을 늘린다. 그래서 크게 그린 다음 줄여서 걸어둔다.
   return (
-    <span className={`hi-res ${className ?? ''}`} style={{ width: size, height: size }}>
-      <img
-        src={src}
-        width={size * res}
-        height={size * res}
-        style={{ transform: `scale(${1 / res})`, transformOrigin: '0 0' }}
-        alt={resident.name}
-        draggable={false}
-      />
-    </span>
+    <span
+      className={`art ${className ?? ''}`}
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={resident.name}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   )
 })
 
@@ -204,15 +196,6 @@ export const World = forwardRef<WorldHandle, Props>(function World(
 
   const sorted = useMemo(() => [...residents].sort((a, b) => a.y - b.y), [residents])
 
-  // 가까이 들여다볼 때만 촘촘히 다시 그린다. 늘 2배로 구우면 기억을 너무 먹는다
-  const [res, setRes] = useState(1)
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      const want = camRef.current.scale > 1.05 ? 2 : 1
-      setRes((r) => (r === want ? r : want))
-    }, 400)
-    return () => window.clearInterval(id)
-  }, [])
 
   return (
     <div
@@ -258,7 +241,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
               }}
               onClick={() => onResident(r)}
             >
-              <MoimoImg resident={r} cache={cache} table={table} res={res} />
+              <MoimoImg resident={r} cache={cache} table={table} />
               {(showNames || (hits && hits.has(r.id))) && (
                 <span className="moimo-name" style={{ transform: `translateX(-50%) scaleX(${r.flip ? -1 : 1})` }}>
                   {r.name}

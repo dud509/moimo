@@ -468,7 +468,7 @@ export default function AnchorEditor() {
           onPointerCancel={onPointerUp}
           onWheel={onWheel}
         >
-          <div className="canvas" style={{ width: CANVAS, height: CANVAS, transform: `scale(${DISP})` }}>
+          <div className="canvas" style={{ width: CANVAS, height: CANVAS, zoom: DISP }}>
             <div className="guides">
               <i className="gv" /><i className="gh" />
             </div>
