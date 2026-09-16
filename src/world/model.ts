@@ -139,6 +139,89 @@ export function spotFor(
   return { x: 200, y: WORLD.h - 160 }
 }
 
+/* ------------------------------------------------------------------ */
+/* 소품 — 캐릭터 사이사이에 깔리는 작은 그림들                            */
+/* ------------------------------------------------------------------ */
+
+export type Prop = {
+  id: string
+  x: number
+  y: number
+  /** 화면에 놓이는 폭(px) */
+  w: number
+  /** 기울기(도) */
+  rot: number
+  flip: boolean
+  /** 진하기 — 큰 것은 옅게 깔리고 작은 것은 또렷하다 */
+  tone: number
+  /** 어떤 그림을 쓸지 고르는 0~1 사이 숫자. 그림 수가 달라져도 자리는 그대로다 */
+  pick: number
+}
+
+/** 마을 전체에 흩뿌릴 소품 수 */
+export const PROP_COUNT = 130
+
+/**
+ * 소품은 두 층으로 깔린다.
+ * - 바닥층: 크고 옅게. 빈 땅을 메운다
+ * - 사이층: 작고 또렷하게. 모이모 사이에 끼어든다
+ */
+const PROP_BACK = { min: 150, max: 260, tone: 0.3 }
+const PROP_FRONT = { min: 46, max: 104, tone: 0.9 }
+/** 이 비율만큼은 바닥층으로 간다 */
+const PROP_BACK_SHARE = 0.34
+
+/**
+ * 소품을 흩뿌린다.
+ *
+ * 오브제는 끝까지 비켜 가고, 소품끼리도 겹쳐 뭉치지 않는다.
+ * 모이모와는 겹쳐도 된다 — 소품은 모이모 아래에 깔리니까.
+ * 다만 마을 한가운데는 모이모가 빽빽해서 어차피 안 보이므로 조금 덜 둔다.
+ */
+export function scatterProps(count = PROP_COUNT): Prop[] {
+  let s = 19980423
+  const rnd = () => {
+    s = (s * 1664525 + 1013904223) >>> 0
+    return s / 4294967296
+  }
+
+  const out: Prop[] = []
+  const free = (x: number, y: number, w: number) => {
+    if (x < 90 || x > WORLD.w - 90 || y < 110 || y > WORLD.h - 90) return false
+    for (const it of ITEMS) {
+      const g = itemGuard(it)
+      if (Math.abs(x - g.cx) < g.hw + w / 2 && Math.abs(y - g.cy) < g.hh + w / 2) return false
+    }
+    // 서로 반쯤은 떨어져 있게. 붙어 있으면 한 덩어리로 보인다
+    for (const p of out) if (Math.hypot(x - p.x, y - p.y) < (w + p.w) * 0.42) return false
+    return true
+  }
+
+  for (let i = 0; i < count; i++) {
+    const back = rnd() < PROP_BACK_SHARE
+    const k = back ? PROP_BACK : PROP_FRONT
+    const w = Math.round(k.min + rnd() * (k.max - k.min))
+    for (let attempt = 0; attempt < 90; attempt++) {
+      const x = 90 + rnd() * (WORLD.w - 180)
+      const y = 110 + rnd() * (WORLD.h - 200)
+      // 나선 한가운데는 모이모가 덮어 버리니 성기게
+      const core = Math.hypot((x - CENTER.x) / 1.34, (y - CENTER.y) / 0.92)
+      if (core < 420 && rnd() < 0.55) continue
+      if (!free(x, y, w)) continue
+      out.push({
+        id: `prop-${i}`,
+        x, y, w,
+        rot: (rnd() - 0.5) * 24,
+        flip: rnd() < 0.5,
+        tone: k.tone * (0.82 + rnd() * 0.18),
+        pick: rnd(),
+      })
+      break
+    }
+  }
+  return out
+}
+
 export function makeResident(
   genes: MoimoGenes, name: string, n: number, rnd: () => number, mine: boolean, note?: string,
   taken: { x: number; y: number }[] = [],

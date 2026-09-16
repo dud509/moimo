@@ -4,7 +4,7 @@ import {
 import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { ItemArt } from './Items'
-import { ITEMS, WORLD, CENTER, type ItemId, type Resident } from './model'
+import { ITEMS, WORLD, CENTER, scatterProps, type ItemId, type Resident } from './model'
 
 export type Camera = { tx: number; ty: number; scale: number }
 export type WorldHandle = {
@@ -54,6 +54,49 @@ function ItemImage({ id }: { id: ItemId }) {
     </svg>
   )
 }
+
+/**
+ * 소품 그림. `src/world/props/` 에 png 를 넣어 두기만 하면 된다 —
+ * 파일 이름도 개수도 상관없다. 넣는 대로 마을에 흩뿌려지고,
+ * 하나도 없으면 아무것도 안 나온다.
+ */
+const PROP_ART: string[] = Object.entries(
+  import.meta.glob('./props/*.{png,webp,svg}', { eager: true, query: '?url', import: 'default' }),
+)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([, url]) => url as string)
+
+/** 모이모 아래에 깔리는 소품들 */
+const PropLayer = memo(function PropLayer() {
+  const list = useMemo(() => {
+    if (!PROP_ART.length) return []
+    return scatterProps().map((p) => ({
+      ...p,
+      src: PROP_ART[Math.min(PROP_ART.length - 1, Math.floor(p.pick * PROP_ART.length))],
+    }))
+  }, [])
+
+  return (
+    <>
+      {list.map((p) => (
+        <img
+          key={p.id}
+          className="prop"
+          src={p.src}
+          alt=""
+          draggable={false}
+          style={{
+            left: p.x,
+            top: p.y,
+            width: p.w,
+            opacity: p.tone,
+            transform: `translate(-50%, -50%) rotate(${p.rot.toFixed(1)}deg) scaleX(${p.flip ? -1 : 1})`,
+          }}
+        />
+      ))}
+    </>
+  )
+})
 
 /* ------------------------------------------------------------------ */
 
@@ -245,6 +288,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     >
       <div ref={worldRef} className={`world${glide ? ' glide' : ''}`} style={{ width: WORLD.w, height: WORLD.h }}>
         <Ground />
+        <PropLayer />
 
         {ITEMS.map((it) => (
           <button
