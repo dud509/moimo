@@ -24,9 +24,9 @@ export const BODY_COLORS = [
   { jamo: 'ㅣ', name: '파랑', hex: '#E1EEF4', accent: '#FFFFFF' },
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF' },
   { jamo: 'ㅓ', name: '분홍', hex: '#fff0f4', accent: '#FFFFFF' },
-  { jamo: 'ㅗ', name: '검정', hex: '#231A17', accent: '#fff0f0', line: '#665546' },
+  { jamo: 'ㅗ', name: '진갈색', hex: '#4A3A32', accent: '#fff0f0', line: '#8A7466' },
   { jamo: 'ㅜ', name: '흰색', hex: '#FFFFFF', accent: '#fff0f0' },
-  { jamo: 'ㅡㅐㅔㅑㅛㅠ', name: '갈색', hex: '#5F5040', accent: '#fff0f0' },
+  { jamo: 'ㅡㅐㅔㅑㅛㅠ', name: '연보라', hex: '#E8E3F3', accent: '#FFFFFF' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
