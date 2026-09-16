@@ -84,9 +84,11 @@ button { cursor: pointer; }
 /* 모이모 */
 .moimo {
   position: absolute; background: none; border: 0; padding: 0; line-height: 0;
-  animation: bob 2.8s ease-in-out infinite;
   transition: opacity 0.25s ease;
 }
+/* 둥실거리는 것은 그림에만 건다.
+   자리 잡는 transform 과 좌우 뒤집기를 덮어쓰지 않게 하려는 것이다 */
+.moimo .art { animation: bob 2.8s ease-in-out infinite; }
 .art { display: block; position: relative; line-height: 0; }
 .art svg { width: 100%; height: 100%; display: block; }
 .moimo .art {

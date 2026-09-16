@@ -36,7 +36,7 @@ export default function App() {
 
   const send = useCallback((name: string, note: string) => {
     setResidents((prev) => {
-      const r = residentFromName(name, prev.length, note || undefined)
+      const r = residentFromName(name, prev.length, note || undefined, prev)
       if (!r) return prev
       setPanel(null)
       setArrived(r.id)

@@ -65,29 +65,85 @@ export type Resident = {
 
 const GOLDEN = Math.PI * (3 - Math.sqrt(5))
 
+/** 모이모가 화면에 놓이는 크기. 겹침을 따질 때 쓴다 */
+export const MOIMO_W = 104
+/** 서로 3분의 1 넘게 겹치지 않도록 둘 사이에 두는 거리 */
+export const MIN_GAP = Math.ceil(MOIMO_W * (2 / 3))
+
+/**
+ * 오브제가 화면에서 차지하는 네모.
+ *
+ * x,y 는 왼쪽 위 모서리가 아니라 «아래 한가운데» 다. 그리기에서 위로
+ * 86% 만큼 끌어올리기 때문이다. 이름표가 아래로 조금 더 나온다.
+ */
+const ITEM_LIFT = 0.86
+const ITEM_LABEL = 46
+
+function itemGuard(it: Item) {
+  const pad = 14
+  const top = it.y - ITEM_LIFT * it.w
+  const bottom = it.y + (1 - ITEM_LIFT) * it.w + ITEM_LABEL
+  return {
+    cx: it.x,
+    cy: (top + bottom) / 2,
+    hw: it.w / 2 + pad,
+    hh: (bottom - top) / 2 + pad,
+  }
+}
+
 /**
  * n번째 주민의 자리.
+ *
  * 별사탕 유리병을 중심으로 나선을 그리며 바깥으로 퍼진다 —
  * 사람이 늘수록 가운데부터 차곡차곡 와글와글해진다.
+ *
+ * 오브제를 가리지 않고, 이미 자리 잡은 모이모와도 너무 붙지 않는 자리를
+ * 찾는다. 못 찾으면 나선을 한 바퀴 더 돌며 바깥으로 밀려난다.
  */
-export function spotFor(n: number, rnd: () => number): { x: number; y: number } {
-  for (let attempt = 0; attempt < 40; attempt++) {
+export function spotFor(
+  n: number,
+  rnd: () => number,
+  taken: { x: number; y: number }[] = [],
+): { x: number; y: number } {
+  /** 이 자리에 서도 되나 — 오브제를 가리지 않고 이웃과도 떨어져 있나 */
+  const free = (x: number, y: number, gap: number) => {
+    if (x < 120 || x > WORLD.w - 120 || y < 140 || y > WORLD.h - 110) return false
+    // x,y 는 발치이고 몸은 그 위로 올라가므로 몸 한가운데를 기준으로 잰다
+    const by = y - MOIMO_W / 2
+    for (const it of ITEMS) {
+      const g = itemGuard(it)
+      if (Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2) return false
+    }
+    for (const t of taken) if (Math.hypot(x - t.x, y - t.y) < gap) return false
+    return true
+  }
+
+  for (let attempt = 0; attempt < 220; attempt++) {
     const k = n + attempt * 0.41
     const r = 56 * Math.sqrt(k + 3)
     const a = k * GOLDEN + (attempt ? rnd() * 0.7 : 0)
     const x = CENTER.x + Math.cos(a) * r * 1.34 + (rnd() - 0.5) * 34
     const y = CENTER.y + Math.sin(a) * r * 0.92 + (rnd() - 0.5) * 26
-    if (x < 120 || x > WORLD.w - 120 || y < 140 || y > WORLD.h - 110) continue
-    if (ITEMS.some((it) => Math.hypot(x - it.x, y - it.y) < it.keepout)) continue
-    return { x, y }
+    if (free(x, y, MIN_GAP)) return { x, y }
   }
-  return { x: 180 + rnd() * (WORLD.w - 360), y: 220 + rnd() * (WORLD.h - 400) }
+
+  // 나선으로 못 찾았으면 아무 데나 던져 보되, 규칙은 그대로 지킨다.
+  // 그래도 안 되면 이웃 사이 거리만 조금씩 좁힌다. 오브제는 끝까지 비켜 간다
+  for (let gap = MIN_GAP; gap >= 24; gap -= 8) {
+    for (let i = 0; i < 400; i++) {
+      const x = 180 + rnd() * (WORLD.w - 360)
+      const y = 220 + rnd() * (WORLD.h - 400)
+      if (free(x, y, gap)) return { x, y }
+    }
+  }
+  return { x: 200, y: WORLD.h - 160 }
 }
 
 export function makeResident(
   genes: MoimoGenes, name: string, n: number, rnd: () => number, mine: boolean, note?: string,
+  taken: { x: number; y: number }[] = [],
 ): Resident {
-  const { x, y } = spotFor(n, rnd)
+  const { x, y } = spotFor(n, rnd, taken)
   return {
     id: `${Date.now().toString(36)}-${Math.floor(rnd() * 1e6).toString(36)}`,
     name, genes, x, y,
@@ -111,7 +167,7 @@ export function seedResidents(count: number): Resident[] {
     const name = randomKoreanName(rnd)
     const genes = genesFromName(name)
     if (!genes) continue
-    const { x, y } = spotFor(out.length, rnd)
+    const { x, y } = spotFor(out.length, rnd, out)
     out.push({
       id: `seed-${out.length}`,
       name, genes, x, y,
@@ -191,10 +247,12 @@ export function trimWorld(list: Resident[]): Resident[] {
 }
 
 /** 이름만 있으면 주민이 된다 */
-export function residentFromName(raw: string, n: number, note?: string): Resident | null {
+export function residentFromName(
+  raw: string, n: number, note?: string, taken: { x: number; y: number }[] = [],
+): Resident | null {
   const parts = splitName(raw)
   if (!parts) return null
   const genes = genesFromName(raw)
   if (!genes) return null
-  return makeResident(genes, parts.full, n, Math.random, true, note)
+  return makeResident(genes, parts.full, n, Math.random, true, note, taken)
 }

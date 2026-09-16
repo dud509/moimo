@@ -290,37 +290,11 @@ export const World = forwardRef<WorldHandle, Props>(function World(
 })
 
 /* ------------------------------------------------------------------ */
-/* 바닥 — 노란끼 도는 미색에 옅은 얼룩만                                 */
+/* 바닥 — 넣어 둔 배경 그림 한 장                                        */
 /* ------------------------------------------------------------------ */
 
 const Ground = memo(function Ground() {
-  const blobs = useMemo(() => {
-    let s = 4242
-    const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296 }
-    return Array.from({ length: 26 }, () => ({
-      x: rnd() * WORLD.w,
-      y: rnd() * WORLD.h,
-      rx: 150 + rnd() * 260,
-      ry: 100 + rnd() * 180,
-      o: 0.25 + rnd() * 0.4,
-    }))
-  }, [])
-
   return (
-    <>
-    {/* 그림 배경이 있으면 그 위에 그린다. 없으면 이 태그가 빈 칸으로 남을 뿐이다 */}
     <img className="ground-art" src={BACKGROUND} alt="" width={WORLD.w} height={WORLD.h} draggable={false} />
-    <svg className="ground" width={WORLD.w} height={WORLD.h} viewBox={`0 0 ${WORLD.w} ${WORLD.h}`}>
-      <rect width={WORLD.w} height={WORLD.h} fill="var(--cream)" />
-      <g fill="var(--cream-deep)">
-        {blobs.map((b, i) => <ellipse key={i} cx={b.x} cy={b.y} rx={b.rx} ry={b.ry} opacity={b.o} />)}
-      </g>
-      <radialGradient id="pool" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#FFFDF4" stopOpacity="0.95" />
-        <stop offset="100%" stopColor="#FFFDF4" stopOpacity="0" />
-      </radialGradient>
-      <ellipse cx={CENTER.x} cy={CENTER.y} rx={620} ry={460} fill="url(#pool)" />
-    </svg>
-    </>
   )
 })
