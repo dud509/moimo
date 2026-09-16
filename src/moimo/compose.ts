@@ -6,7 +6,7 @@
  */
 
 import {
-  BODY_COLORS, CANVAS, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, REGION_MORPH,
+  BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, REGION_MORPH,
   SLOTS, Z_BODY, Z_MORPH, edgeFor,
   bodyUrl, composeAnchor, fillFor, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor,
   type AnchorTable, type SlotKey,
@@ -27,8 +27,18 @@ function innards(svg: string): string {
 
 const C = CANVAS / 2
 
+/** 이름이 다시 붙기 전에 자리를 지키는 색 — 그 뒤에 가리개로 바꾼다 */
+const SENTINEL = '#123456'
+
+/** 위에서 아래로 흐르는 세로 가리개 */
+const fadeDef = (id: string) =>
+  `<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">` +
+  `<stop offset="0" stop-color="#fff"/>` +
+  `<stop offset="${FADE_HOLD}" stop-color="#fff"/>` +
+  `<stop offset="${FADE_END}" stop-color="#000"/></linearGradient>`
+
 /** 무늬 덩어리를 두르는 선 */
-const edge = (line: string, how: 'line' | 'soft' | 'flat') =>
+const edge = (line: string, how: 'line' | 'soft' | 'fade' | 'flat') =>
   how === 'line'
     ? `stroke="${line}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"`
     : ''
@@ -131,7 +141,20 @@ export function bodyPieces(opts: {
     )
     // 무늬 덩어리에 선을 두른다. 색만 바뀌면 얼룩처럼 보이고,
     // 테두리가 있어야 의도한 모양으로 읽힌다
-    if (howEdge === 'soft' && sil) {
+    if (howEdge === 'fade' && sil) {
+      const veil = innards(
+        prepareSvg(morphRaw, { fill: SENTINEL, line: 'none', accent: SENTINEL, morph: SENTINEL }, `${uid}v`),
+      ).split(SENTINEL).join(`url(#fg-${uid})`)
+      out.push({
+        z: Z_MORPH,
+        svg:
+          `<defs>${fadeDef(`fg-${uid}`)}` +
+          `<clipPath id="skin-${uid}">${sil}</clipPath>` +
+          `<mask id="veil-${uid}">${veil}</mask></defs>` +
+          `<g clip-path="url(#skin-${uid})" mask="url(#veil-${uid})">` +
+          `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="${mark}"/></g>`,
+      })
+    } else if (howEdge === 'soft' && sil) {
       // 무늬를 흐린 가리개로 삼아 가장자리가 번지게 한다.
       // 색을 실루엣 가득 깔고 그 가리개로 도려내는 식이다
       const veil = innards(prepareSvg(morphRaw, { fill: '#FFFFFF', line: '#FFFFFF', accent: '#FFFFFF', morph: '#FFFFFF' }, `${uid}v`))
@@ -177,6 +200,21 @@ export function bodyPieces(opts: {
       : ''
     const half = r.쪽 ? ` clip-path="url(#${id})"` : ''
 
+    if (howEdge === 'fade' && skin) {
+      const gid = `ef${i}-${uid}`
+      const veil = prepareSvg(tags, { fill: SENTINEL, line: 'none', accent: SENTINEL, ear: SENTINEL }, `${uid}rv${i}`)
+        .split(SENTINEL).join(`url(#${gid})`)
+      out.push({
+        z: Z_MORPH + 0.25,
+        svg:
+          `<defs>${halfDef}${fadeDef(gid)}` +
+          `<clipPath id="es${i}-${uid}">${skin}</clipPath>` +
+          `<mask id="ev${i}-${uid}">${veil}</mask></defs>` +
+          `<g clip-path="url(#es${i}-${uid})"><g${half} mask="url(#ev${i}-${uid})">` +
+          `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="${mark}"/></g></g>`,
+      })
+      return
+    }
     if (howEdge === 'soft' && skin) {
       // 귀도 무늬와 같은 방식으로 번지게 한다
       const veil = prepareSvg(tags, { fill: '#FFFFFF', line: '#FFFFFF', accent: '#FFFFFF', ear: '#FFFFFF' }, `${uid}rv${i}`)

@@ -179,7 +179,17 @@ export const MORPH_TAIL = new Set<number>([1, 2])
  * `line` 은 몸통과 같은 선으로 테두리를 두른다. `soft` 는 가장자리를 흐려
  * 에어브러시처럼 번지게 한다. `flat` 은 아무것도 하지 않는다.
  */
-export const MORPH_EDGE: 'line' | 'soft' | 'flat' = 'soft'
+export const MORPH_EDGE: 'line' | 'soft' | 'fade' | 'flat' = 'fade'
+
+/**
+ * `fade` — 위에서 아래로 흐르는 세로 그라데이션.
+ *
+ * 귀 끝은 꽉 찬 색이고 뿌리로 내려오며 사라진다. 덩어리마다 제 높이를
+ * 기준으로 삼으므로 귀가 길든 짧든 같은 비율로 풀린다.
+ * 0 이 덩어리의 맨 위, 1 이 맨 아래다.
+ */
+export const FADE_HOLD = 0.45   // 여기까지는 색이 꽉 차 있다
+export const FADE_END = 1.0     // 여기서 완전히 사라진다
 /** `soft` 일 때 번지는 정도 */
 export const MORPH_BLUR = 20
 
@@ -199,7 +209,7 @@ export const MORPH_SPREAD = 16
  */
 export const HEAD_BOTTOM = 304
 /** 몸통 쪽 무늬의 가장자리 마감 */
-export const MORPH_BODY_EDGE: 'line' | 'flat' = 'line'
+export const MORPH_BODY_EDGE: 'line' | 'soft' | 'fade' | 'flat' = 'line'
 
 /**
  * 이 몸통 색에서 무늬 가장자리를 어떻게 마감할지.
@@ -207,7 +217,7 @@ export const MORPH_BODY_EDGE: 'line' | 'flat' = 'line'
  * 어두운 색은 번지게 두면 흰 바탕으로 흘러들어 때 탄 것처럼 보인다.
  * 그 줄에 `edge: 'line'` 을 붙이면 그 색만 선으로 두른다.
  */
-export const edgeFor = (c: BodyColor): 'line' | 'soft' | 'flat' =>
+export const edgeFor = (c: BodyColor): 'line' | 'soft' | 'fade' | 'flat' =>
   'edge' in c ? (c as { edge: 'line' }).edge : MORPH_EDGE
 
 export const REGION_MORPH: Record<number, RegionSpec[]> = {
