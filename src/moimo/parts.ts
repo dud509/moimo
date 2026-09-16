@@ -179,7 +179,7 @@ export const MORPH_TAIL = new Set<number>([1, 2])
  * `line` 은 몸통과 같은 선으로 테두리를 두른다. `soft` 는 가장자리를 흐려
  * 에어브러시처럼 번지게 한다. `flat` 은 아무것도 하지 않는다.
  */
-export const MORPH_EDGE: 'line' | 'soft' | 'fade' | 'flat' = 'fade'
+export const MORPH_EDGE: 'line' | 'soft' | 'fade' | 'flat' = 'flat'
 
 /**
  * `fade` — 위에서 아래로 흐르는 세로 그라데이션.
