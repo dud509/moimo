@@ -50,15 +50,20 @@ export const SOURCE_FILL = '#FFFFFF'
 export const SOURCE_ACCENT = '#FF00FF'
 
 /**
- * 몸통 파일에서 «귀» 로 표시해 둔 색.
+ * 몸통 파일에 «부위» 를 표시해 두는 색.
  *
- * 귀는 몸통마다 자리도 모양도 달라 무늬 한 장으로는 칠할 수 없다. 그래서
- * 몸통 파일 안에 귀 영역을 형광 초록으로 한 겹 덧대 두고, 그것을 칠한다.
- * 일러스트레이터는 이 색을 `lime` 으로 적어 내보내기도 한다.
- * 평소에는 몸통 색으로 칠해 없는 것처럼 둔다.
+ * 귀나 얼굴은 몸통마다 자리도 모양도 달라 무늬 한 장으로는 칠할 수 없다.
+ * 그래서 몸통 파일 안에서 그 부위를 눈에 띄는 색으로 칠해 표시해 둔다.
+ * 일러스트레이터는 이 색들을 `lime`, `aqua` 로 적어 내보내기도 한다.
+ * 평소에는 몸통 색으로 덮어 없는 것처럼 두고, 그 무늬일 때만 칠한다.
  */
-export const SOURCE_EAR = '#00FF00'
-export const EAR_MARK = /fill="(#00ff00|#0f0|lime)"|data-name="귀"/i
+export const MARKS = {
+  귀: /fill="(#00ff00|#0f0|lime)"/i,
+  얼굴: /fill="(#00ffff|#0ff|aqua|cyan)"/i,
+} as const
+
+export type RegionPart = keyof typeof MARKS
+export type RegionSpec = { 부위: RegionPart; 쪽?: '왼' | '오' }
 /** 색을 갈아입지 않는 파츠의 채우기 */
 export const FILL_COLOR = SOURCE_FILL
 
@@ -125,7 +130,13 @@ export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>
  * 몸통 파일에 표시해 둔 귀 영역을 칠한다. 표시가 없는 몸통은 예전처럼
  * 무늬 파일을 쓴다.
  */
-export const REGION_MORPH: Record<number, '귀'> = { 1: '귀' }
+/**
+ * 무늬 하나를 «어느 부위를 칠할지» 로 적는다. 그림 파일이 필요 없다.
+ * 쪽을 적지 않으면 양쪽 다 칠한다. 표시가 없는 몸통은 무늬 파일로 돌아간다.
+ */
+export const REGION_MORPH: Record<number, RegionSpec[]> = {
+  1: [{ 부위: '귀', 쪽: '왼' }, { 부위: '얼굴', 쪽: '오' }],
+}
 
 export const Z_BODY = 2
 export const Z_MORPH = 3
@@ -237,7 +248,7 @@ export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part:
  *    일러스트레이터가 뽑은 id("_몸통", "radial-gradient")가 파일마다 같아서
  *    그대로 두면 그라디언트가 엉뚱한 파츠를 가리킨다.
  */
-export type Paint = { fill: string; line: string; accent?: string; ear?: string }
+export type Paint = { fill: string; line: string; accent?: string; mark?: string }
 
 /**
  * 받아온 것이 정말 SVG 인지.
@@ -251,7 +262,7 @@ export function isSvgText(text: string): boolean {
 
 export function prepareSvg(svg: string, paint: Paint, uid: string): string {
   const { fill, line, accent } = paint
-  const ear = paint.ear ?? fill
+  const mark = paint.mark ?? fill
   return svg
     // 흰색은 #ffffff, #fff, white 어느 표기로 나와도 잡는다
     .replace(/#ffffff\b/gi, fill)
@@ -265,11 +276,10 @@ export function prepareSvg(svg: string, paint: Paint, uid: string): string {
     .replace(/\b(fill|stroke)="magenta"/gi, (_m, a: string) => `${a}="${accent ?? fill}"`)
     .replace(/\b(fill|stroke):\s*magenta\b/gi, (_m, a: string) => `${a}:${accent ?? fill}`)
     .replace(/rgb\(\s*255\s*,\s*0\s*,\s*255\s*\)/gi, accent ?? fill)
-    // 귀 표시색 — 칠할 일이 없으면 몸통 색으로 덮어 없는 것처럼 둔다
-    .replace(/#00ff00\b/gi, ear)
-    .replace(/#0f0\b/gi, ear)
-    .replace(/\b(fill|stroke)="lime"/gi, (_m, a: string) => `${a}="${ear}"`)
-    .replace(/\b(fill|stroke):\s*lime\b/gi, (_m, a: string) => `${a}:${ear}`)
+    // 부위 표시색 — 칠할 일이 없으면 몸통 색으로 덮어 없는 것처럼 둔다
+    .replace(/#00ff00\b|#0f0\b|#00ffff\b|#0ff\b/gi, mark)
+    .replace(/\b(fill|stroke)="(lime|aqua|cyan)"/gi, (_m, a: string) => `${a}="${mark}"`)
+    .replace(/\b(fill|stroke):\s*(lime|aqua|cyan)\b/gi, (_m, a: string) => `${a}:${mark}`)
     .replace(/#888989\b/gi, line)
     .replace(/\bid="([^"]+)"/g, (_m, id: string) => `id="${id}-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, (_m, id: string) => `url(#${id}-${uid})`)

@@ -6,7 +6,7 @@
  */
 
 import {
-  BODY_COLORS, CANVAS, EAR_MARK, REGION_MORPH, SLOTS, Z_BODY, Z_MORPH,
+  BODY_COLORS, CANVAS, MARKS, REGION_MORPH, SLOTS, Z_BODY, Z_MORPH,
   bodyUrl, composeAnchor, fillFor, isSvgText, lineFor, morphUrls, partUrl, prepareSvg, syOf,
   type AnchorTable, type SlotKey,
 } from './parts'
@@ -25,25 +25,32 @@ function innards(svg: string): string {
 
 const C = CANVAS / 2
 
+/** 이 몸통에 그 부위 표시가 실제로 있는가 */
+function split_has(bodyRaw: string | undefined, r: { 부위: keyof typeof MARKS }): boolean {
+  return Boolean(bodyRaw && MARKS[r.부위].test(bodyRaw))
+}
+
 /**
  * 몸통 파일에서 채워진 영역만 골라 무늬를 가둘 테두리로 삼는다.
  *
  * 무늬 한 장을 열두 몸통이 같이 쓰게 하려는 것이다. 넉넉하게 그린 도형을
  * 그 몸통의 실루엣으로 잘라내면, 같은 그림이 몸통마다 제 모양을 얻는다.
  */
-function splitBody(svg: string): { fills: string; ears: string; lines: string } {
+function splitBody(svg: string) {
   const fills: string[] = []
-  const ears: string[] = []
   const lines: string[] = []
+  const marks: Partial<Record<keyof typeof MARKS, string[]>> = {}
   const re = /<(path|polyline|polygon|circle|ellipse|rect|line)\b[^>]*\/>/gi
   let m: RegExpExecArray | null
   while ((m = re.exec(svg))) {
     const tag = m[0]
-    if (/fill="none"/i.test(tag)) lines.push(tag)
-    else if (EAR_MARK.test(tag)) ears.push(tag)
-    else fills.push(tag)
+    if (/fill="none"/i.test(tag)) { lines.push(tag); continue }
+    fills.push(tag)
+    for (const part of Object.keys(MARKS) as (keyof typeof MARKS)[]) {
+      if (MARKS[part].test(tag)) (marks[part] ??= []).push(tag)
+    }
   }
-  return { fills: fills.join(''), ears: ears.join(''), lines: lines.join('') }
+  return { fills: fills.join(''), lines: lines.join(''), marks }
 }
 
 function silhouette(bodySvg: string): string {
@@ -104,19 +111,17 @@ export function composeMoimo(
 
   // 무늬가 있으면 몸통을 면과 선으로 갈라 그 사이에 끼운다.
   // 통째로 얹으면 무늬가 몸통의 안쪽 선까지 덮어 버린다.
-  // 「귀」 처럼 몸통에 표시해 둔 부위를 칠하는 무늬인가
-  const region = REGION_MORPH[genes.morph]
+  // 그림 대신 몸통에 표시해 둔 부위를 칠하는 무늬인가
+  const regions = (REGION_MORPH[genes.morph] ?? []).filter((r) => split_has(bodyRaw, r))
   const split = bodyRaw ? splitBody(bodyRaw) : null
-  const hasEars = Boolean(split?.ears)
 
-  if (split && split.lines && (morphRaw || hasEars)) {
-    // 몸통을 면·귀·선으로 갈라 무늬를 그 사이에 끼운다.
+  if (split && split.lines && (morphRaw || regions.length)) {
+    // 몸통을 면과 선으로 갈라 무늬를 그 사이에 끼운다.
     // 통째로 얹으면 무늬가 몸통의 안쪽 선까지 덮어 버린다.
-    const earColor = region === '귀' && hasEars ? color.accent : color.hex
     pieces.push({ z: Z_BODY, svg: paint(split.fills, Z_BODY) })
 
-    // 부위를 칠하는 무늬라도 그 몸통에 표시가 없으면 무늬 파일로 돌아간다
-    if (morphRaw && !(region && hasEars)) {
+    // 표시가 없는 몸통은 예전처럼 무늬 파일로 돌아간다
+    if (morphRaw && !regions.length) {
       const sil = silhouette(bodyRaw!)
       const inner = innards(paint(morphRaw, Z_MORPH))
       pieces.push({
@@ -127,10 +132,16 @@ export function composeMoimo(
           : inner,
       })
     }
-    // 귀는 머리 위로 올린다. 몸통 파일에서는 머리 아래에 깔려 있을 수 있다
-    if (hasEars) {
-      pieces.push({ z: Z_MORPH + 0.25, svg: prepareSvg(split.ears, { fill: color.hex, line, accent: color.accent, ear: earColor }, `${uid}ear`) })
-    }
+
+    // 칠할 부위를 한 겹 더 얹는다. 몸통 파일에서 머리 아래 깔려 있어도 위로 올라온다
+    regions.forEach((r, i) => {
+      const tags = (split.marks[r.부위] ?? []).join('')
+      if (!tags) return
+      const lit = prepareSvg(tags, { fill: color.hex, line, accent: color.accent, mark: color.accent }, `${uid}r${i}`)
+      const half = r.쪽 === '왼' ? 'half-l' : r.쪽 === '오' ? 'half-r' : ''
+      pieces.push({ z: Z_MORPH + 0.25, svg: half ? `<g clip-path="url(#${half}-${uid})">${lit}</g>` : lit })
+    })
+
     pieces.push({ z: Z_MORPH + 0.5, svg: paint(split.lines, Z_MORPH + 0.5) })
   } else {
     push(Z_BODY, bodyUrl(genes.body), color.hex, flat)
