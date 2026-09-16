@@ -56,35 +56,37 @@ function ItemImage({ id }: { id: ItemId }) {
 }
 
 /**
- * 소품 그림. `src/world/props/` 에 png 를 넣어 두기만 하면 된다 —
- * 파일 이름도 개수도 상관없다. 넣는 대로 마을에 흩뿌려지고,
- * 하나도 없으면 아무것도 안 나온다.
+ * 소품 그림. `public/items/deco1.png` ~ `deco5.png`.
+ * 마을 곳곳에 흩뿌려진다. 없는 파일은 조용히 빠진다 —
+ * 더 그리면 `DECO_COUNT` 만 올리면 된다.
  */
-const PROP_ART: string[] = Object.entries(
-  import.meta.glob('./props/*.{png,webp,svg}', { eager: true, query: '?url', import: 'default' }),
-)
-  .sort(([a], [b]) => a.localeCompare(b))
-  .map(([, url]) => url as string)
+const DECO_COUNT = 5
+const PROP_ART: string[] = Array.from({ length: DECO_COUNT }, (_, i) => `/items/deco${i + 1}.png`)
+
+function Prop({ src, style }: { src: string; style: React.CSSProperties }) {
+  const [ok, setOk] = useState(true)
+  if (!ok) return null
+  return (
+    <img className="prop" src={src} alt="" draggable={false} style={style} onError={() => setOk(false)} />
+  )
+}
 
 /** 모이모 아래에 깔리는 소품들 */
 const PropLayer = memo(function PropLayer() {
-  const list = useMemo(() => {
-    if (!PROP_ART.length) return []
-    return scatterProps().map((p) => ({
+  const list = useMemo(
+    () => scatterProps().map((p) => ({
       ...p,
       src: PROP_ART[Math.min(PROP_ART.length - 1, Math.floor(p.pick * PROP_ART.length))],
-    }))
-  }, [])
+    })),
+    [],
+  )
 
   return (
     <>
       {list.map((p) => (
-        <img
+        <Prop
           key={p.id}
-          className="prop"
           src={p.src}
-          alt=""
-          draggable={false}
           style={{
             left: p.x,
             top: p.y,
