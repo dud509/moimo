@@ -6,7 +6,7 @@
  */
 
 import {
-  BODY_COLORS, CANVAS, SLOTS, Z_BODY, Z_MORPH,
+  BODY_COLORS, CANVAS, EAR_MARK, REGION_MORPH, SLOTS, Z_BODY, Z_MORPH,
   bodyUrl, composeAnchor, fillFor, isSvgText, lineFor, morphUrls, partUrl, prepareSvg, syOf,
   type AnchorTable, type SlotKey,
 } from './parts'
@@ -31,13 +31,19 @@ const C = CANVAS / 2
  * 무늬 한 장을 열두 몸통이 같이 쓰게 하려는 것이다. 넉넉하게 그린 도형을
  * 그 몸통의 실루엣으로 잘라내면, 같은 그림이 몸통마다 제 모양을 얻는다.
  */
-function splitBody(svg: string): { fills: string; lines: string } {
+function splitBody(svg: string): { fills: string; ears: string; lines: string } {
   const fills: string[] = []
+  const ears: string[] = []
   const lines: string[] = []
   const re = /<(path|polyline|polygon|circle|ellipse|rect|line)\b[^>]*\/>/gi
   let m: RegExpExecArray | null
-  while ((m = re.exec(svg))) (/fill="none"/i.test(m[0]) ? lines : fills).push(m[0])
-  return { fills: fills.join(''), lines: lines.join('') }
+  while ((m = re.exec(svg))) {
+    const tag = m[0]
+    if (/fill="none"/i.test(tag)) lines.push(tag)
+    else if (EAR_MARK.test(tag)) ears.push(tag)
+    else fills.push(tag)
+  }
+  return { fills: fills.join(''), ears: ears.join(''), lines: lines.join('') }
 }
 
 function silhouette(bodySvg: string): string {
@@ -98,17 +104,34 @@ export function composeMoimo(
 
   // 무늬가 있으면 몸통을 면과 선으로 갈라 그 사이에 끼운다.
   // 통째로 얹으면 무늬가 몸통의 안쪽 선까지 덮어 버린다.
-  const split = bodyRaw && morphRaw ? splitBody(innards(paint(bodyRaw, Z_BODY))) : null
-  const sil = bodyRaw && morphRaw ? silhouette(bodyRaw) : ''
+  // 「귀」 처럼 몸통에 표시해 둔 부위를 칠하는 무늬인가
+  const region = REGION_MORPH[genes.morph]
+  const split = bodyRaw ? splitBody(bodyRaw) : null
+  const hasEars = Boolean(split?.ears)
 
-  if (split && split.lines && sil) {
-    pieces.push({ z: Z_BODY, svg: split.fills })
-    pieces.push({
-      z: Z_MORPH,
-      svg: `<defs><clipPath id="skin-${uid}">${sil}</clipPath></defs>` +
-           `<g clip-path="url(#skin-${uid})">${innards(paint(morphRaw!, Z_MORPH))}</g>`,
-    })
-    pieces.push({ z: Z_MORPH + 0.5, svg: split.lines })
+  if (split && split.lines && (morphRaw || hasEars)) {
+    // 몸통을 면·귀·선으로 갈라 무늬를 그 사이에 끼운다.
+    // 통째로 얹으면 무늬가 몸통의 안쪽 선까지 덮어 버린다.
+    const earColor = region === '귀' && hasEars ? color.accent : color.hex
+    pieces.push({ z: Z_BODY, svg: paint(split.fills, Z_BODY) })
+
+    // 부위를 칠하는 무늬라도 그 몸통에 표시가 없으면 무늬 파일로 돌아간다
+    if (morphRaw && !(region && hasEars)) {
+      const sil = silhouette(bodyRaw!)
+      const inner = innards(paint(morphRaw, Z_MORPH))
+      pieces.push({
+        z: Z_MORPH,
+        svg: sil
+          ? `<defs><clipPath id="skin-${uid}">${sil}</clipPath></defs>` +
+            `<g clip-path="url(#skin-${uid})">${inner}</g>`
+          : inner,
+      })
+    }
+    // 귀는 머리 위로 올린다. 몸통 파일에서는 머리 아래에 깔려 있을 수 있다
+    if (hasEars) {
+      pieces.push({ z: Z_MORPH + 0.25, svg: prepareSvg(split.ears, { fill: color.hex, line, accent: color.accent, ear: earColor }, `${uid}ear`) })
+    }
+    pieces.push({ z: Z_MORPH + 0.5, svg: paint(split.lines, Z_MORPH + 0.5) })
   } else {
     push(Z_BODY, bodyUrl(genes.body), color.hex, flat)
     if (morphUrl) push(Z_MORPH, morphUrl, color.hex, flat)

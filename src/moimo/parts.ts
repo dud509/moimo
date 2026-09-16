@@ -48,6 +48,17 @@ export const SOURCE_FILL = '#FFFFFF'
  * 화면에서는 몸통 색에 맞는 accent 로 바뀐다. 팔레트에 없는 색이라 헷갈리지 않는다.
  */
 export const SOURCE_ACCENT = '#FF00FF'
+
+/**
+ * 몸통 파일에서 «귀» 로 표시해 둔 색.
+ *
+ * 귀는 몸통마다 자리도 모양도 달라 무늬 한 장으로는 칠할 수 없다. 그래서
+ * 몸통 파일 안에 귀 영역을 형광 초록으로 한 겹 덧대 두고, 그것을 칠한다.
+ * 일러스트레이터는 이 색을 `lime` 으로 적어 내보내기도 한다.
+ * 평소에는 몸통 색으로 칠해 없는 것처럼 둔다.
+ */
+export const SOURCE_EAR = '#00FF00'
+export const EAR_MARK = /fill="(#00ff00|#0f0|lime)"|data-name="귀"/i
 /** 색을 갈아입지 않는 파츠의 채우기 */
 export const FILL_COLOR = SOURCE_FILL
 
@@ -107,6 +118,15 @@ export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>
   isTinted(slot, part) ? bodyHex : FILL_COLOR
 
 /** 몸통 z=2, 무늬 z=3 — 슬롯 사이에 낀다 */
+/**
+ * 그림 파일 없이 몸통에 표시해 둔 부위를 그대로 칠하는 무늬.
+ *
+ * 귀는 몸통마다 자리와 모양이 달라 무늬 한 장으로 덮을 수 없다. 대신
+ * 몸통 파일에 표시해 둔 귀 영역을 칠한다. 표시가 없는 몸통은 예전처럼
+ * 무늬 파일을 쓴다.
+ */
+export const REGION_MORPH: Record<number, '귀'> = { 1: '귀' }
+
 export const Z_BODY = 2
 export const Z_MORPH = 3
 
@@ -217,7 +237,7 @@ export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part:
  *    일러스트레이터가 뽑은 id("_몸통", "radial-gradient")가 파일마다 같아서
  *    그대로 두면 그라디언트가 엉뚱한 파츠를 가리킨다.
  */
-export type Paint = { fill: string; line: string; accent?: string }
+export type Paint = { fill: string; line: string; accent?: string; ear?: string }
 
 /**
  * 받아온 것이 정말 SVG 인지.
@@ -231,6 +251,7 @@ export function isSvgText(text: string): boolean {
 
 export function prepareSvg(svg: string, paint: Paint, uid: string): string {
   const { fill, line, accent } = paint
+  const ear = paint.ear ?? fill
   return svg
     // 흰색은 #ffffff, #fff, white 어느 표기로 나와도 잡는다
     .replace(/#ffffff\b/gi, fill)
@@ -244,6 +265,11 @@ export function prepareSvg(svg: string, paint: Paint, uid: string): string {
     .replace(/\b(fill|stroke)="magenta"/gi, (_m, a: string) => `${a}="${accent ?? fill}"`)
     .replace(/\b(fill|stroke):\s*magenta\b/gi, (_m, a: string) => `${a}:${accent ?? fill}`)
     .replace(/rgb\(\s*255\s*,\s*0\s*,\s*255\s*\)/gi, accent ?? fill)
+    // 귀 표시색 — 칠할 일이 없으면 몸통 색으로 덮어 없는 것처럼 둔다
+    .replace(/#00ff00\b/gi, ear)
+    .replace(/#0f0\b/gi, ear)
+    .replace(/\b(fill|stroke)="lime"/gi, (_m, a: string) => `${a}="${ear}"`)
+    .replace(/\b(fill|stroke):\s*lime\b/gi, (_m, a: string) => `${a}:${ear}`)
     .replace(/#888989\b/gi, line)
     .replace(/\bid="([^"]+)"/g, (_m, id: string) => `id="${id}-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, (_m, id: string) => `url(#${id}-${uid})`)
