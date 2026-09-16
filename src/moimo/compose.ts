@@ -6,7 +6,7 @@
  */
 
 import {
-  BODY_COLORS, CANVAS, MARKS, MORPH_TAIL, REGION_MORPH, SLOTS, Z_BODY, Z_MORPH,
+  BODY_COLORS, CANVAS, MARKS, MORPH_BLUR, MORPH_TAIL, REGION_MORPH, SLOTS, Z_BODY, Z_MORPH, edgeFor,
   bodyUrl, composeAnchor, fillFor, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor,
   type AnchorTable, type SlotKey,
 } from './parts'
@@ -27,8 +27,10 @@ function innards(svg: string): string {
 const C = CANVAS / 2
 
 /** 무늬 덩어리를 두르는 선 */
-const EDGE = (line: string) =>
-  `stroke="${line}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"`
+const edge = (line: string, how: 'line' | 'soft' | 'flat') =>
+  how === 'line'
+    ? `stroke="${line}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"`
+    : ''
 
 /** 이 몸통에 그 부위 표시가 실제로 있는가 */
 function split_has(bodyRaw: string | undefined, r: { 부위: keyof typeof MARKS }): boolean {
@@ -100,6 +102,7 @@ export function bodyPieces(opts: {
 }): { z: number; svg: string }[] {
   const { bodyRaw, morphRaw, morph, color, uid } = opts
   const { fill, line, accent, mark } = toneFor(color, morph)
+  const howEdge = edgeFor(color)
   const out: { z: number; svg: string }[] = []
   const paint = (raw: string, z: number) =>
     prepareSvg(raw, { fill, line, accent }, `${uid}${z}`)
@@ -126,13 +129,31 @@ export function bodyPieces(opts: {
     )
     // 무늬 덩어리에 선을 두른다. 색만 바뀌면 얼룩처럼 보이고,
     // 테두리가 있어야 의도한 모양으로 읽힌다
-    out.push({
-      z: Z_MORPH,
-      svg: sil
-        ? `<defs><clipPath id="skin-${uid}">${sil}</clipPath></defs>` +
-          `<g clip-path="url(#skin-${uid})" ${EDGE(line)}>${inner}</g>`
-        : `<g ${EDGE(line)}>${inner}</g>`,
-    })
+    if (howEdge === 'soft' && sil) {
+      // 무늬를 흐린 가리개로 삼아 가장자리가 번지게 한다.
+      // 색을 실루엣 가득 깔고 그 가리개로 도려내는 식이다
+      const veil = innards(prepareSvg(morphRaw, { fill: '#FFFFFF', line: '#FFFFFF', accent: '#FFFFFF', morph: '#FFFFFF' }, `${uid}v`))
+      out.push({
+        z: Z_MORPH,
+        svg:
+          `<defs>` +
+          `<clipPath id="skin-${uid}">${sil}</clipPath>` +
+          `<filter id="blur-${uid}" x="-25%" y="-25%" width="150%" height="150%">` +
+          `<feGaussianBlur stdDeviation="${MORPH_BLUR}"/></filter>` +
+          `<mask id="veil-${uid}"><g filter="url(#blur-${uid})">${veil}</g></mask>` +
+          `</defs>` +
+          `<g clip-path="url(#skin-${uid})" mask="url(#veil-${uid})">` +
+          `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="${mark}"/></g>`,
+      })
+    } else {
+      out.push({
+        z: Z_MORPH,
+        svg: sil
+          ? `<defs><clipPath id="skin-${uid}">${sil}</clipPath></defs>` +
+            `<g clip-path="url(#skin-${uid})" ${edge(line, howEdge)}>${inner}</g>`
+          : `<g ${edge(line, howEdge)}>${inner}</g>`,
+      })
+    }
   }
 
   // 칠할 부위를 한 겹 더 얹는다. 몸통 파일에서 머리 아래 깔려 있어도 위로 올라온다
@@ -140,13 +161,13 @@ export function bodyPieces(opts: {
     const tags = (split.marks[r.부위] ?? []).join('')
     if (!tags) return
     const lit = prepareSvg(tags, { fill, line, accent, ear: mark }, `${uid}r${i}`)
-    if (!r.쪽) { out.push({ z: Z_MORPH + 0.25, svg: `<g ${EDGE(line)}>${lit}</g>` }); return }
+    if (!r.쪽) { out.push({ z: Z_MORPH + 0.25, svg: `<g ${edge(line, howEdge)}>${lit}</g>` }); return }
     const id = `${r.쪽 === '왼' ? 'l' : 'r'}${i}-${uid}`
     const x = r.쪽 === '왼' ? 0 : C
     out.push({
       z: Z_MORPH + 0.25,
       svg: `<defs><clipPath id="${id}"><rect x="${x}" y="0" width="${C}" height="${CANVAS}"/></clipPath></defs>` +
-           `<g clip-path="url(#${id})" ${EDGE(line)}>${lit}</g>`,
+           `<g clip-path="url(#${id})" ${edge(line, howEdge)}>${lit}</g>`,
     })
   })
 

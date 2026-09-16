@@ -24,7 +24,7 @@ export const BODY_COLORS = [
   { jamo: 'ㅣ받침', name: '파랑', hex: '#E1EEF4', accent: '#FFFFFF' },
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF' },
   { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF' },
-  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79' },
+  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79', edge: 'line' as const },
   { jamo: 'ㅣ', name: '민트', hex: '#E4F1EA', accent: '#FFFFFF' },
   { jamo: '나머지', name: '연보라', hex: '#E8E3F3', accent: '#FFFFFF' },
 ] as const
@@ -172,6 +172,25 @@ export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>
  * 몸통 색으로 남아 동떨어져 보인다. 이 무늬일 때는 꼬리도 함께 칠한다.
  */
 export const MORPH_TAIL = new Set<number>([1, 2])
+
+/**
+ * 무늬 가장자리를 어떻게 마감할지.
+ *
+ * `line` 은 몸통과 같은 선으로 테두리를 두른다. `soft` 는 가장자리를 흐려
+ * 에어브러시처럼 번지게 한다. `flat` 은 아무것도 하지 않는다.
+ */
+export const MORPH_EDGE: 'line' | 'soft' | 'flat' = 'soft'
+/** `soft` 일 때 번지는 정도 */
+export const MORPH_BLUR = 20
+
+/**
+ * 이 몸통 색에서 무늬 가장자리를 어떻게 마감할지.
+ *
+ * 어두운 색은 번지게 두면 흰 바탕으로 흘러들어 때 탄 것처럼 보인다.
+ * 그 줄에 `edge: 'line'` 을 붙이면 그 색만 선으로 두른다.
+ */
+export const edgeFor = (c: BodyColor): 'line' | 'soft' | 'flat' =>
+  'edge' in c ? (c as { edge: 'line' }).edge : MORPH_EDGE
 
 export const REGION_MORPH: Record<number, RegionSpec[]> = {
   1: [{ 부위: '귀' }],                 // 귀 양쪽 + 무늬 파일
