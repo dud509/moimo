@@ -21,12 +21,12 @@ export const LINE_COLOR = '#38312A'
  *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
  */
 export const BODY_COLORS = [
-  { jamo: 'ㅣ받침', name: '파랑', hex: '#E1EEF4', accent: '#FFFFFF', mark: '#A9CEE2' },
-  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF', mark: '#F0DDA2' },
-  { jamo: 'ㅓ', name: '분홍', hex: '#fff0f4', accent: '#FFFFFF', mark: '#F7C6D5' },
-  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79', mark: '#6B584B' },
-  { jamo: 'ㅣ', name: '흰색', hex: '#FFFFFF', accent: '#fff0f0', mark: '#C6E2D8' },
-  { jamo: '나머지', name: '연보라', hex: '#E8E3F3', accent: '#FFFFFF', mark: '#C3B7DF' },
+  { jamo: 'ㅣ받침', name: '파랑', hex: '#A9CEE2', accent: '#FFFFFF' },
+  { jamo: 'ㅏ', name: '노랑', hex: '#F0DDA2', accent: '#FFFFFF' },
+  { jamo: 'ㅓ', name: '분홍', hex: '#F7C6D5', accent: '#FFFFFF' },
+  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79' },
+  { jamo: 'ㅣ', name: '민트', hex: '#C6E2D8', accent: '#FFFFFF' },
+  { jamo: '나머지', name: '연보라', hex: '#C3B7DF', accent: '#FFFFFF' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
@@ -37,10 +37,10 @@ export const lineFor = (c: BodyColor): string => ('line' in c ? c.line : LINE_CO
 /**
  * 이 몸통 색일 때 무늬와 귀를 칠할 색.
  *
- * 따로 정하지 않으면 강조색을 쓴다. 몸통 색마다 다르게 두고 싶으면
- * 그 줄에 `mark: '#...'` 를 붙인다.
+ * 이름이 정한 색 그대로다. 몸 전체를 칠할 때와 무늬로 갈 때가 같은 색이라야
+ * 「파랑」이 두 가지 파랑으로 갈라지지 않는다.
  */
-export const markFor = (c: BodyColor): string => c.mark
+export const markFor = (c: BodyColor): string => c.hex
 
 /** 무늬가 없을 때만 쓰는 흰 바탕과 그 선·강조색 */
 const PLAIN_WHITE = '#FFFFFF'

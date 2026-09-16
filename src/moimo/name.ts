@@ -88,7 +88,7 @@ const BODY_SPECIAL: Record<string, number> = { 김: 1, 이: 2, 박: 3 }
  * 대신 ㅗ 와 ㅜ 를 한 통에 넣어 색 수는 여섯 그대로 둔다.
  */
 function colorOf(jung: string, jong: string): number {
-  if (jung === 'ㅣ') return jong ? 1 : 5   // 받침 있으면 파랑(김 계열), 없으면 흰색(이 계열)
+  if (jung === 'ㅣ') return jong ? 1 : 5   // 받침 있으면 파랑(김 계열), 없으면 민트(이 계열)
   if (jung === 'ㅏ') return 2
   if (jung === 'ㅓ') return 3
   if (jung === 'ㅗ' || jung === 'ㅜ') return 4
@@ -210,7 +210,7 @@ export const encodeGenes = (g: MoimoGenes) =>
 // 한 색에 쏠린 목록을 쓰면 마을 전체가 그 색으로 물든다.
 const SURNAMES = [
   '김', '임', '신', '심', '민', '진',   // 파랑   ㅣ + 받침
-  '이', '지', '기',                     // 흰색   ㅣ
+  '이', '지', '기',                     // 민트   ㅣ
   '박', '강', '장', '한', '남', '안',   // 노랑   ㅏ
   '정', '서', '전', '허', '성',         // 분홍   ㅓ
   '조', '오', '송', '문',               // 진갈색 ㅗ ㅜ
