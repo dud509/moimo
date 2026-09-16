@@ -56,12 +56,12 @@ function ItemImage({ id }: { id: ItemId }) {
 }
 
 /**
- * 소품 그림. `public/items/deco1.png` ~ `deco5.png`.
+ * 소품 그림. `public/items/deco1.svg` ~ `deco5.svg`.
  * 마을 곳곳에 흩뿌려진다. 없는 파일은 조용히 빠진다 —
  * 더 그리면 `DECO_COUNT` 만 올리면 된다.
  */
 const DECO_COUNT = 5
-const PROP_ART: string[] = Array.from({ length: DECO_COUNT }, (_, i) => `/items/deco${i + 1}.png`)
+const PROP_ART: string[] = Array.from({ length: DECO_COUNT }, (_, i) => `/items/deco${i + 1}.svg`)
 
 function Prop({ src, style }: { src: string; style: React.CSSProperties }) {
   const [ok, setOk] = useState(true)

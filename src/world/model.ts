@@ -166,8 +166,8 @@ export const PROP_COUNT = 130
  * - 바닥층: 크고 옅게. 빈 땅을 메운다
  * - 사이층: 작고 또렷하게. 모이모 사이에 끼어든다
  */
-const PROP_BACK = { min: 150, max: 260, tone: 0.3 }
-const PROP_FRONT = { min: 46, max: 104, tone: 0.9 }
+const PROP_BACK = { min: 160, max: 280, tone: 0.5 }
+const PROP_FRONT = { min: 56, max: 118, tone: 1 }
 /** 이 비율만큼은 바닥층으로 간다 */
 const PROP_BACK_SHARE = 0.34
 
@@ -190,7 +190,7 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
     if (x < 90 || x > WORLD.w - 90 || y < 110 || y > WORLD.h - 90) return false
     for (const it of ITEMS) {
       const g = itemGuard(it)
-      if (Math.abs(x - g.cx) < g.hw + w / 2 && Math.abs(y - g.cy) < g.hh + w / 2) return false
+      if (Math.abs(x - g.cx) < g.hw + w * 0.75 && Math.abs(y - g.cy) < g.hh + w * 0.75) return false
     }
     // 서로 반쯤은 떨어져 있게. 붙어 있으면 한 덩어리로 보인다
     for (const p of out) if (Math.hypot(x - p.x, y - p.y) < (w + p.w) * 0.42) return false
