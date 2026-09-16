@@ -120,10 +120,11 @@ export function composeMoimo(
     // 통째로 얹으면 무늬가 몸통의 안쪽 선까지 덮어 버린다.
     pieces.push({ z: Z_BODY, svg: paint(split.fills, Z_BODY) })
 
-    // 표시가 없는 몸통은 예전처럼 무늬 파일로 돌아간다
-    if (morphRaw && !regions.length) {
+    // 무늬 파일은 표시와 별개로 늘 함께 그린다. 무늬 파일 안에서는
+    // 마젠타와 형광 초록이 모두 강조색이 된다
+    if (morphRaw) {
       const sil = silhouette(bodyRaw!)
-      const inner = innards(paint(morphRaw, Z_MORPH))
+      const inner = innards(prepareSvg(morphRaw, { fill: color.hex, line, accent: color.accent, mark: color.accent }, `${uid}${Z_MORPH}`))
       pieces.push({
         z: Z_MORPH,
         svg: sil
