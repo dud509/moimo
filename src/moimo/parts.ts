@@ -21,12 +21,12 @@ export const LINE_COLOR = '#38312A'
  *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
  */
 export const BODY_COLORS = [
-  { jamo: 'ㅣ받침', name: '파랑', hex: '#A9CEE2', accent: '#FFFFFF' },
-  { jamo: 'ㅏ', name: '노랑', hex: '#F0DDA2', accent: '#FFFFFF' },
-  { jamo: 'ㅓ', name: '분홍', hex: '#F7C6D5', accent: '#FFFFFF' },
+  { jamo: 'ㅣ받침', name: '파랑', hex: '#E1EEF4', accent: '#FFFFFF' },
+  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF' },
+  { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF' },
   { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79' },
-  { jamo: 'ㅣ', name: '민트', hex: '#C6E2D8', accent: '#FFFFFF' },
-  { jamo: '나머지', name: '연보라', hex: '#C3B7DF', accent: '#FFFFFF' },
+  { jamo: 'ㅣ', name: '민트', hex: '#E4F1EA', accent: '#FFFFFF' },
+  { jamo: '나머지', name: '연보라', hex: '#E8E3F3', accent: '#FFFFFF' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
