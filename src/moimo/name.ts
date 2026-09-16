@@ -79,7 +79,21 @@ const BODY_BY_CHO: Record<string, number> = {
 const BODY_SPECIAL: Record<string, number> = { 김: 1, 이: 2, 박: 3 }
 
 /** 몸통 색깔 — 성 중성 */
-const COLOR_BY_JUNG: Record<string, number> = { ㅣ: 1, ㅏ: 2, ㅓ: 3, ㅗ: 4, ㅜ: 5 }
+/**
+ * 몸통 색 — 성의 중성.
+ *
+ * 다만 ㅣ 하나에 김(21.5%)과 이(14.7%)가 같이 들어 있어 성씨의 44% 가
+ * 한 색으로 몰렸다. ㅣ 만 받침 유무로 한 번 더 가른다. 김은 받침이 있고
+ * 이는 없으므로 둘이 갈라지고, 가장 큰 통이 44% 에서 28% 로 내려간다.
+ * 대신 ㅗ 와 ㅜ 를 한 통에 넣어 색 수는 여섯 그대로 둔다.
+ */
+function colorOf(jung: string, jong: string): number {
+  if (jung === 'ㅣ') return jong ? 1 : 5   // 받침 있으면 파랑(김 계열), 없으면 흰색(이 계열)
+  if (jung === 'ㅏ') return 2
+  if (jung === 'ㅓ') return 3
+  if (jung === 'ㅗ' || jung === 'ㅜ') return 4
+  return 6
+}
 
 /** 몸통 무늬 — 성 종성. 받침 없으면 무늬 없음 */
 const MORPH_BY_JONG: Record<string, number> = { '': 0, ㄱ: 1, ㄴ: 2, ㅁ: 3, ㅇ: 4 }
@@ -105,7 +119,7 @@ const JONG_6: Record<string, number> = { ㄱ: 1, ㄴ: 2, ㅇ: 3, ㅁ: 4, '': 5 }
 export function genesFromParts(p: NameParts): MoimoGenes {
   return {
     body: BODY_SPECIAL[p.surname] ?? pick(BODY_BY_CHO, p.s.cho, 12),
-    color: pick(COLOR_BY_JUNG, p.s.jung, 6),
+    color: colorOf(p.s.jung, p.s.jong),
     morph: pick(MORPH_BY_JONG, p.s.jong, 5),
     eye: pick(CONSONANT_11, p.n1.cho, 11),
     mouth: pick(VOWEL_9, p.n1.jung, 9),
@@ -158,7 +172,9 @@ export function explain(p: NameParts): Reason[] {
   const g = genesFromParts(p)
   return READOUT.map((r) => {
     const syl = p[r.src]
-    const jamo = syl[JAMO_KEY[r.place]]
+    let jamo: string = syl[JAMO_KEY[r.place]]
+    // 색은 ㅣ 일 때만 받침까지 보고 정해지므로 그대로 읽어 준다
+    if (r.slot === 'color' && jamo === 'ㅣ') jamo = p.s.jong ? 'ㅣ · 받침 있음' : 'ㅣ · 받침 없음'
     return {
       slot: r.slot,
       label: r.label,
@@ -190,12 +206,15 @@ export const encodeGenes = (g: MoimoGenes) =>
 /* 이웃 이름 — 마을을 비어 보이지 않게 채울 때만 쓴다                    */
 /* ------------------------------------------------------------------ */
 
-// 몸통 색은 성의 중성이 정하므로, 여섯 색이 고루 나오도록 고른다.
-// (ㅜ = 흰색인 성씨가 없으면 흰 모이모는 영영 안 나온다)
+// 몸통 색은 성이 정하므로, 여섯 색이 고루 나오도록 성씨를 고른다.
+// 한 색에 쏠린 목록을 쓰면 마을 전체가 그 색으로 물든다.
 const SURNAMES = [
-  '김', '이', '박', '최', '정', '강', '조', '윤', '장', '임',
-  '한', '오', '서', '신', '권', '황', '안', '송', '류', '전',
-  '문', '우', '구', '추', '주', '남', '노', '고', '배', '허',
+  '김', '임', '신', '심', '민', '진',   // 파랑   ㅣ + 받침
+  '이', '지', '기',                     // 흰색   ㅣ
+  '박', '강', '장', '한', '남', '안',   // 노랑   ㅏ
+  '정', '서', '전', '허', '성',         // 분홍   ㅓ
+  '조', '오', '송', '문',               // 진갈색 ㅗ ㅜ
+  '최', '윤', '권', '황', '배', '유',   // 연보라 나머지
 ]
 const GIVEN_1 = ['민', '서', '지', '하', '예', '수', '준', '유', '도', '시', '주', '건', '은', '채', '연', '재', '다', '가', '나', '소']
 const GIVEN_2 = ['준', '연', '우', '윤', '아', '진', '현', '원', '빈', '경', '호', '람', '온', '영', '희', '린', '겸', '율', '후', '솔']
