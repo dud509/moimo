@@ -4,7 +4,7 @@ import {
 import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { ItemArt } from './Items'
-import { ITEMS, WORLD, CENTER, scatterProps, type ItemId, type Resident } from './model'
+import { ITEMS, WORLD, CENTER, PROPS, type ItemId, type Resident } from './model'
 
 export type Camera = { tx: number; ty: number; scale: number }
 export type WorldHandle = {
@@ -63,42 +63,26 @@ function ItemImage({ id }: { id: ItemId }) {
 const DECO_COUNT = 5
 const PROP_ART: string[] = Array.from({ length: DECO_COUNT }, (_, i) => `/items/deco${i + 1}.svg`)
 
-function Prop({ src, style }: { src: string; style: React.CSSProperties }) {
+function Prop({ prop }: { prop: (typeof PROPS)[number] }) {
   const [ok, setOk] = useState(true)
   if (!ok) return null
+  const src = PROP_ART[Math.min(PROP_ART.length - 1, Math.floor(prop.pick * PROP_ART.length))]
   return (
-    <img className="prop" src={src} alt="" draggable={false} style={style} onError={() => setOk(false)} />
+    <img
+      className="prop"
+      src={src}
+      alt=""
+      draggable={false}
+      onError={() => setOk(false)}
+      style={{
+        left: prop.x,
+        top: prop.y,
+        width: prop.w,
+        transform: `translate(-50%, -50%) rotate(${prop.rot.toFixed(1)}deg) scaleX(${prop.flip ? -1 : 1})`,
+      }}
+    />
   )
 }
-
-/** 모이모 아래에 깔리는 소품들 */
-const PropLayer = memo(function PropLayer() {
-  const list = useMemo(
-    () => scatterProps().map((p) => ({
-      ...p,
-      src: PROP_ART[Math.min(PROP_ART.length - 1, Math.floor(p.pick * PROP_ART.length))],
-    })),
-    [],
-  )
-
-  return (
-    <>
-      {list.map((p) => (
-        <Prop
-          key={p.id}
-          src={p.src}
-          style={{
-            left: p.x,
-            top: p.y,
-            width: p.w,
-            opacity: p.tone,
-            transform: `translate(-50%, -50%) rotate(${p.rot.toFixed(1)}deg) scaleX(${p.flip ? -1 : 1})`,
-          }}
-        />
-      ))}
-    </>
-  )
-})
 
 /* ------------------------------------------------------------------ */
 
@@ -275,7 +259,17 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     if (drag.current?.id === e.pointerId) drag.current = null
   }
 
-  const sorted = useMemo(() => [...residents].sort((a, b) => a.y - b.y), [residents])
+  /**
+   * 소품과 모이모를 같은 위계로 세운다.
+   * 발치가 위에 있는 것부터 그려서 앞뒤가 자연스럽게 겹쳐 보인다.
+   */
+  const stage = useMemo(() => {
+    const rows: ({ foot: number } & ({ kind: 'moimo'; r: Resident } | { kind: 'prop'; p: (typeof PROPS)[number] }))[] = [
+      ...residents.map((r) => ({ foot: r.y, kind: 'moimo' as const, r })),
+      ...PROPS.map((p) => ({ foot: p.y + p.w / 2, kind: 'prop' as const, p })),
+    ]
+    return rows.sort((a, b) => a.foot - b.foot)
+  }, [residents])
 
 
   return (
@@ -290,7 +284,6 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     >
       <div ref={worldRef} className={`world${glide ? ' glide' : ''}`} style={{ width: WORLD.w, height: WORLD.h }}>
         <Ground />
-        <PropLayer />
 
         {ITEMS.map((it) => (
           <button
@@ -307,7 +300,9 @@ export const World = forwardRef<WorldHandle, Props>(function World(
           </button>
         ))}
 
-        {sorted.map((r) => {
+        {stage.map((s) => {
+          if (s.kind === 'prop') return <Prop key={s.p.id} prop={s.p} />
+          const r = s.r
           const dim = hits ? !hits.has(r.id) : false
           return (
             <button

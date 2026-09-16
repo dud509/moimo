@@ -5,14 +5,14 @@ import { genesFromName, randomKoreanName, splitName, type MoimoGenes } from '../
  * ================================================================== */
 
 /** 13인치(1440×900) 화면에 심어둘 이웃 수. 화면이 넓으면 그만큼 더 심는다 */
-export const SEED_COUNT = 90
+export const SEED_COUNT = 230
 
 /**
  * 한 화면에 둘 수 있는 최대 인원.
  * 넘으면 심어둔 이웃부터 조용히 자리를 비켜준다 —
  * 사람이 만든 모이모는 끝까지 남는다.
  */
-export const MAX_RESIDENTS = 260
+export const MAX_RESIDENTS = 560
 
 /* ================================================================== */
 
@@ -67,8 +67,8 @@ const GOLDEN = Math.PI * (3 - Math.sqrt(5))
 
 /** 모이모가 화면에 놓이는 크기. 겹침을 따질 때 쓴다 */
 export const MOIMO_W = 104
-/** 서로 3분의 1 넘게 겹치지 않도록 둘 사이에 두는 거리 */
-export const MIN_GAP = Math.ceil(MOIMO_W * (2 / 3))
+/** 서로 아예 겹치지 않도록 둘 사이에 두는 거리 */
+export const MIN_GAP = MOIMO_W
 
 /**
  * 오브제가 화면에서 차지하는 네모.
@@ -114,26 +114,33 @@ export function spotFor(
       const g = itemGuard(it)
       if (Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2) return false
     }
-    for (const t of taken) if (Math.hypot(x - t.x, y - t.y) < gap) return false
+    // 소품은 같은 바닥에 나란히 놓이므로 스쳐도 된다. 얼굴만 가리지 않게 비켜 준다
+    for (const p of PROPS) if (Math.abs(x - p.x) < 44 && Math.abs(by - p.y) < 44) return false
+    // 모이모끼리는 아예 겹치지 않는다. 가운데 거리로 재면 모서리끼리 물려서 네모로 잰다
+    for (const t of taken) if (Math.abs(x - t.x) < gap && Math.abs(y - t.y) < gap) return false
     return true
   }
 
-  for (let attempt = 0; attempt < 220; attempt++) {
+  for (let attempt = 0; attempt < 500; attempt++) {
     const k = n + attempt * 0.41
-    const r = 56 * Math.sqrt(k + 3)
+    const r = 52 * Math.sqrt(k + 3)
     const a = k * GOLDEN + (attempt ? rnd() * 0.7 : 0)
     const x = CENTER.x + Math.cos(a) * r * 1.34 + (rnd() - 0.5) * 34
     const y = CENTER.y + Math.sin(a) * r * 0.92 + (rnd() - 0.5) * 26
     if (free(x, y, MIN_GAP)) return { x, y }
   }
 
-  // 나선으로 못 찾았으면 아무 데나 던져 보되, 규칙은 그대로 지킨다.
-  // 그래도 안 되면 이웃 사이 거리만 조금씩 좁힌다. 오브제는 끝까지 비켜 간다
-  for (let gap = MIN_GAP; gap >= 24; gap -= 8) {
-    for (let i = 0; i < 400; i++) {
-      const x = 180 + rnd() * (WORLD.w - 360)
-      const y = 220 + rnd() * (WORLD.h - 400)
-      if (free(x, y, gap)) return { x, y }
+  // 나선으로 못 찾았으면 아무 데나 던져 보되, 규칙은 그대로 지킨다
+  for (let i = 0; i < 1200; i++) {
+    const x = 180 + rnd() * (WORLD.w - 360)
+    const y = 220 + rnd() * (WORLD.h - 400)
+    if (free(x, y, MIN_GAP)) return { x, y }
+  }
+  // 그래도 못 찾았으면 마을을 격자로 훑는다. 빈칸이 있으면 반드시 걸린다
+  const step = MOIMO_W / 4
+  for (let y = WORLD.h - 120; y > 140; y -= step) {
+    for (let x = 130; x < WORLD.w - 130; x += step) {
+      if (free(x, y, MIN_GAP)) return { x, y }
     }
   }
   return { x: 200, y: WORLD.h - 160 }
@@ -152,8 +159,6 @@ export type Prop = {
   /** 기울기(도) */
   rot: number
   flip: boolean
-  /** 진하기 — 큰 것은 옅게 깔리고 작은 것은 또렷하다 */
-  tone: number
   /** 어떤 그림을 쓸지 고르는 0~1 사이 숫자. 그림 수가 달라져도 자리는 그대로다 */
   pick: number
 }
@@ -162,21 +167,19 @@ export type Prop = {
 export const PROP_COUNT = 130
 
 /**
- * 소품은 두 층으로 깔린다.
- * - 바닥층: 크고 옅게. 빈 땅을 메운다
- * - 사이층: 작고 또렷하게. 모이모 사이에 끼어든다
+ * 소품 크기. 모이모와 같은 위계로 서므로 비슷한 덩치다 —
+ * 옅어 보이는 것은 그림의 외곽선 색이 하는 일이지 진하기로 누르지 않는다.
  */
-const PROP_BACK = { min: 160, max: 280, tone: 0.5 }
-const PROP_FRONT = { min: 56, max: 118, tone: 1 }
-/** 이 비율만큼은 바닥층으로 간다 */
-const PROP_BACK_SHARE = 0.34
+const PROP_MIN = 64
+const PROP_MAX = 132
+/** 기울여 놓으면 네모가 그만큼 커진다. 자리를 잴 때 얹어 준다 */
+const ROT_PAD = 1.2
 
 /**
  * 소품을 흩뿌린다.
  *
- * 오브제는 끝까지 비켜 가고, 소품끼리도 겹쳐 뭉치지 않는다.
- * 모이모와는 겹쳐도 된다 — 소품은 모이모 아래에 깔리니까.
- * 다만 마을 한가운데는 모이모가 빽빽해서 어차피 안 보이므로 조금 덜 둔다.
+ * 오브제도 소품끼리도 비켜 간다. 모이모는 이 자리를 피해서 선다 —
+ * 소품과 모이모는 같은 바닥에 나란히 놓이지 겹쳐 쌓이지 않는다.
  */
 export function scatterProps(count = PROP_COUNT): Prop[] {
   let s = 19980423
@@ -192,35 +195,35 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
       const g = itemGuard(it)
       if (Math.abs(x - g.cx) < g.hw + w * 0.75 && Math.abs(y - g.cy) < g.hh + w * 0.75) return false
     }
-    // 서로 반쯤은 떨어져 있게. 붙어 있으면 한 덩어리로 보인다
-    for (const p of out) if (Math.hypot(x - p.x, y - p.y) < (w + p.w) * 0.42) return false
+    // 소품끼리도 네모로 재서 붙지 않게 한다
+    for (const p of out) {
+      const d = (w + p.w) * ROT_PAD / 2
+      if (Math.abs(x - p.x) < d && Math.abs(y - p.y) < d) return false
+    }
     return true
   }
 
   for (let i = 0; i < count; i++) {
-    const back = rnd() < PROP_BACK_SHARE
-    const k = back ? PROP_BACK : PROP_FRONT
-    const w = Math.round(k.min + rnd() * (k.max - k.min))
+    const w = Math.round(PROP_MIN + rnd() * (PROP_MAX - PROP_MIN))
     for (let attempt = 0; attempt < 90; attempt++) {
       const x = 90 + rnd() * (WORLD.w - 180)
       const y = 110 + rnd() * (WORLD.h - 200)
-      // 나선 한가운데는 모이모가 덮어 버리니 성기게
+      // 한가운데는 모이모가 먼저 차지하는 자리라 조금 비워 준다
       const core = Math.hypot((x - CENTER.x) / 1.34, (y - CENTER.y) / 0.92)
-      if (core < 420 && rnd() < 0.55) continue
+      if (core < 300 && rnd() < 0.5) continue
       if (!free(x, y, w)) continue
-      out.push({
-        id: `prop-${i}`,
-        x, y, w,
-        rot: (rnd() - 0.5) * 24,
-        flip: rnd() < 0.5,
-        tone: k.tone * (0.82 + rnd() * 0.18),
-        pick: rnd(),
-      })
+      out.push({ id: `prop-${i}`, x, y, w, rot: (rnd() - 0.5) * 24, flip: rnd() < 0.5, pick: rnd() })
       break
     }
   }
   return out
 }
+
+/**
+ * 마을에 깔린 소품. 한 번 정해지면 변하지 않는다 —
+ * 모이모는 이 자리를 보고 비켜서 선다.
+ */
+export const PROPS: Prop[] = scatterProps()
 
 export function makeResident(
   genes: MoimoGenes, name: string, n: number, rnd: () => number, mine: boolean, note?: string,
