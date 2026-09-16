@@ -34,6 +34,14 @@ export type BodyColor = (typeof BODY_COLORS)[number]
 /** 이 몸통 색일 때 쓸 선 색 */
 export const lineFor = (c: BodyColor): string => ('line' in c ? c.line : LINE_COLOR)
 
+/**
+ * 이 몸통 색일 때 무늬와 귀를 칠할 색.
+ *
+ * 따로 정하지 않으면 강조색을 쓴다. 몸통 색마다 다르게 두고 싶으면
+ * 그 줄에 `mark: '#...'` 를 붙인다.
+ */
+export const markFor = (c: BodyColor): string => ('mark' in c ? (c as { mark: string }).mark : c.accent)
+
 /* ================================================================== *
  *  아래는 파츠 원본 파일에 들어 있는 값 — 에셋을 다시 뽑지 않는 한 그대로  *
  * ================================================================== */
@@ -59,8 +67,10 @@ export const SOURCE_ACCENT = '#FF00FF'
  */
 export const MARKS = {
   귀: /fill="(#00ff00|#0f0|lime)"/i,
-  몸: /fill="(#00ffff|#0ff|aqua|cyan)"/i,
 } as const
+
+/** 무늬 파일에서 «칠할 자리» 로 표시해 둔 색 */
+export const MORPH_MARK = /#00ffff\b|#0ff\b|\b(fill|stroke)="(aqua|cyan)"/i
 
 export type RegionPart = keyof typeof MARKS
 export type RegionSpec = { 부위: RegionPart; 쪽?: '왼' | '오' }
@@ -254,7 +264,7 @@ export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part:
  *    일러스트레이터가 뽑은 id("_몸통", "radial-gradient")가 파일마다 같아서
  *    그대로 두면 그라디언트가 엉뚱한 파츠를 가리킨다.
  */
-export type Paint = { fill: string; line: string; accent?: string; mark?: string }
+export type Paint = { fill: string; line: string; accent?: string; ear?: string; morph?: string }
 
 /**
  * 받아온 것이 정말 SVG 인지.
@@ -268,7 +278,8 @@ export function isSvgText(text: string): boolean {
 
 export function prepareSvg(svg: string, paint: Paint, uid: string): string {
   const { fill, line, accent } = paint
-  const mark = paint.mark ?? fill
+  const ear = paint.ear ?? fill
+  const morph = paint.morph ?? fill
   return svg
     // 흰색은 #ffffff, #fff, white 어느 표기로 나와도 잡는다
     .replace(/#ffffff\b/gi, fill)
@@ -282,10 +293,14 @@ export function prepareSvg(svg: string, paint: Paint, uid: string): string {
     .replace(/\b(fill|stroke)="magenta"/gi, (_m, a: string) => `${a}="${accent ?? fill}"`)
     .replace(/\b(fill|stroke):\s*magenta\b/gi, (_m, a: string) => `${a}:${accent ?? fill}`)
     .replace(/rgb\(\s*255\s*,\s*0\s*,\s*255\s*\)/gi, accent ?? fill)
-    // 부위 표시색 — 칠할 일이 없으면 몸통 색으로 덮어 없는 것처럼 둔다
-    .replace(/#00ff00\b|#0f0\b|#00ffff\b|#0ff\b/gi, mark)
-    .replace(/\b(fill|stroke)="(lime|aqua|cyan)"/gi, (_m, a: string) => `${a}="${mark}"`)
-    .replace(/\b(fill|stroke):\s*(lime|aqua|cyan)\b/gi, (_m, a: string) => `${a}:${mark}`)
+    // 표시색 — 칠할 일이 없으면 몸통 색으로 덮어 없는 것처럼 둔다.
+    // 라임은 귀 면적, 아쿠아는 무늬 자리다
+    .replace(/#00ff00\b|#0f0\b/gi, ear)
+    .replace(/\b(fill|stroke)="lime"/gi, (_m, a: string) => `${a}="${ear}"`)
+    .replace(/\b(fill|stroke):\s*lime\b/gi, (_m, a: string) => `${a}:${ear}`)
+    .replace(/#00ffff\b|#0ff\b/gi, morph)
+    .replace(/\b(fill|stroke)="(aqua|cyan)"/gi, (_m, a: string) => `${a}="${morph}"`)
+    .replace(/\b(fill|stroke):\s*(aqua|cyan)\b/gi, (_m, a: string) => `${a}:${morph}`)
     .replace(/#888989\b/gi, line)
     .replace(/\bid="([^"]+)"/g, (_m, id: string) => `id="${id}-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, (_m, id: string) => `url(#${id}-${uid})`)
