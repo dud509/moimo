@@ -29,7 +29,7 @@ const MOIMO_PX = 104
  * 없으면 그냥 안 보이고 예전처럼 크림색과 옅은 얼룩만 남는다.
  * 월드 크기(3600×2400)에 맞춰 늘어나므로 그 비율로 그리면 된다.
  */
-const BACKGROUND = '/world/background.png'
+const BACKGROUND = '/world/background.jpg'
 
 /**
  * 오브제 그림. `public/items/jar.png` 처럼 놓으면 그 그림을 쓰고,
