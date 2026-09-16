@@ -34,21 +34,6 @@ export type BodyColor = (typeof BODY_COLORS)[number]
 /** 이 몸통 색일 때 쓸 선 색 */
 export const lineFor = (c: BodyColor): string => ('line' in c ? c.line : LINE_COLOR)
 
-/**
- * 손으로 그린 듯 선을 흔드는 정도.
- *
- *   slots      흔들 파츠. 지금은 몸통만 — 여기에 'eye', 'hair' 처럼 더하면 늘어난다
- *   frequency  낮을수록 크고 느슨한 물결, 높을수록 잘게 떨린다
- *   scale      밀어내는 거리(px). 512 캔버스 기준이라 3 이면 아주 옅다
- *   octaves    겹치는 잡음의 층. 1 이면 매끈, 3 이면 거칠다
- */
-export const WOBBLE = {
-  slots: ['body'] as ReadonlyArray<SlotKey | 'body' | 'morph'>,
-  frequency: 0.022,
-  scale: 3.2,
-  octaves: 2,
-}
-
 /* ================================================================== *
  *  아래는 파츠 원본 파일에 들어 있는 값 — 에셋을 다시 뽑지 않는 한 그대로  *
  * ================================================================== */
