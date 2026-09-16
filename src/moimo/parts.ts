@@ -145,6 +145,14 @@ export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>
  * 쪽을 적으면 캔버스 한가운데를 기준으로 반만, 안 적으면 양쪽 다 칠한다.
  * 여기에 적히지 않아도 그 무늬의 무늬 파일은 늘 함께 그려진다.
  */
+/**
+ * 무늬가 몸통의 «바깥» 까지 덮는 무늬들.
+ *
+ * 꼬리는 몸통에 이어 붙은 것이라 몸통 바깥이 무늬 색으로 덮이면 꼬리만
+ * 몸통 색으로 남아 동떨어져 보인다. 이 무늬일 때는 꼬리도 함께 칠한다.
+ */
+export const MORPH_TAIL = new Set<number>([1, 2])
+
 export const REGION_MORPH: Record<number, RegionSpec[]> = {
   1: [{ 부위: '귀' }],                 // 귀 양쪽 + 무늬 파일
   2: [],                               // 무늬 파일만 — 귀는 건드리지 않는다

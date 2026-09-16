@@ -6,7 +6,7 @@
  */
 
 import {
-  BODY_COLORS, CANVAS, MARKS, REGION_MORPH, SLOTS, Z_BODY, Z_MORPH,
+  BODY_COLORS, CANVAS, MARKS, MORPH_TAIL, REGION_MORPH, SLOTS, Z_BODY, Z_MORPH,
   bodyUrl, composeAnchor, fillFor, isSvgText, lineFor, markFor, morphUrls, partUrl, prepareSvg, syOf,
   type AnchorTable, type SlotKey,
 } from './parts'
@@ -39,6 +39,7 @@ function split_has(bodyRaw: string | undefined, r: { 부위: keyof typeof MARKS 
 function splitBody(svg: string) {
   const fills: string[] = []
   const lines: string[] = []
+  const inner: string[] = []
   const marks: Partial<Record<keyof typeof MARKS, string[]>> = {}
   const re = /<(path|polyline|polygon|circle|ellipse|rect|line)\b[^>]*\/>/gi
   let m: RegExpExecArray | null
@@ -46,11 +47,12 @@ function splitBody(svg: string) {
     const tag = m[0]
     if (/fill="none"/i.test(tag)) { lines.push(tag); continue }
     fills.push(tag)
+    if (/fill="(#ff00ff|#f0f|magenta)"/i.test(tag)) inner.push(tag)
     for (const part of Object.keys(MARKS) as (keyof typeof MARKS)[]) {
       if (MARKS[part].test(tag)) (marks[part] ??= []).push(tag)
     }
   }
-  return { fills: fills.join(''), lines: lines.join(''), marks }
+  return { fills: fills.join(''), inner: inner.join(''), lines: lines.join(''), marks }
 }
 
 function silhouette(bodySvg: string): string {
@@ -144,18 +146,26 @@ export function composeMoimo(
       pieces.push({ z: Z_MORPH + 0.25, svg: half ? `<g clip-path="url(#${half}-${uid})">${lit}</g>` : lit })
     })
 
+    // 귀 안쪽 분홍은 귀 면적 위로 올린다. 아래 깔리면 귀를 칠할 때 묻힌다
+    if (regions.length && split.inner) {
+      pieces.push({ z: Z_MORPH + 0.3, svg: paint(split.inner, Z_MORPH + 0.3) })
+    }
+
     pieces.push({ z: Z_MORPH + 0.5, svg: paint(split.lines, Z_MORPH + 0.5) })
   } else {
     push(Z_BODY, bodyUrl(genes.body), color.hex, flat)
     if (morphUrl) push(Z_MORPH, morphUrl, color.hex, flat)
   }
 
+  // 꼬리는 몸통에 이어 붙은 것이라, 무늬가 몸통 바깥을 덮으면 함께 칠한다
+  const bodyTone = MORPH_TAIL.has(genes.morph) ? mark : color.hex
+
   for (const s of SLOTS) {
     const n = genes[s.key as keyof MoimoGenes] as number
     push(
       s.z,
       partUrl(s.key as SlotKey, n),
-      fillFor(s.key as SlotKey, n, color.hex),
+      fillFor(s.key as SlotKey, n, s.key === 'tail' ? bodyTone : color.hex),
       composeAnchor(table, genes.body, s.key as SlotKey, n),
     )
   }
