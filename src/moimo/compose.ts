@@ -11,6 +11,7 @@ import {
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
+import type { BodyColor } from './parts'
 
 export type PartsCache = Map<string, string>
 
@@ -81,6 +82,76 @@ function layer(inner: string, a: ReturnType<typeof composeAnchor>, uid: string):
 }
 
 /** 유전자 → SVG 문자열 한 장 */
+
+/**
+ * 몸통과 무늬를 한 벌로 쌓는다. 앵커편집기와 월드가 같은 것을 보게 하려고
+ * 따로 뽑아 두었다. 층 번호를 붙여 돌려주므로 파츠 사이에 그대로 끼워 넣는다.
+ */
+export function bodyPieces(opts: {
+  bodyRaw?: string
+  morphRaw?: string
+  morph: number
+  color: BodyColor
+  uid: string
+}): { z: number; svg: string }[] {
+  const { bodyRaw, morphRaw, morph, color, uid } = opts
+  const line = lineFor(color)
+  const mark = markFor(color)
+  const out: { z: number; svg: string }[] = []
+  const paint = (raw: string, z: number) =>
+    prepareSvg(raw, { fill: color.hex, line, accent: color.accent }, `${uid}${z}`)
+
+  const regions = (REGION_MORPH[morph] ?? []).filter((r) => split_has(bodyRaw, r))
+  const split = bodyRaw ? splitBody(bodyRaw) : null
+
+  // 갈라낼 선이 없는 몸통은 예전처럼 통째로 그린다
+  if (!split || !split.lines || (!morphRaw && !regions.length)) {
+    if (bodyRaw) out.push({ z: Z_BODY, svg: innards(paint(bodyRaw, Z_BODY)) })
+    if (morphRaw) out.push({ z: Z_MORPH, svg: innards(paint(morphRaw, Z_MORPH)) })
+    return out
+  }
+
+  // 몸통을 면과 선으로 갈라 무늬를 그 사이에 끼운다.
+  // 통째로 얹으면 무늬가 몸통의 안쪽 선까지 덮어 버린다
+  out.push({ z: Z_BODY, svg: paint(split.fills, Z_BODY) })
+
+  // 무늬 파일은 표시와 별개로 늘 함께 그린다
+  if (morphRaw) {
+    const sil = silhouette(bodyRaw!)
+    const inner = innards(
+      prepareSvg(morphRaw, { fill: color.hex, line, accent: color.accent, morph: mark }, `${uid}${Z_MORPH}`),
+    )
+    out.push({
+      z: Z_MORPH,
+      svg: sil
+        ? `<defs><clipPath id="skin-${uid}">${sil}</clipPath></defs>` +
+          `<g clip-path="url(#skin-${uid})">${inner}</g>`
+        : inner,
+    })
+  }
+
+  // 칠할 부위를 한 겹 더 얹는다. 몸통 파일에서 머리 아래 깔려 있어도 위로 올라온다
+  regions.forEach((r, i) => {
+    const tags = (split.marks[r.부위] ?? []).join('')
+    if (!tags) return
+    const lit = prepareSvg(tags, { fill: color.hex, line, accent: color.accent, ear: mark }, `${uid}r${i}`)
+    if (!r.쪽) { out.push({ z: Z_MORPH + 0.25, svg: lit }); return }
+    const id = `${r.쪽 === '왼' ? 'l' : 'r'}${i}-${uid}`
+    const x = r.쪽 === '왼' ? 0 : C
+    out.push({
+      z: Z_MORPH + 0.25,
+      svg: `<defs><clipPath id="${id}"><rect x="${x}" y="0" width="${C}" height="${CANVAS}"/></clipPath></defs>` +
+           `<g clip-path="url(#${id})">${lit}</g>`,
+    })
+  })
+
+  // 귀 안쪽 분홍은 귀 면적 위로 올린다. 아래 깔리면 귀를 칠할 때 묻힌다
+  if (regions.length && split.inner) out.push({ z: Z_MORPH + 0.3, svg: paint(split.inner, Z_MORPH + 0.3) })
+
+  out.push({ z: Z_MORPH + 0.5, svg: paint(split.lines, Z_MORPH + 0.5) })
+  return out
+}
+
 export function composeMoimo(
   genes: MoimoGenes,
   cache: PartsCache,
@@ -102,9 +173,6 @@ export function composeMoimo(
     })
   }
 
-  const flat = { x: 0, y: 0, s: 1, r: 0 }
-  const paint = (raw: string, z: number) =>
-    prepareSvg(raw, { fill: color.hex, line, accent: color.accent }, `${uid}${z}`)
 
   const bodyRaw = cache.get(bodyUrl(genes.body))
   const morphUrl = genes.morph > 0
@@ -112,50 +180,7 @@ export function composeMoimo(
     : undefined
   const morphRaw = morphUrl ? cache.get(morphUrl) : undefined
 
-  // 무늬가 있으면 몸통을 면과 선으로 갈라 그 사이에 끼운다.
-  // 통째로 얹으면 무늬가 몸통의 안쪽 선까지 덮어 버린다.
-  // 그림 대신 몸통에 표시해 둔 부위를 칠하는 무늬인가
-  const regions = (REGION_MORPH[genes.morph] ?? []).filter((r) => split_has(bodyRaw, r))
-  const split = bodyRaw ? splitBody(bodyRaw) : null
-
-  if (split && split.lines && (morphRaw || regions.length)) {
-    // 몸통을 면과 선으로 갈라 무늬를 그 사이에 끼운다.
-    // 통째로 얹으면 무늬가 몸통의 안쪽 선까지 덮어 버린다.
-    pieces.push({ z: Z_BODY, svg: paint(split.fills, Z_BODY) })
-
-    // 무늬 파일은 표시와 별개로 늘 함께 그린다. 무늬 파일 안에서는
-    // 마젠타와 형광 초록이 모두 강조색이 된다
-    if (morphRaw) {
-      const sil = silhouette(bodyRaw!)
-      const inner = innards(prepareSvg(morphRaw, { fill: color.hex, line, accent: color.accent, morph: mark }, `${uid}${Z_MORPH}`))
-      pieces.push({
-        z: Z_MORPH,
-        svg: sil
-          ? `<defs><clipPath id="skin-${uid}">${sil}</clipPath></defs>` +
-            `<g clip-path="url(#skin-${uid})">${inner}</g>`
-          : inner,
-      })
-    }
-
-    // 칠할 부위를 한 겹 더 얹는다. 몸통 파일에서 머리 아래 깔려 있어도 위로 올라온다
-    regions.forEach((r, i) => {
-      const tags = (split.marks[r.부위] ?? []).join('')
-      if (!tags) return
-      const lit = prepareSvg(tags, { fill: color.hex, line, accent: color.accent, ear: mark }, `${uid}r${i}`)
-      const half = r.쪽 === '왼' ? 'half-l' : r.쪽 === '오' ? 'half-r' : ''
-      pieces.push({ z: Z_MORPH + 0.25, svg: half ? `<g clip-path="url(#${half}-${uid})">${lit}</g>` : lit })
-    })
-
-    // 귀 안쪽 분홍은 귀 면적 위로 올린다. 아래 깔리면 귀를 칠할 때 묻힌다
-    if (regions.length && split.inner) {
-      pieces.push({ z: Z_MORPH + 0.3, svg: paint(split.inner, Z_MORPH + 0.3) })
-    }
-
-    pieces.push({ z: Z_MORPH + 0.5, svg: paint(split.lines, Z_MORPH + 0.5) })
-  } else {
-    push(Z_BODY, bodyUrl(genes.body), color.hex, flat)
-    if (morphUrl) push(Z_MORPH, morphUrl, color.hex, flat)
-  }
+  pieces.push(...bodyPieces({ bodyRaw, morphRaw, morph: genes.morph, color, uid }))
 
   // 꼬리는 몸통에 이어 붙은 것이라, 무늬가 몸통 바깥을 덮으면 함께 칠한다
   const bodyTone = MORPH_TAIL.has(genes.morph) ? mark : color.hex

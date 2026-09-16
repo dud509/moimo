@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
-  BODY_COLORS, BODY_COUNT, CANVAS, DEFAULT_ANCHOR, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
-  Z_BODY, Z_MORPH, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  fillFor, lineFor, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, warnIfNothingToTint,
+  BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
+  Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
+  fillFor, lineFor, markFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf,
+  warnIfNothingToTint,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
 
@@ -15,6 +16,7 @@ const SCOPES: { key: Scope; label: string; hint: string }[] = [
   { key: 'part',  label: '이 파츠',         hint: '몸통 12종 × 이 파츠 하나' },
   { key: 'one',   label: '이 조합만',       hint: '이 몸통 하나 × 이 파츠 하나' },
 ]
+import { bodyPieces } from '../moimo/compose'
 import { useSvg } from './useSvg'
 import initial from '../data/anchors.json'
 
@@ -116,6 +118,36 @@ function LayerReadout({
   )
 }
 
+/** 몸통과 무늬를 월드와 똑같은 방식으로 쌓아 보여 준다 */
+function BodyStack({
+  body, morph, color, dim,
+}: {
+  body: number
+  morph: number
+  color: (typeof BODY_COLORS)[number]
+  dim: boolean
+}) {
+  const uid = useId().replace(/:/g, '')
+  const bodySvg = useSvg(bodyUrl(body))
+  const morphSvg = useSvg(morph > 0 ? morphUrls(body, morph) : null)
+  const html = useMemo(() => {
+    const pieces = bodyPieces({
+      bodyRaw: bodySvg.svg ?? undefined,
+      morphRaw: morphSvg.svg ?? undefined,
+      morph, color, uid,
+    })
+    return pieces.sort((a, b) => a.z - b.z).map((p) => p.svg).join('')
+  }, [bodySvg.svg, morphSvg.svg, morph, color, uid])
+
+  return (
+    <div
+      className="layer"
+      style={{ zIndex: Z_BODY, opacity: dim ? 0.28 : 1 }}
+      dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 ${CANVAS} ${CANVAS}">${html}</svg>` }}
+    />
+  )
+}
+
 /* 몸통 + 무늬 + 파츠를 한 벌 쌓은 것. 무대와 모아보기가 같이 쓴다 */
 function Figure({
   body, variant, morph, color, table, soloSlot, warnTint,
@@ -129,24 +161,17 @@ function Figure({
   warnTint?: boolean
 }) {
   const line = lineFor(color)
-  const paint = { fill: color.hex, line, accent: color.accent }
   return (
     <>
-      <Layer
-        urls={bodyUrl(body)} paint={paint} anchor={DEFAULT_ANCHOR} z={Z_BODY}
-        dim={soloSlot != null} label={`몸통 ${body}`}
-      />
-      {morph > 0 && (
-        <Layer
-          urls={morphUrls(body, morph)} paint={paint} anchor={DEFAULT_ANCHOR} z={Z_MORPH}
-          dim={soloSlot != null} label="무늬"
-        />
-      )}
+      <BodyStack body={body} morph={morph} color={color} dim={soloSlot != null} />
       {SLOTS.map((s) => (
         <Layer
           key={s.key}
           urls={partUrl(s.key, variant[s.key])}
-          paint={{ fill: fillFor(s.key, variant[s.key], color.hex), line, accent: color.accent }}
+          paint={{
+            fill: fillFor(s.key, variant[s.key], s.key === 'tail' && MORPH_TAIL.has(morph) ? markFor(color) : color.hex),
+            line, accent: color.accent,
+          }}
           anchor={composeAnchor(table, body, s.key, variant[s.key])}
           z={s.z}
           dim={soloSlot != null && soloSlot !== s.key}
