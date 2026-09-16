@@ -41,6 +41,21 @@ button { cursor: pointer; }
 .world.glide { transition: transform 0.8s cubic-bezier(0.22, 0.9, 0.24, 1); }
 .ground { position: absolute; top: 0; left: 0; pointer-events: none; }
 
+/* 그림 배경 — public/world/background.png 를 놓으면 크림색 위에 깔린다.
+   파일이 없으면 브라우저가 아무것도 그리지 않으므로 그냥 비어 있다 */
+.ground-art {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; pointer-events: none; user-select: none;
+}
+
+/* 오브제 그림 — public/items/jar.png 처럼 놓으면 그린 그림 대신 쓰인다 */
+.item-art {
+  width: 100%; height: 100%;
+  object-fit: contain; object-position: bottom;
+  display: block; pointer-events: none; user-select: none;
+}
+
 @keyframes bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
 
 /* 오브제 */

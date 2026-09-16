@@ -19,6 +19,42 @@ const MAX_SCALE = 2.2
 const HOME_SCALE = 0.75
 const MOIMO_PX = 104
 
+
+/* ------------------------------------------------------------------ */
+/* 그림으로 갈아 끼울 수 있는 것들                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 배경 그림. `public/world/background.png` 를 놓으면 크림색 바탕 위에 깔린다.
+ * 없으면 그냥 안 보이고 예전처럼 크림색과 옅은 얼룩만 남는다.
+ * 월드 크기(3600×2400)에 맞춰 늘어나므로 그 비율로 그리면 된다.
+ */
+const BACKGROUND = '/world/background.png'
+
+/**
+ * 오브제 그림. `public/items/jar.png` 처럼 놓으면 그 그림을 쓰고,
+ * 없으면 지금까지 쓰던 그린 그림으로 돌아간다. 한 개씩 옮겨 갈 수 있다.
+ */
+function ItemImage({ id }: { id: ItemId }) {
+  const [png, setPng] = useState(true)
+  if (png) {
+    return (
+      <img
+        className="item-art"
+        src={`/items/${id}.png`}
+        alt=""
+        draggable={false}
+        onError={() => setPng(false)}
+      />
+    )
+  }
+  return (
+    <svg viewBox="0 0 200 200" width="100%" height="100%" overflow="visible">
+      <ItemArt id={id} />
+    </svg>
+  )
+}
+
 /* ------------------------------------------------------------------ */
 
 export const MoimoImg = memo(function MoimoImg({
@@ -217,9 +253,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             style={{ left: it.x, top: it.y, width: it.w, height: it.w }}
             onClick={() => { if (!drag.current) onItem(it.id) }}
           >
-            <svg viewBox="0 0 200 200" width="100%" height="100%" overflow="visible">
-              <ItemArt id={it.id} />
-            </svg>
+            <ItemImage id={it.id} />
             <span className="item-label">
               <b>{it.name}</b>
               <i>{it.id === 'music' && playing ? '노래 끄기' : it.tag}</i>
@@ -273,6 +307,9 @@ const Ground = memo(function Ground() {
   }, [])
 
   return (
+    <>
+    {/* 그림 배경이 있으면 그 위에 그린다. 없으면 이 태그가 빈 칸으로 남을 뿐이다 */}
+    <img className="ground-art" src={BACKGROUND} alt="" width={WORLD.w} height={WORLD.h} draggable={false} />
     <svg className="ground" width={WORLD.w} height={WORLD.h} viewBox={`0 0 ${WORLD.w} ${WORLD.h}`}>
       <rect width={WORLD.w} height={WORLD.h} fill="var(--cream)" />
       <g fill="var(--cream-deep)">
@@ -284,5 +321,6 @@ const Ground = memo(function Ground() {
       </radialGradient>
       <ellipse cx={CENTER.x} cy={CENTER.y} rx={620} ry={460} fill="url(#pool)" />
     </svg>
+    </>
   )
 })
