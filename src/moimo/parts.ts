@@ -184,6 +184,16 @@ export const MORPH_EDGE: 'line' | 'soft' | 'flat' = 'soft'
 export const MORPH_BLUR = 20
 
 /**
+ * 번지기는 귀와 얼굴에서만 한다.
+ *
+ * 몸통과 팔다리에서 번지면 옷에 얼룩이 진 것처럼 보인다. 이 높이 아래는
+ * 번지지 않고 또렷하게 그린다. 열두 몸통 모두 몸통통이 y=307 에서 시작한다.
+ */
+export const HEAD_BOTTOM = 304
+/** 몸통 쪽 무늬의 가장자리 마감 */
+export const MORPH_BODY_EDGE: 'line' | 'flat' = 'line'
+
+/**
  * 이 몸통 색에서 무늬 가장자리를 어떻게 마감할지.
  *
  * 어두운 색은 번지게 두면 흰 바탕으로 흘러들어 때 탄 것처럼 보인다.

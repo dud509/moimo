@@ -6,7 +6,8 @@
  */
 
 import {
-  BODY_COLORS, CANVAS, MARKS, MORPH_BLUR, MORPH_TAIL, REGION_MORPH, SLOTS, Z_BODY, Z_MORPH, edgeFor,
+  BODY_COLORS, CANVAS, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_TAIL, REGION_MORPH,
+  SLOTS, Z_BODY, Z_MORPH, edgeFor,
   bodyUrl, composeAnchor, fillFor, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor,
   type AnchorTable, type SlotKey,
 } from './parts'
@@ -133,17 +134,24 @@ export function bodyPieces(opts: {
       // 무늬를 흐린 가리개로 삼아 가장자리가 번지게 한다.
       // 색을 실루엣 가득 깔고 그 가리개로 도려내는 식이다
       const veil = innards(prepareSvg(morphRaw, { fill: '#FFFFFF', line: '#FFFFFF', accent: '#FFFFFF', morph: '#FFFFFF' }, `${uid}v`))
+      // 번지기는 귀와 얼굴에서만. 몸통에서 번지면 옷에 얼룩이 진 것처럼 보인다
+      const H = HEAD_BOTTOM
       out.push({
         z: Z_MORPH,
         svg:
           `<defs>` +
           `<clipPath id="skin-${uid}">${sil}</clipPath>` +
+          `<clipPath id="head-${uid}"><rect x="0" y="0" width="${CANVAS}" height="${H}"/></clipPath>` +
+          `<clipPath id="torso-${uid}"><rect x="0" y="${H}" width="${CANVAS}" height="${CANVAS - H}"/></clipPath>` +
           `<filter id="blur-${uid}" x="-25%" y="-25%" width="150%" height="150%">` +
           `<feGaussianBlur stdDeviation="${MORPH_BLUR}"/></filter>` +
           `<mask id="veil-${uid}"><g filter="url(#blur-${uid})">${veil}</g></mask>` +
           `</defs>` +
-          `<g clip-path="url(#skin-${uid})" mask="url(#veil-${uid})">` +
-          `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="${mark}"/></g>`,
+          `<g clip-path="url(#skin-${uid})">` +
+          `<g clip-path="url(#head-${uid})" mask="url(#veil-${uid})">` +
+          `<rect x="0" y="0" width="${CANVAS}" height="${H}" fill="${mark}"/></g>` +
+          `<g clip-path="url(#torso-${uid})" ${edge(line, MORPH_BODY_EDGE)}>${inner}</g>` +
+          `</g>`,
       })
     } else {
       out.push({
