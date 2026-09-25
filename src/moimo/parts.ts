@@ -68,6 +68,24 @@ export function toneFor(c: BodyColor, morph: number) {
 
 /** 원본 SVG 의 선 색 */
 export const SOURCE_LINE = '#888989'
+
+/**
+ * 이 색이 선인가.
+ *
+ * 원본은 #888989 로 맞춰 두었지만 일러스트에서 다시 뽑다 보면 #898989
+ * 처럼 한 자리씩 어긋난다. 그러면 선 색이 안 바뀌어 몸통 하나만 흐리게
+ * 떠 버린다. 그래서 딱 그 값이 아니라 «회색 언저리» 를 다 선으로 본다 —
+ * 세 채널이 서로 비슷하고 밝기가 중간쯤인 색.
+ */
+export function isLineGrey(hex: string): boolean {
+  const n = parseInt(hex, 16)
+  const r = (n >> 16) & 255
+  const g = (n >> 8) & 255
+  const b = n & 255
+  const lo = Math.min(r, g, b)
+  const hi = Math.max(r, g, b)
+  return hi - lo <= 12 && lo >= 0x78 && hi <= 0xa0
+}
 /** 원본 SVG 의 채우기 색 */
 export const SOURCE_FILL = '#FFFFFF'
 /**
@@ -376,7 +394,7 @@ export function prepareSvg(svg: string, paint: Paint, uid: string): string {
     .replace(/#00ffff\b|#0ff\b/gi, morph)
     .replace(/\b(fill|stroke)="(aqua|cyan)"/gi, (_m, a: string) => `${a}="${morph}"`)
     .replace(/\b(fill|stroke):\s*(aqua|cyan)\b/gi, (_m, a: string) => `${a}:${morph}`)
-    .replace(/#888989\b/gi, line)
+    .replace(/#([0-9a-f]{6})\b/gi, (m: string, hex: string) => (isLineGrey(hex) ? line : m))
     .replace(/\bid="([^"]+)"/g, (_m, id: string) => `id="${id}-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, (_m, id: string) => `url(#${id}-${uid})`)
     .replace(/\b(xlink:href|href)="#([^"]+)"/g, (_m, a: string, id: string) => `${a}="#${id}-${uid}"`)
