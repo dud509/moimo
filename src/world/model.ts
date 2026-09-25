@@ -5,14 +5,14 @@ import { genesFromName, randomKoreanName, splitName, type MoimoGenes } from '../
  * ================================================================== */
 
 /** 13인치(1440×900) 화면에 심어둘 이웃 수. 화면이 넓으면 그만큼 더 심는다 */
-export const SEED_COUNT = 230
+export const SEED_COUNT = 90
 
 /**
  * 한 화면에 둘 수 있는 최대 인원.
  * 넘으면 심어둔 이웃부터 조용히 자리를 비켜준다 —
  * 사람이 만든 모이모는 끝까지 남는다.
  */
-export const MAX_RESIDENTS = 560
+export const MAX_RESIDENTS = 260
 
 /* ================================================================== */
 
@@ -78,8 +78,12 @@ const GOLDEN = Math.PI * (3 - Math.sqrt(5))
 
 /** 모이모가 화면에 놓이는 크기. 겹침을 따질 때 쓴다 */
 export const MOIMO_W = 104
-/** 서로 아예 겹치지 않도록 둘 사이에 두는 거리 */
-export const MIN_GAP = MOIMO_W
+/**
+ * 둘 사이에 두는 거리.
+ * 어깨가 닿을 만큼은 붙어 서야 와글와글해 보인다 —
+ * 겹치지 말아야 할 것은 서로가 아니라 소품과 오브제다.
+ */
+export const MIN_GAP = Math.ceil(MOIMO_W * 0.72)
 
 /**
  * 오브제가 화면에서 차지하는 네모.
@@ -125,9 +129,9 @@ export function spotFor(
       const g = itemGuard(it)
       if (Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2) return false
     }
-    // 소품은 같은 바닥에 나란히 놓이므로 스쳐도 된다. 얼굴만 가리지 않게 비켜 준다
+    // 소품과는 겹치지 않는다. 소품은 무리 바깥에 있으니 둘레에서만 마주친다
     for (const p of PROPS) {
-      const d = 24 + p.w * 0.3
+      const d = (MOIMO_W + p.w * ROT_PAD) / 2
       if (Math.abs(x - p.x) < d && Math.abs(by - p.y) < d) return false
     }
     // 모이모끼리는 아예 겹치지 않는다. 가운데 거리로 재면 모서리끼리 물려서 네모로 잰다
@@ -137,7 +141,7 @@ export function spotFor(
 
   for (let attempt = 0; attempt < 500; attempt++) {
     const k = n + attempt * 0.41
-    const r = 52 * Math.sqrt(k + 3)
+    const r = 56 * Math.sqrt(k + 3)
     const a = k * GOLDEN + (attempt ? rnd() * 0.7 : 0)
     const x = CENTER.x + Math.cos(a) * r * 1.34 + (rnd() - 0.5) * 34
     const y = CENTER.y + Math.sin(a) * r * 0.92 + (rnd() - 0.5) * 26
@@ -198,6 +202,13 @@ export const PROP_COUNT = 260
 
 /** 기울여 놓으면 네모가 그만큼 커진다. 자리를 잴 때 얹어 준다 */
 const ROT_PAD = 1.2
+
+/**
+ * 모이모가 모여 서는 자리. 소품은 여기를 비켜서 둘레에 깔린다.
+ * 나선이 이만큼 퍼지는 것을 보고 잡은 크기다 — 사람이 더 오면 무리가
+ * 이 울타리를 넘어가는데, 그때는 모이모 쪽이 소품을 비켜 선다.
+ */
+const CROWD = { rx: 56 * Math.sqrt(SEED_COUNT + 20) * 1.34, ry: 56 * Math.sqrt(SEED_COUNT + 20) * 0.92 }
 /** 무게를 다 더한 값 — 종류를 뽑을 때 쓴다 */
 const WEIGHT_SUM = PROP_KINDS.reduce((a, k) => a + k.weight, 0)
 
@@ -238,9 +249,11 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
     for (let attempt = 0; attempt < 90; attempt++) {
       const x = 90 + rnd() * (WORLD.w - 180)
       const y = 110 + rnd() * (WORLD.h - 200)
-      // 한가운데는 모이모가 먼저 차지하는 자리라 조금 비워 준다
-      const core = Math.hypot((x - CENTER.x) / 1.34, (y - CENTER.y) / 0.92)
-      if (core < 300 && rnd() < 0.5) continue
+      // 모이모가 모여 서는 한가운데는 통째로 비켜 준다
+      const pad = w / 2 + 20
+      const ex = (x - CENTER.x) / (CROWD.rx + pad)
+      const ey = (y - CENTER.y) / (CROWD.ry + pad)
+      if (ex * ex + ey * ey < 1) continue
       if (!free(x, y, w)) continue
       out.push({ id: `prop-${i}`, x, y, w, rot: (rnd() - 0.5) * 24, flip: rnd() < 0.5, kind })
       break
