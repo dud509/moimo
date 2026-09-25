@@ -4,7 +4,7 @@ import {
 import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { ItemArt } from './Items'
-import { ITEMS, WORLD, CENTER, PROPS, type ItemId, type Resident } from './model'
+import { ITEMS, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Resident } from './model'
 
 export type Camera = { tx: number; ty: number; scale: number }
 export type WorldHandle = {
@@ -35,42 +35,38 @@ const BACKGROUND = '/world/background.jpg'
  * 오브제 그림. `public/items/jar.png` 처럼 놓으면 그 그림을 쓰고,
  * 없으면 지금까지 쓰던 그린 그림으로 돌아간다. 한 개씩 옮겨 갈 수 있다.
  */
-function ItemImage({ id }: { id: ItemId }) {
-  const [png, setPng] = useState(true)
-  if (png) {
+function ItemImage({ item }: { item: Item }) {
+  // svg 를 먼저 찾고, 없으면 png, 그것도 없으면 그린 그림으로 내려간다
+  const [step, setStep] = useState(0)
+  const src = step === 0 ? `/items/${item.id}.svg` : `/items/${item.id}.png`
+  if (step < 2) {
     return (
       <img
         className="item-art"
-        src={`/items/${id}.png`}
+        src={src}
         alt=""
         draggable={false}
-        onError={() => setPng(false)}
+        style={{ transform: `scale(${(1 / item.fill).toFixed(3)})` }}
+        onError={() => setStep(step + 1)}
       />
     )
   }
   return (
     <svg viewBox="0 0 200 200" width="100%" height="100%" overflow="visible">
-      <ItemArt id={id} />
+      <ItemArt id={item.id} />
     </svg>
   )
 }
 
-/**
- * 소품 그림. `public/items/deco1.svg` ~ `deco5.svg`.
- * 마을 곳곳에 흩뿌려진다. 없는 파일은 조용히 빠진다 —
- * 더 그리면 `DECO_COUNT` 만 올리면 된다.
- */
-const DECO_COUNT = 5
-const PROP_ART: string[] = Array.from({ length: DECO_COUNT }, (_, i) => `/items/deco${i + 1}.svg`)
-
+/** 소품 한 개. 어떤 그림을 쓸지는 PROP_KINDS 에 적혀 있다 */
 function Prop({ prop }: { prop: (typeof PROPS)[number] }) {
   const [ok, setOk] = useState(true)
   if (!ok) return null
-  const src = PROP_ART[Math.min(PROP_ART.length - 1, Math.floor(prop.pick * PROP_ART.length))]
+  const k = PROP_KINDS[prop.kind]
   return (
     <img
       className="prop"
-      src={src}
+      src={k.src}
       alt=""
       draggable={false}
       onError={() => setOk(false)}
@@ -78,7 +74,8 @@ function Prop({ prop }: { prop: (typeof PROPS)[number] }) {
         left: prop.x,
         top: prop.y,
         width: prop.w,
-        transform: `translate(-50%, -50%) rotate(${prop.rot.toFixed(1)}deg) scaleX(${prop.flip ? -1 : 1})`,
+        transform: `translate(-50%, -50%) rotate(${prop.rot.toFixed(1)}deg)`
+          + ` scaleX(${prop.flip ? -1 : 1}) scale(${(1 / k.fill).toFixed(3)})`,
       }}
     />
   )
@@ -292,7 +289,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             style={{ left: it.x, top: it.y, width: it.w, height: it.w }}
             onClick={() => { if (!drag.current) onItem(it.id) }}
           >
-            <ItemImage id={it.id} />
+            <ItemImage item={it} />
             <span className="item-label">
               <b>{it.name}</b>
               <i>{it.id === 'music' && playing ? '노래 끄기' : it.tag}</i>

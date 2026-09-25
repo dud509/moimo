@@ -32,18 +32,23 @@ export type Item = {
   tag: string
   x: number
   y: number
-  /** 화면상 폭(px) */
+  /** 화면에 보이는 폭(px) */
   w: number
+  /**
+   * 그림이 500 캔버스에서 실제로 차지하는 비율.
+   * 여백이 넓은 파일은 그만큼 키워서 보여 줘야 다른 것과 크기가 맞는다
+   */
+  fill: number
   /** 모이모가 겹치지 않게 비워둘 반경 */
   keepout: number
 }
 
 export const ITEMS: Item[] = [
-  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', x: 1800, y: 1180, w: 300, keepout: 210 },
-  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', x: 870,  y: 640,  w: 250, keepout: 165 },
-  { id: 'album',  name: '앨범',         tag: '기록과 방명록', x: 2760, y: 690,  w: 250, keepout: 165 },
-  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', x: 1110, y: 1840, w: 230, keepout: 150 },
-  { id: 'music',  name: '플레이어',     tag: '노래 켜기',     x: 2700, y: 1800, w: 220, keepout: 150 },
+  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', x: 1800, y: 1180, w: 340, fill: 0.76, keepout: 210 },
+  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', x: 870,  y: 640,  w: 260, fill: 0.58, keepout: 165 },
+  { id: 'album',  name: '앨범',         tag: '기록과 방명록', x: 2760, y: 690,  w: 280, fill: 0.71, keepout: 165 },
+  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', x: 1110, y: 1840, w: 240, fill: 0.46, keepout: 150 },
+  { id: 'music',  name: '플레이어',     tag: '노래 켜기',     x: 2700, y: 1800, w: 220, fill: 1, keepout: 150 },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -115,7 +120,10 @@ export function spotFor(
       if (Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2) return false
     }
     // 소품은 같은 바닥에 나란히 놓이므로 스쳐도 된다. 얼굴만 가리지 않게 비켜 준다
-    for (const p of PROPS) if (Math.abs(x - p.x) < 44 && Math.abs(by - p.y) < 44) return false
+    for (const p of PROPS) {
+      const d = 24 + p.w * 0.3
+      if (Math.abs(x - p.x) < d && Math.abs(by - p.y) < d) return false
+    }
     // 모이모끼리는 아예 겹치지 않는다. 가운데 거리로 재면 모서리끼리 물려서 네모로 잰다
     for (const t of taken) if (Math.abs(x - t.x) < gap && Math.abs(y - t.y) < gap) return false
     return true
@@ -150,30 +158,42 @@ export function spotFor(
 /* 소품 — 캐릭터 사이사이에 깔리는 작은 그림들                            */
 /* ------------------------------------------------------------------ */
 
+/**
+ * 소품 한 종류.
+ * `fill` 은 그림이 500 캔버스에서 실제로 차지하는 비율 —
+ * 별사탕은 11%뿐이라 그대로 놓으면 먼지만 해진다.
+ * `weight` 는 많이 깔릴수록 크다. 별사탕은 흩뿌리고 상자는 드문드문.
+ */
+export type PropKind = { src: string; fill: number; min: number; max: number; weight: number }
+
+export const PROP_KINDS: PropKind[] = [
+  { src: '/items/starcandy01.svg', fill: 0.11, min: 26, max: 48, weight: 5 },
+  { src: '/items/starcandy02.svg', fill: 0.11, min: 26, max: 48, weight: 5 },
+  { src: '/items/starcandy03.svg', fill: 0.10, min: 26, max: 48, weight: 5 },
+  { src: '/items/box01.svg',       fill: 0.60, min: 96, max: 152, weight: 1 },
+  { src: '/items/box02.svg',       fill: 0.48, min: 96, max: 152, weight: 1 },
+]
+
 export type Prop = {
   id: string
   x: number
   y: number
-  /** 화면에 놓이는 폭(px) */
+  /** 화면에 보이는 폭(px) */
   w: number
   /** 기울기(도) */
   rot: number
   flip: boolean
-  /** 어떤 그림을 쓸지 고르는 0~1 사이 숫자. 그림 수가 달라져도 자리는 그대로다 */
-  pick: number
+  /** PROP_KINDS 의 몇 번째 그림인지 */
+  kind: number
 }
 
 /** 마을 전체에 흩뿌릴 소품 수 */
-export const PROP_COUNT = 130
+export const PROP_COUNT = 260
 
-/**
- * 소품 크기. 모이모와 같은 위계로 서므로 비슷한 덩치다 —
- * 옅어 보이는 것은 그림의 외곽선 색이 하는 일이지 진하기로 누르지 않는다.
- */
-const PROP_MIN = 64
-const PROP_MAX = 132
 /** 기울여 놓으면 네모가 그만큼 커진다. 자리를 잴 때 얹어 준다 */
 const ROT_PAD = 1.2
+/** 무게를 다 더한 값 — 종류를 뽑을 때 쓴다 */
+const WEIGHT_SUM = PROP_KINDS.reduce((a, k) => a + k.weight, 0)
 
 /**
  * 소품을 흩뿌린다.
@@ -204,7 +224,11 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
   }
 
   for (let i = 0; i < count; i++) {
-    const w = Math.round(PROP_MIN + rnd() * (PROP_MAX - PROP_MIN))
+    let t = rnd() * WEIGHT_SUM
+    let kind = 0
+    while (kind < PROP_KINDS.length - 1 && (t -= PROP_KINDS[kind].weight) > 0) kind++
+    const k = PROP_KINDS[kind]
+    const w = Math.round(k.min + rnd() * (k.max - k.min))
     for (let attempt = 0; attempt < 90; attempt++) {
       const x = 90 + rnd() * (WORLD.w - 180)
       const y = 110 + rnd() * (WORLD.h - 200)
@@ -212,7 +236,7 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
       const core = Math.hypot((x - CENTER.x) / 1.34, (y - CENTER.y) / 0.92)
       if (core < 300 && rnd() < 0.5) continue
       if (!free(x, y, w)) continue
-      out.push({ id: `prop-${i}`, x, y, w, rot: (rnd() - 0.5) * 24, flip: rnd() < 0.5, pick: rnd() })
+      out.push({ id: `prop-${i}`, x, y, w, rot: (rnd() - 0.5) * 24, flip: rnd() < 0.5, kind })
       break
     }
   }
