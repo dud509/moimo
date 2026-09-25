@@ -32,13 +32,8 @@ export type Item = {
   tag: string
   x: number
   y: number
-  /** 화면에 보이는 폭(px) */
+  /** 화면에 보이는 폭(px) — 여백은 잘라내고 재므로 아트보드 크기와 상관없다 */
   w: number
-  /**
-   * 그림이 500 캔버스에서 실제로 차지하는 비율.
-   * 여백이 넓은 파일은 그만큼 키워서 보여 줘야 다른 것과 크기가 맞는다
-   */
-  fill: number
   /** 모이모가 겹치지 않게 비워둘 반경 */
   keepout: number
 }
@@ -51,10 +46,10 @@ export type Item = {
  * 플레이어는 그림이 아직 없어 빼 두었고, 노래는 아래 띠에서 켠다.
  */
 export const ITEMS: Item[] = [
-  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', x: 1800, y: 1180, w: 340, fill: 0.76, keepout: 210 },
-  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', x: 1080, y: 830,  w: 260, fill: 0.58, keepout: 165 },
-  { id: 'album',  name: '앨범',         tag: '기록과 방명록', x: 2520, y: 830,  w: 280, fill: 0.71, keepout: 165 },
-  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', x: 1080, y: 1620, w: 240, fill: 0.46, keepout: 150 },
+  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', x: 1800, y: 1180, w: 340, keepout: 210 },
+  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', x: 1080, y: 830,  w: 260, keepout: 165 },
+  { id: 'album',  name: '앨범',         tag: '기록과 방명록', x: 2520, y: 830,  w: 280, keepout: 165 },
+  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', x: 1080, y: 1620, w: 240, keepout: 150 },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -170,18 +165,16 @@ export function spotFor(
 
 /**
  * 소품 한 종류.
- * `fill` 은 그림이 500 캔버스에서 실제로 차지하는 비율 —
- * 별사탕은 11%뿐이라 그대로 놓으면 먼지만 해진다.
  * `weight` 는 많이 깔릴수록 크다. 별사탕은 흩뿌리고 상자는 드문드문.
  */
-export type PropKind = { src: string; fill: number; min: number; max: number; weight: number }
+export type PropKind = { src: string; min: number; max: number; weight: number }
 
 export const PROP_KINDS: PropKind[] = [
-  { src: '/items/starcandy01.svg', fill: 0.11, min: 26, max: 48, weight: 5 },
-  { src: '/items/starcandy02.svg', fill: 0.11, min: 26, max: 48, weight: 5 },
-  { src: '/items/starcandy03.svg', fill: 0.10, min: 26, max: 48, weight: 5 },
-  { src: '/items/box01.svg',       fill: 0.60, min: 96, max: 152, weight: 1 },
-  { src: '/items/box02.svg',       fill: 0.48, min: 96, max: 152, weight: 1 },
+  { src: '/items/starcandy01.svg', min: 26, max: 48, weight: 5 },
+  { src: '/items/starcandy02.svg', min: 26, max: 48, weight: 5 },
+  { src: '/items/starcandy03.svg', min: 26, max: 48, weight: 5 },
+  { src: '/items/box01.svg',       min: 96, max: 152, weight: 1 },
+  { src: '/items/box02.svg',       min: 96, max: 152, weight: 1 },
 ]
 
 export type Prop = {

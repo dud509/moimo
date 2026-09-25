@@ -5,6 +5,13 @@ import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { ItemArt } from './Items'
 import { ITEMS, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Resident } from './model'
+import { useTightArt, type Tight } from './tight'
+
+/** 여백을 잘라내고 쓸 그림들 — 오브제와 소품 */
+const ART_SRCS = [
+  ...ITEMS.map((it) => `/items/${it.id}.svg`),
+  ...PROP_KINDS.map((k) => k.src),
+]
 
 export type Camera = { tx: number; ty: number; scale: number }
 export type WorldHandle = {
@@ -35,47 +42,33 @@ const BACKGROUND = '/world/background.jpg'
  * 오브제 그림. `public/items/jar.png` 처럼 놓으면 그 그림을 쓰고,
  * 없으면 지금까지 쓰던 그린 그림으로 돌아간다. 한 개씩 옮겨 갈 수 있다.
  */
-function ItemImage({ item }: { item: Item }) {
-  // svg 를 먼저 찾고, 없으면 png, 그것도 없으면 그린 그림으로 내려간다
-  const [step, setStep] = useState(0)
-  const src = step === 0 ? `/items/${item.id}.svg` : `/items/${item.id}.png`
-  if (step < 2) {
+function ItemImage({ item, art }: { item: Item; art?: Tight }) {
+  // 그림을 못 읽었으면 지금까지 쓰던 그린 그림으로 내려간다
+  if (!art) {
     return (
-      <img
-        className="item-art"
-        src={src}
-        alt=""
-        draggable={false}
-        style={{ transform: `scale(${(1 / item.fill).toFixed(3)})` }}
-        onError={() => setStep(step + 1)}
-      />
+      <svg viewBox="0 0 200 200" width="100%" height="100%" overflow="visible">
+        <ItemArt id={item.id} />
+      </svg>
     )
   }
-  return (
-    <svg viewBox="0 0 200 200" width="100%" height="100%" overflow="visible">
-      <ItemArt id={item.id} />
-    </svg>
-  )
+  return <img className="item-art" src={art.url} alt="" draggable={false} />
 }
 
 /** 소품 한 개. 어떤 그림을 쓸지는 PROP_KINDS 에 적혀 있다 */
-function Prop({ prop }: { prop: (typeof PROPS)[number] }) {
-  const [ok, setOk] = useState(true)
-  if (!ok) return null
-  const k = PROP_KINDS[prop.kind]
+function Prop({ prop, art }: { prop: (typeof PROPS)[number]; art?: Tight }) {
+  if (!art) return null
   return (
     <img
       className="prop"
-      src={k.src}
+      src={art.url}
       alt=""
       draggable={false}
-      onError={() => setOk(false)}
       style={{
         left: prop.x,
         top: prop.y,
         width: prop.w,
-        transform: `translate(-50%, -50%) rotate(${prop.rot.toFixed(1)}deg)`
-          + ` scaleX(${prop.flip ? -1 : 1}) scale(${(1 / k.fill).toFixed(3)})`,
+        height: prop.w * art.ratio,
+        transform: `translate(-50%, -50%) rotate(${prop.rot.toFixed(1)}deg) scaleX(${prop.flip ? -1 : 1})`,
       }}
     />
   )
@@ -128,6 +121,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   { residents, cache, table, onItem, onResident, arrivedId, showNames, hits, onCamera },
   ref,
 ) {
+  const art = useTightArt(ART_SRCS)
   const boxRef = useRef<HTMLDivElement>(null)
   const worldRef = useRef<HTMLDivElement>(null)
   const camRef = useRef<Camera>({ tx: 0, ty: 0, scale: 0.6 })
@@ -287,7 +281,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             style={{ left: it.x, top: it.y, width: it.w, height: it.w }}
             onClick={() => { if (!drag.current) onItem(it.id) }}
           >
-            <ItemImage item={it} />
+            <ItemImage item={it} art={art[`/items/${it.id}.svg`]} />
             <span className="item-label">
               <b>{it.name}</b>
               <i>{it.tag}</i>
@@ -296,7 +290,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
         ))}
 
         {stage.map((s) => {
-          if (s.kind === 'prop') return <Prop key={s.p.id} prop={s.p} />
+          if (s.kind === 'prop') return <Prop key={s.p.id} prop={s.p} art={art[PROP_KINDS[s.p.kind].src]} />
           const r = s.r
           const dim = hits ? !hits.has(r.id) : false
           return (
