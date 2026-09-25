@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+  <path d="M317.24,401.32l-88.56,19.84c-54.07,12.11-105.43-29.01-105.43-84.42v-75.48c0-50.31,34.9-93.9,83.99-104.9l56.93-12.76c54.07-12.11,105.43,29.01,105.43,84.42v107.89c0,31.37-21.76,58.54-52.36,65.39Z" fill="#d4e5f6"/>
+  <path d="M325.05,398.69l-96.93,21.72c-33.18,7.43-64.7-17.8-64.7-51.81v-82.82c0-44.84,31.1-83.69,74.86-93.49l66.81-14.97c33.18-7.43,64.7,17.8,64.7,51.81v113.69c0,26.8-18.59,50.02-44.75,55.88Z" fill="#e5f0fb"/>
+  <polygon points="214.03 266.79 196.09 270.96 196.09 246.52 214.03 242.35 214.03 266.79" fill="#5a5a59" stroke="#9b9b9b" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+  <path d="M245.03,273.17l-10.46,2.34c-5.07,1.13-9.88-2.72-9.88-7.92v-42.61c0-3.8,2.64-7.09,6.35-7.92l10.46-2.34c5.07-1.13,9.88,2.72,9.88,7.92v42.61c0,3.8-2.64,7.09-6.35,7.92Z" fill="#fff" stroke="#867561" stroke-miterlimit="10" stroke-width="4"/>
+  <path d="M317.24,401.32l-88.56,19.84c-54.07,12.11-105.43-29.01-105.43-84.42v-75.48c0-50.31,34.9-93.9,83.99-104.9l56.93-12.76c54.07-12.11,105.43,29.01,105.43,84.42v107.89c0,31.37-21.76,58.54-52.36,65.39Z" fill="none" stroke="#867561" stroke-miterlimit="10" stroke-width="4"/>
+  <ellipse cx="293.46" cy="333.9" rx="68.6" ry="55.96" transform="translate(-137.58 442.58) rotate(-62.84)" fill="#d4e5f6" stroke="#867561" stroke-miterlimit="10" stroke-width="4"/>
+  <ellipse cx="317.92" cy="345.3" rx="68.6" ry="55.96" transform="translate(-134.43 470.54) rotate(-62.84)" fill="#e5f0fb" stroke="#867561" stroke-miterlimit="10" stroke-width="4"/>
+  <ellipse cx="320.05" cy="347.84" rx="55.08" ry="44.94" transform="translate(-135.53 473.82) rotate(-62.84)" fill="#e5f0fb" stroke="#867561" stroke-miterlimit="10" stroke-width="4"/>
+  <ellipse cx="323.98" cy="349.86" rx="23.98" ry="19.56" transform="translate(-135.19 478.41) rotate(-62.84)" fill="#5a5a59" stroke="#867561" stroke-miterlimit="10" stroke-width="4"/>
+  <g>
+    <ellipse cx="207.47" cy="294.7" rx="16.54" ry="13.5" transform="translate(-149.44 344.76) rotate(-62.84)" fill="#e9f9ff" stroke="#867561" stroke-miterlimit="10" stroke-width="4"/>
+    <ellipse cx="207.47" cy="294.7" rx="10.4" ry="8.48" transform="translate(-149.44 344.76) rotate(-62.84)" fill="#daebf9"/>
+  </g>
+  <ellipse cx="268.58" cy="247.83" rx="6.81" ry="5.56" transform="translate(-74.52 373.67) rotate(-62.84)" fill="#5a5a59" stroke="#9b9b9b" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+  <ellipse cx="268.58" cy="228.18" rx="6.81" ry="5.56" transform="translate(-57.04 362.99) rotate(-62.84)" fill="#5a5a59" stroke="#9b9b9b" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+  <path d="M296.71,368.39l-6.92,1.61c-2.04.48-4-1.08-4-3.18v-12.96c0-1.52,1.05-2.83,2.52-3.18l6.92-1.61c2.04-.48,4,1.08,4,3.18v12.96c0,1.52-1.05,2.83-2.52,3.18Z" fill="#fff" stroke="#867561" stroke-miterlimit="10" stroke-width="4"/>
+  <polygon points="291.29 163.16 250.28 172.28 230.35 165.59 271.36 156.48 291.29 163.16" fill="#fff" stroke="#867561" stroke-linejoin="round" stroke-width="4"/>
+  <line x1="349.24" y1="284.26" x2="324.78" y2="272.87" fill="#d4e5f6" stroke="#867561" stroke-miterlimit="10" stroke-width="4"/>
+  <line x1="286.61" y1="406.33" x2="262.15" y2="394.94" fill="#d4e5f6" stroke="#867561" stroke-miterlimit="10" stroke-width="4"/>
+</svg>
