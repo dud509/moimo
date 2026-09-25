@@ -121,8 +121,12 @@ export function bodyPieces(opts: {
   const regions = (REGION_MORPH[morph] ?? []).filter((r) => split_has(bodyRaw, r))
   const split = bodyRaw ? splitBody(bodyRaw) : null
 
-  // 갈라낼 선이 없는 몸통은 예전처럼 통째로 그린다
-  if (!split || !split.lines || (!morphRaw && !regions.length)) {
+  // 갈라낼 선이 없는 몸통만 통째로 그린다.
+  //
+  // 선이 있으면 무늬가 없어도 갈라서 그린다 — 귀 면적을 표시하려고 덮어
+  // 둔 라임 도형이 파일에서 귀 선보다 뒤에 있으면, 통째로 그릴 때 그
+  // 도형이 선을 덮어 귀 선만 얇아 보인다. 선은 언제나 맨 위다.
+  if (!split || !split.lines) {
     if (bodyRaw) out.push({ z: Z_BODY, svg: innards(paint(bodyRaw, Z_BODY)) })
     if (morphRaw) out.push({ z: Z_MORPH, svg: innards(paint(morphRaw, Z_MORPH)) })
     return out
