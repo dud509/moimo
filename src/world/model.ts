@@ -5,14 +5,14 @@ import { genesFromName, randomKoreanName, splitName, type MoimoGenes } from '../
  * ================================================================== */
 
 /** 13인치(1440×900) 화면에 심어둘 이웃 수. 화면이 넓으면 그만큼 더 심는다 */
-export const SEED_COUNT = 90
+export const SEED_COUNT = 170
 
 /**
  * 한 화면에 둘 수 있는 최대 인원.
  * 넘으면 심어둔 이웃부터 조용히 자리를 비켜준다 —
  * 사람이 만든 모이모는 끝까지 남는다.
  */
-export const MAX_RESIDENTS = 260
+export const MAX_RESIDENTS = 420
 
 /* ================================================================== */
 
@@ -198,25 +198,19 @@ export type Prop = {
 }
 
 /** 마을 전체에 흩뿌릴 소품 수 */
-export const PROP_COUNT = 260
+export const PROP_COUNT = 360
 
 /** 기울여 놓으면 네모가 그만큼 커진다. 자리를 잴 때 얹어 준다 */
 const ROT_PAD = 1.2
-
-/**
- * 모이모가 모여 서는 자리. 소품은 여기를 비켜서 둘레에 깔린다.
- * 나선이 이만큼 퍼지는 것을 보고 잡은 크기다 — 사람이 더 오면 무리가
- * 이 울타리를 넘어가는데, 그때는 모이모 쪽이 소품을 비켜 선다.
- */
-const CROWD = { rx: 56 * Math.sqrt(SEED_COUNT + 20) * 1.34, ry: 56 * Math.sqrt(SEED_COUNT + 20) * 0.92 }
 /** 무게를 다 더한 값 — 종류를 뽑을 때 쓴다 */
 const WEIGHT_SUM = PROP_KINDS.reduce((a, k) => a + k.weight, 0)
 
 /**
  * 소품을 흩뿌린다.
  *
- * 오브제도 소품끼리도 비켜 간다. 모이모는 이 자리를 피해서 선다 —
- * 소품과 모이모는 같은 바닥에 나란히 놓이지 겹쳐 쌓이지 않는다.
+ * 마을 구석구석에 고르게 깔린다 — 가운데를 비워 두지 않는다.
+ * 오브제도 소품끼리도 비켜 가고, 모이모는 이 자리를 피해서 선다.
+ * 소품과 모이모는 한 바닥에 나란히 놓이지 겹쳐 쌓이지 않는다.
  */
 export function scatterProps(count = PROP_COUNT): Prop[] {
   let s = 19980423
@@ -249,11 +243,6 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
     for (let attempt = 0; attempt < 90; attempt++) {
       const x = 90 + rnd() * (WORLD.w - 180)
       const y = 110 + rnd() * (WORLD.h - 200)
-      // 모이모가 모여 서는 한가운데는 통째로 비켜 준다
-      const pad = w / 2 + 20
-      const ex = (x - CENTER.x) / (CROWD.rx + pad)
-      const ey = (y - CENTER.y) / (CROWD.ry + pad)
-      if (ex * ex + ey * ey < 1) continue
       if (!free(x, y, w)) continue
       out.push({ id: `prop-${i}`, x, y, w, rot: (rnd() - 0.5) * 24, flip: rnd() < 0.5, kind })
       break
