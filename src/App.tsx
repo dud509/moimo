@@ -135,7 +135,6 @@ export default function App() {
         cache={cache}
         table={table}
         arrivedId={arrived}
-        playing={playing}
         showNames={showNames}
         hits={hits}
         onItem={openItem}
@@ -153,10 +152,10 @@ export default function App() {
 
       <nav className="dock">
         {ITEMS.map((it) => (
-          <button key={it.id} onClick={() => openItem(it.id)}>
-            {it.id === 'music' ? (playing ? '노래 끄기' : '노래 켜기') : it.name}
-          </button>
+          <button key={it.id} onClick={() => openItem(it.id)}>{it.name}</button>
         ))}
+        {/* 플레이어는 그림이 아직 없어 마을에 세우지 않는다. 노래는 여기서 켠다 */}
+        <button onClick={toggleMusic}>{playing ? '노래 끄기' : '노래 켜기'}</button>
         <button
           className="ghost"
           onClick={() => {

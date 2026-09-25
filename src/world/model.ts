@@ -43,12 +43,18 @@ export type Item = {
   keepout: number
 }
 
+/**
+ * 마을에 놓인 오브제.
+ *
+ * 처음 열었을 때 네 개가 한 화면에 다 들어오도록 유리병을 가운데 두고
+ * 네 귀퉁이로 벌려 둔다. 오른쪽 아래는 비어 있다 —
+ * 플레이어는 그림이 아직 없어 빼 두었고, 노래는 아래 띠에서 켠다.
+ */
 export const ITEMS: Item[] = [
   { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', x: 1800, y: 1180, w: 340, fill: 0.76, keepout: 210 },
-  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', x: 870,  y: 640,  w: 260, fill: 0.58, keepout: 165 },
-  { id: 'album',  name: '앨범',         tag: '기록과 방명록', x: 2760, y: 690,  w: 280, fill: 0.71, keepout: 165 },
-  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', x: 1110, y: 1840, w: 240, fill: 0.46, keepout: 150 },
-  { id: 'music',  name: '플레이어',     tag: '노래 켜기',     x: 2700, y: 1800, w: 220, fill: 1, keepout: 150 },
+  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', x: 1080, y: 830,  w: 260, fill: 0.58, keepout: 165 },
+  { id: 'album',  name: '앨범',         tag: '기록과 방명록', x: 2520, y: 830,  w: 280, fill: 0.71, keepout: 165 },
+  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', x: 1080, y: 1620, w: 240, fill: 0.46, keepout: 150 },
 ]
 
 /* ------------------------------------------------------------------ */
