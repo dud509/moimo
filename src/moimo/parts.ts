@@ -47,29 +47,22 @@ const PLAIN_WHITE = '#FFFFFF'
 const PLAIN_ACCENT = '#FFF4F3'
 
 /**
- * 색을 뒤집어 쓰는 무늬.
- *
- * 보통은 바탕이 희고 표시한 데가 이름 색이다. 여기 적힌 무늬만 반대로 —
- * 몸은 이름 색 그대로 두고 표시한 데를 희게 판다.
- */
-export const MORPH_INVERT = new Set<number>([2])
-
-/**
  * 이 몸통 색과 무늬로 어떤 색들을 쓸지.
  *
  * 무늬가 없으면 이름이 정한 색이 몸 전체를 칠한다. 무늬가 있으면 바탕은
  * 희게 두고 그 색은 무늬로 간다. 한 마리가 두 색을 갖지 않게 하려는 것이다.
- * 뒤집어 쓰는 무늬는 그 둘을 맞바꾼다.
+ *
+ * 어디를 칠하고 어디를 비울지는 무늬 파일이 정한다 — 칠할 데만 그린 무늬도
+ * 있고, 넓게 칠해 두고 비울 데를 파낸 무늬도 있다. 코드는 둘을 구별하지
+ * 않는다.
  */
 export function toneFor(c: BodyColor, morph: number) {
   const plain = morph === 0
-  const invert = MORPH_INVERT.has(morph)
-  const body = plain || invert
   return {
-    fill: body ? c.hex : PLAIN_WHITE,
-    line: body ? lineFor(c) : LINE_COLOR,
-    accent: body ? c.accent : PLAIN_ACCENT,
-    mark: invert ? PLAIN_WHITE : markFor(c),
+    fill: plain ? c.hex : PLAIN_WHITE,
+    line: plain ? lineFor(c) : LINE_COLOR,
+    accent: plain ? c.accent : PLAIN_ACCENT,
+    mark: markFor(c),
   }
 }
 
@@ -200,7 +193,7 @@ export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>
  * 꼬리는 몸통에 이어 붙은 것이라 몸통 바깥이 무늬 색으로 덮이면 꼬리만
  * 몸통 색으로 남아 동떨어져 보인다. 이 무늬일 때는 꼬리도 함께 칠한다.
  */
-export const MORPH_TAIL = new Set<number>([1, 2])
+export const MORPH_TAIL = new Set<number>([1, 2, 3, 5])
 
 /**
  * 무늬 가장자리를 어떻게 마감할지.
