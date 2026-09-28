@@ -13,6 +13,7 @@ export type MoimoGenes = {
   body: number     // 1..12
   color: number    // 1..6
   morph: number    // 0..5  (0 = 무늬 없음)
+  tone: number     // 0 = 흰 바탕, 1 = 한 톤 누른 바탕
   eye: number      // 1..11
   mouth: number    // 1..9
   cheek: number    // 1..6
@@ -98,6 +99,19 @@ function colorOf(jung: string, jong: string): number {
 /** 몸통 무늬 — 성 종성. 받침 없으면 무늬 없음 */
 const MORPH_BY_JONG: Record<string, number> = { '': 0, ㄱ: 1, ㄴ: 2, ㅁ: 3, ㅇ: 4 }
 
+/**
+ * 무늬 바탕 — 이름 첫 글자의 중성.
+ *
+ * 무늬가 다섯인데 늘 «흰 바탕 + 이름 색» 두 가지뿐이면 다섯이 다 비슷해
+ * 보인다. 바탕을 한 톤 누른 색으로도 쓸 수 있게 해 열 가지로 늘린다.
+ *
+ * 어느 쪽인지는 모음조화가 정한다 — ㅏㅑㅗㅛㅐ 같은 밝은 모음(양성)이면
+ * 바탕도 밝게 두고, ㅓㅕㅜㅠㅡㅣ 같은 어두운 모음(음성)이면 한 톤 누른다.
+ * 소리의 밝기가 그대로 색의 밝기가 되는 셈이다.
+ */
+const BRIGHT_VOWELS = new Set(['ㅏ', 'ㅑ', 'ㅗ', 'ㅛ', 'ㅐ', 'ㅒ', 'ㅘ', 'ㅚ', 'ㅙ'])
+const toneOf = (jung: string): number => (BRIGHT_VOWELS.has(jung) ? 0 : 1)
+
 /** 눈·머리장식 — 초성 */
 const CONSONANT_11: Record<string, number> = {
   ㄱ: 1, ㄴ: 2, ㄷ: 3, ㄹ: 4, ㅁ: 5, ㅂ: 6, ㅅ: 7, ㅇ: 8, ㅈ: 9, ㅎ: 10,
@@ -121,6 +135,7 @@ export function genesFromParts(p: NameParts): MoimoGenes {
     body: BODY_SPECIAL[p.surname] ?? pick(BODY_BY_CHO, p.s.cho, 12),
     color: colorOf(p.s.jung, p.s.jong),
     morph: pick(MORPH_BY_JONG, p.s.jong, 5),
+    tone: toneOf(p.n1.jung),
     eye: pick(CONSONANT_11, p.n1.cho, 11),
     mouth: pick(VOWEL_9, p.n1.jung, 9),
     cheek: pick(JONG_6, p.n1.jong, 6),
@@ -157,6 +172,7 @@ const READOUT: Array<{
   { slot: 'body',    label: '몸통',     src: 's',  place: '초성' },
   { slot: 'color',   label: '몸통 색깔', src: 's',  place: '중성' },
   { slot: 'morph',   label: '몸통 무늬', src: 's',  place: '종성' },
+  { slot: 'tone',    label: '무늬 바탕', src: 'n1', place: '중성' },
   { slot: 'eye',     label: '눈',       src: 'n1', place: '초성' },
   { slot: 'mouth',   label: '입',       src: 'n1', place: '중성' },
   { slot: 'cheek',   label: '볼 장식',  src: 'n1', place: '종성' },
@@ -175,6 +191,8 @@ export function explain(p: NameParts): Reason[] {
     let jamo: string = syl[JAMO_KEY[r.place]]
     // 색은 ㅣ 일 때만 받침까지 보고 정해지므로 그대로 읽어 준다
     if (r.slot === 'color' && jamo === 'ㅣ') jamo = p.s.jong ? 'ㅣ · 받침 있음' : 'ㅣ · 받침 없음'
+    // 바탕은 그 모음이 밝은 소리냐 어두운 소리냐로 갈린다
+    if (r.slot === 'tone') jamo = `${jamo} · ${g.tone ? '어두운 모음' : '밝은 모음'}`
     return {
       slot: r.slot,
       label: r.label,
@@ -191,14 +209,14 @@ export function explain(p: NameParts): Reason[] {
 /* ------------------------------------------------------------------ */
 
 export const SLOT_SIZES = {
-  body: 12, color: 6, morph: 6, eye: 11, mouth: 9, cheek: 6, hair: 11, tail: 9, deco: 6,
+  body: 12, color: 6, morph: 6, tone: 2, eye: 11, mouth: 9, cheek: 6, hair: 11, tail: 9, deco: 6,
 } as const
 
 export const TOTAL_COMBINATIONS = Object.values(SLOT_SIZES).reduce((a, b) => a * b, 1)
 
 /** 유전자를 짧은 코드로 — 도감 검색·공유용 */
 export const encodeGenes = (g: MoimoGenes) =>
-  [g.body, g.color, g.morph, g.eye, g.mouth, g.cheek, g.hair, g.tail, g.deco]
+  [g.body, g.color, g.morph, g.tone, g.eye, g.mouth, g.cheek, g.hair, g.tail, g.deco]
     .map((n) => n.toString(36).toUpperCase())
     .join('')
 

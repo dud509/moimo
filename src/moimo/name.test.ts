@@ -62,8 +62,11 @@ const NAMES = ['김민수','이서연','박도윤','최지우','정하준','강�
 for (const n of NAMES) {
   const g = genesFromName(n)
   if (!g) continue
+  // 무늬와 바탕만 0부터 — 무늬 0 은 «무늬 없음», 바탕 0 은 «흰 바탕» 이다
   const bad = Object.entries(g).filter(([k, v]) =>
-    k === 'morph' ? (v < 0 || v > 5) : v < 1 || v > ({body:12,color:6,eye:11,mouth:9,cheek:6,hair:11,tail:9,deco:6} as any)[k])
+    k === 'morph' ? (v < 0 || v > 5)
+      : k === 'tone' ? (v < 0 || v > 1)
+      : v < 1 || v > ({body:12,color:6,eye:11,mouth:9,cheek:6,hair:11,tail:9,deco:6} as any)[k])
   if (bad.length) { fail++; console.log(`  ✗ ${n} 범위 벗어남`, bad) }
 }
 

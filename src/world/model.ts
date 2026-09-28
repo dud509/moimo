@@ -327,7 +327,12 @@ export function loadWorld(seeds = SEED_COUNT): Resident[] {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) {
         // 예전 형식이 섞여 있어도 쓸 수 있는 것만 살린다
-        const ok = parsed.filter(usable)
+        // 유전자는 이름에서 나오는 것이라 늘 다시 계산한다.
+        // 규칙이 바뀌어도 예전에 저장된 모이모가 옛 모습으로 남지 않는다
+        const ok = parsed.filter(usable).map((r: Resident) => {
+          const g = genesFromName(r.name)
+          return g ? { ...r, genes: g } : r
+        })
         if (ok.length) return ok
       }
     }

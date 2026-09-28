@@ -109,10 +109,12 @@ export function bodyPieces(opts: {
   morphRaw?: string
   morph: number
   color: BodyColor
+  /** 0 = 흰 바탕, 1 = 한 톤 누른 바탕 */
+  tone?: number
   uid: string
 }): { z: number; svg: string }[] {
-  const { bodyRaw, morphRaw, morph, color, uid } = opts
-  const { fill, line, accent, mark } = toneFor(color, morph)
+  const { bodyRaw, morphRaw, morph, color, tone, uid } = opts
+  const { fill, line, accent, mark } = toneFor(color, morph, tone)
   const howEdge = edgeFor(color)
   const out: { z: number; svg: string }[] = []
   const paint = (raw: string, z: number) =>
@@ -258,7 +260,7 @@ export function composeMoimo(
   table: AnchorTable,
 ): string {
   const color = BODY_COLORS[genes.color - 1] ?? BODY_COLORS[0]
-  const { fill: bodyHex, line, accent, mark } = toneFor(color, genes.morph)
+  const { fill: bodyHex, line, accent, mark } = toneFor(color, genes.morph, genes.tone)
   const uid = `m${genes.body}${genes.color}${genes.morph}${genes.eye}${genes.mouth}${genes.cheek}${genes.hair}${genes.tail}${genes.deco}`
 
   const pieces: { z: number; svg: string }[] = []
@@ -279,7 +281,7 @@ export function composeMoimo(
     : undefined
   const morphRaw = morphUrl ? cache.get(morphUrl) : undefined
 
-  pieces.push(...bodyPieces({ bodyRaw, morphRaw, morph: genes.morph, color, uid }))
+  pieces.push(...bodyPieces({ bodyRaw, morphRaw, morph: genes.morph, color, tone: genes.tone, uid }))
 
   // 꼬리는 몸통에 이어 붙은 것이라, 무늬가 몸통 바깥을 덮으면 함께 칠한다
   const bodyTone = MORPH_TAIL.has(genes.morph) ? mark : bodyHex

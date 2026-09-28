@@ -120,10 +120,11 @@ function LayerReadout({
 
 /** 몸통과 무늬를 월드와 똑같은 방식으로 쌓아 보여 준다 */
 function BodyStack({
-  body, morph, color, dim,
+  body, morph, color, tone, dim,
 }: {
   body: number
   morph: number
+  tone: number
   color: (typeof BODY_COLORS)[number]
   dim: boolean
 }) {
@@ -134,10 +135,10 @@ function BodyStack({
     const pieces = bodyPieces({
       bodyRaw: bodySvg.svg ?? undefined,
       morphRaw: morphSvg.svg ?? undefined,
-      morph, color, uid,
+      morph, color, tone, uid,
     })
     return pieces.sort((a, b) => a.z - b.z).map((p) => p.svg).join('')
-  }, [bodySvg.svg, morphSvg.svg, morph, color, uid])
+  }, [bodySvg.svg, morphSvg.svg, morph, color, tone, uid])
 
   return (
     <div
@@ -150,20 +151,21 @@ function BodyStack({
 
 /* 몸통 + 무늬 + 파츠를 한 벌 쌓은 것. 무대와 모아보기가 같이 쓴다 */
 function Figure({
-  body, variant, morph, color, table, soloSlot, warnTint,
+  body, variant, morph, color, tone, table, soloSlot, warnTint,
 }: {
   body: number
   variant: Record<string, number>
   morph: number
+  tone: number
   color: (typeof BODY_COLORS)[number]
   table: AnchorTable
   soloSlot?: SlotKey | null
   warnTint?: boolean
 }) {
-  const { fill, line, accent, mark } = toneFor(color, morph)
+  const { fill, line, accent, mark } = toneFor(color, morph, tone)
   return (
     <>
-      <BodyStack body={body} morph={morph} color={color} dim={soloSlot != null} />
+      <BodyStack body={body} morph={morph} color={color} tone={tone} dim={soloSlot != null} />
       {SLOTS.map((s) => (
         <Layer
           key={s.key}
@@ -217,6 +219,7 @@ export default function AnchorEditor() {
     () => Object.fromEntries(SLOTS.map((s) => [s.key, 1])),
   )
   const [morph, setMorph] = useState(0) // 0 = 무늬 없음
+  const [tone, setTone] = useState(0)   // 0 = 흰 바탕, 1 = 한 톤 누름
   const [solo, setSolo] = useState(false)
   const [sheet, setSheet] = useState<'off' | 'bodies' | 'parts'>('off')
   const [dirty, setDirty] = useState(false)
@@ -446,6 +449,13 @@ export default function AnchorEditor() {
               ))}
             </select>
           </label>
+          <label className="toggle">
+            바탕
+            <select value={tone} onChange={(e) => setTone(Number(e.target.value))}>
+              <option value={0}>흰색</option>
+              <option value={1}>한 톤 누름</option>
+            </select>
+          </label>
         </div>
 
         {sheet !== 'off' ? (
@@ -460,7 +470,7 @@ export default function AnchorEditor() {
                     on={n === body}
                     onPick={() => setBody(n)}
                   >
-                    <Figure body={n} variant={variant} morph={morph} color={color} table={table} />
+                    <Figure body={n} variant={variant} morph={morph} color={color} tone={tone} table={table} />
                   </Cell>
                 ))
               : sel && Array.from({ length: SLOTS.find((s) => s.key === sel)!.count }, (_, i) => i + 1).map((n) => (
@@ -476,6 +486,7 @@ export default function AnchorEditor() {
                       body={body}
                       variant={{ ...variant, [sel]: n }}
                       morph={morph}
+                      tone={tone}
                       color={color}
                       table={table}
                     />
@@ -502,6 +513,7 @@ export default function AnchorEditor() {
               body={body}
               variant={variant}
               morph={morph}
+              tone={tone}
               color={color}
               table={table}
               soloSlot={solo && sel ? sel : null}
