@@ -33,7 +33,7 @@ export const BODY_COLORS = [
 
 export type BodyColor = (typeof BODY_COLORS)[number]
 
-/** 이 몸통 색의 짙은 쪽 */
+/** 이 몸통 색의 짙은 쪽 — 무늬를 진하게 넣을 때 쓴다 */
 export const deepFor = (c: BodyColor): string => c.deep
 
 /** 이 몸통 색일 때 쓸 선 색 */
@@ -52,48 +52,14 @@ const PLAIN_WHITE = '#FFFFFF'
 const PLAIN_ACCENT = '#FFF4F3'
 
 /**
- * 바탕을 한 톤 누를 때 얼마나 내릴지.
- * 밝기를 내리면서 채도는 조금 눌러 둔다. 검은색을 섞으면 회색으로 죽고,
- * 채도를 그대로 두면 파스텔 무리에서 혼자 쨍해진다.
- */
-export const DEEP_LIGHT = 0.1
-export const DEEP_SAT = 0.62
-
-/** 같은 색의 짙은 쪽. 색상은 그대로 두고 밝기만 내린다 */
-export function deepen(hex: string): string {
-  const v = parseInt(hex.slice(1), 16)
-  const r = ((v >> 16) & 255) / 255
-  const g = ((v >> 8) & 255) / 255
-  const b = (v & 255) / 255
-  const hi = Math.max(r, g, b)
-  const lo = Math.min(r, g, b)
-  const l = (hi + lo) / 2
-  const d = hi - lo
-  let h = 0
-  if (d) {
-    h = hi === r ? ((g - b) / d + (g < b ? 6 : 0)) : hi === g ? (b - r) / d + 2 : (r - g) / d + 4
-    h /= 6
-  }
-  const s0 = d ? d / (1 - Math.abs(2 * l - 1)) : 0
-
-  const L = Math.max(0.08, l - DEEP_LIGHT)
-  const S = Math.min(1, s0 * DEEP_SAT)
-
-  const c = (1 - Math.abs(2 * L - 1)) * S
-  const x = c * (1 - Math.abs(((h * 6) % 2) - 1))
-  const m = L - c / 2
-  const seg = Math.floor(h * 6) % 6
-  const rgb = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][seg]
-  const to = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, '0')
-  return `#${to(rgb[0])}${to(rgb[1])}${to(rgb[2])}`.toUpperCase()
-}
-
-/**
  * 이 몸통 색과 무늬로 어떤 색들을 쓸지.
  *
- * 무늬가 없으면 이름이 정한 색이 몸 전체를 칠한다. 무늬가 있으면 바탕을
- * 비우고 그 색은 무늬로 간다. 한 마리가 두 색을 갖지 않게 하려는 것이다.
- * 바탕을 희게 비울지 한 톤 눌러 비울지는 이름이 정한다(tone).
+ * 무늬가 없으면 이름이 정한 색이 몸 전체를 칠한다. 무늬가 있으면 바탕은
+ * 희게 두고 그 색은 무늬로 간다. 한 마리가 두 색을 갖지 않게 하려는 것이다.
+ *
+ * 이름이 «누름» 쪽이면(tone) 그 둘을 뒤집는다 — 몸이 이름 색을 그대로 입고
+ * 무늬 자리에 짙은 쪽 색이 앉는다. 같은 무늬라도 흰 바탕에 연하게 앉은 것과
+ * 제 색 위에 진하게 앉은 것이 따로 있게 된다.
  *
  * 어디를 칠하고 어디를 비울지는 무늬 파일이 정한다 — 칠할 데만 그린 무늬도
  * 있고, 넓게 칠해 두고 비울 데를 파낸 무늬도 있다. 코드는 둘을 구별하지
@@ -102,11 +68,13 @@ export function deepen(hex: string): string {
 export function toneFor(c: BodyColor, morph: number, tone = 0) {
   const plain = morph === 0
   const deep = !plain && tone === 1
+  // 무늬가 없거나 뒤집은 쪽이면 몸이 이름 색을 그대로 입는다
+  const dressed = plain || deep
   return {
-    fill: plain ? c.hex : deep ? deepFor(c) : PLAIN_WHITE,
-    line: plain ? lineFor(c) : LINE_COLOR,
-    accent: plain ? c.accent : deep ? deepen(c.accent) : PLAIN_ACCENT,
-    mark: markFor(c),
+    fill: dressed ? c.hex : PLAIN_WHITE,
+    line: dressed ? lineFor(c) : LINE_COLOR,
+    accent: dressed ? c.accent : PLAIN_ACCENT,
+    mark: deep ? deepFor(c) : markFor(c),
   }
 }
 
