@@ -19,17 +19,22 @@ export const LINE_COLOR = '#38312A'
  *   hex     몸통 전체 색
  *   accent  몸통 안에서 따로 노는 부분의 색 (배·얼굴판 같은 곳)
  *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
+ *   deep    바탕을 «한 톤 누를» 때 쓸 색. 없으면 hex 를 눌러서 만든다.
+ *           진갈색은 더 눌러 봤자 까매지기만 해서 분홍과 짝지어 둔다
  */
 export const BODY_COLORS = [
   { jamo: 'ㅣ받침', name: '파랑', hex: '#E1EEF4', accent: '#FFFFFF' },
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF' },
   { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF' },
-  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79' },
+  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79', deep: '#FFF0F4' },
   { jamo: 'ㅣ', name: '민트', hex: '#E4F1EA', accent: '#FFFFFF' },
   { jamo: '나머지', name: '연보라', hex: '#E8E3F3', accent: '#FFFFFF' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
+
+/** 이 몸통 색의 짙은 쪽 — 따로 적어 두었으면 그것을, 아니면 눌러서 만든다 */
+export const deepFor = (c: BodyColor): string => ('deep' in c ? c.deep : deepen(c.hex))
 
 /** 이 몸통 색일 때 쓸 선 색 */
 export const lineFor = (c: BodyColor): string => ('line' in c ? c.line : LINE_COLOR)
@@ -48,10 +53,11 @@ const PLAIN_ACCENT = '#FFF4F3'
 
 /**
  * 바탕을 한 톤 누를 때 얼마나 내릴지.
- * 밝기만 내리고 색은 오히려 조금 살린다 — 검은색을 섞으면 회색으로 죽는다.
+ * 밝기를 내리면서 채도는 조금 눌러 둔다. 검은색을 섞으면 회색으로 죽고,
+ * 채도를 그대로 두면 파스텔 무리에서 혼자 쨍해진다.
  */
 export const DEEP_LIGHT = 0.1
-export const DEEP_SAT = 1
+export const DEEP_SAT = 0.62
 
 /** 같은 색의 짙은 쪽. 색상은 그대로 두고 밝기만 내린다 */
 export function deepen(hex: string): string {
@@ -97,7 +103,7 @@ export function toneFor(c: BodyColor, morph: number, tone = 0) {
   const plain = morph === 0
   const deep = !plain && tone === 1
   return {
-    fill: plain ? c.hex : deep ? deepen(c.hex) : PLAIN_WHITE,
+    fill: plain ? c.hex : deep ? deepFor(c) : PLAIN_WHITE,
     line: plain ? lineFor(c) : LINE_COLOR,
     accent: plain ? c.accent : deep ? deepen(c.accent) : PLAIN_ACCENT,
     mark: markFor(c),
