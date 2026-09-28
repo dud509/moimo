@@ -22,7 +22,7 @@ export const LINE_COLOR = '#38312A'
  *   deep    누름 쪽일 때 무늬에 쓸 색. 색마다 눈으로 골라 둔 값이다.
  *           진갈색만 짙은 쪽이 없어서 — 더 눌러 봤자 까매진다 — 분홍과 짝지었다
  *   noFlip  누름 쪽이어도 뒤집지 않는다. 진갈색은 몸이 제 색을 입으면
- *           너무 무거워서 흰 바탕을 그대로 두고 무늬 색만 바꾼다
+ *           너무 무거워서, 흰 바탕 자리에 deep 을 깔고 무늬는 제 색으로 둔다
  */
 export const BODY_COLORS = [
   { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FFFFFF', deep: '#CAE0E5' },
@@ -70,13 +70,15 @@ const PLAIN_ACCENT = '#FFF4F3'
 export function toneFor(c: BodyColor, morph: number, tone = 0) {
   const plain = morph === 0
   const deep = !plain && tone === 1
+  // 뒤집지 않는 색은 무늬를 제 색으로 두고 흰 바탕 자리만 짙은 쪽으로 깐다
+  const held = deep && 'noFlip' in c
   // 무늬가 없거나 뒤집은 쪽이면 몸이 이름 색을 그대로 입는다
-  const dressed = plain || (deep && !('noFlip' in c))
+  const dressed = plain || (deep && !held)
   return {
-    fill: dressed ? c.hex : PLAIN_WHITE,
+    fill: dressed ? c.hex : held ? deepFor(c) : PLAIN_WHITE,
     line: dressed ? lineFor(c) : LINE_COLOR,
     accent: dressed ? c.accent : PLAIN_ACCENT,
-    mark: deep ? deepFor(c) : markFor(c),
+    mark: deep && !held ? deepFor(c) : markFor(c),
   }
 }
 
