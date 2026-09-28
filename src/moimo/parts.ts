@@ -19,14 +19,16 @@ export const LINE_COLOR = '#38312A'
  *   hex     몸통 전체 색
  *   accent  몸통 안에서 따로 노는 부분의 색 (배·얼굴판 같은 곳)
  *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
- *   deep    무늬가 있을 때 바탕에 쓸 짙은 쪽 색. 색마다 눈으로 골라 둔 값이다.
+ *   deep    누름 쪽일 때 무늬에 쓸 색. 색마다 눈으로 골라 둔 값이다.
  *           진갈색만 짙은 쪽이 없어서 — 더 눌러 봤자 까매진다 — 분홍과 짝지었다
+ *   noFlip  누름 쪽이어도 뒤집지 않는다. 진갈색은 몸이 제 색을 입으면
+ *           너무 무거워서 흰 바탕을 그대로 두고 무늬 색만 바꾼다
  */
 export const BODY_COLORS = [
   { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FFFFFF', deep: '#CAE0E5' },
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF', deep: '#FFF2BB' },
   { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6' },
-  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79', deep: '#FFF0F4' },
+  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79', deep: '#FFF0F4', noFlip: true },
   { jamo: 'ㅣ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7' },
   { jamo: '나머지', name: '연보라', hex: '#E9E6F4', accent: '#FFFFFF', deep: '#D9D6EA' },
 ] as const
@@ -69,7 +71,7 @@ export function toneFor(c: BodyColor, morph: number, tone = 0) {
   const plain = morph === 0
   const deep = !plain && tone === 1
   // 무늬가 없거나 뒤집은 쪽이면 몸이 이름 색을 그대로 입는다
-  const dressed = plain || deep
+  const dressed = plain || (deep && !('noFlip' in c))
   return {
     fill: dressed ? c.hex : PLAIN_WHITE,
     line: dressed ? lineFor(c) : LINE_COLOR,
