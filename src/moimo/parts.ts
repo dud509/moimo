@@ -19,22 +19,22 @@ export const LINE_COLOR = '#38312A'
  *   hex     몸통 전체 색
  *   accent  몸통 안에서 따로 노는 부분의 색 (배·얼굴판 같은 곳)
  *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
- *   deep    바탕을 «한 톤 누를» 때 쓸 색. 없으면 hex 를 눌러서 만든다.
- *           진갈색은 더 눌러 봤자 까매지기만 해서 분홍과 짝지어 둔다
+ *   deep    무늬가 있을 때 바탕에 쓸 짙은 쪽 색. 색마다 눈으로 골라 둔 값이다.
+ *           진갈색만 짙은 쪽이 없어서 — 더 눌러 봤자 까매진다 — 분홍과 짝지었다
  */
 export const BODY_COLORS = [
-  { jamo: 'ㅣ받침', name: '파랑', hex: '#E1EEF4', accent: '#FFFFFF' },
-  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF' },
-  { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF' },
+  { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FFFFFF', deep: '#CAE0E5' },
+  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF', deep: '#FFF2BB' },
+  { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6' },
   { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79', deep: '#FFF0F4' },
-  { jamo: 'ㅣ', name: '민트', hex: '#E4F1EA', accent: '#FFFFFF' },
-  { jamo: '나머지', name: '연보라', hex: '#E8E3F3', accent: '#FFFFFF' },
+  { jamo: 'ㅣ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7' },
+  { jamo: '나머지', name: '연보라', hex: '#E9E6F4', accent: '#FFFFFF', deep: '#D9D6EA' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
 
-/** 이 몸통 색의 짙은 쪽 — 따로 적어 두었으면 그것을, 아니면 눌러서 만든다 */
-export const deepFor = (c: BodyColor): string => ('deep' in c ? c.deep : deepen(c.hex))
+/** 이 몸통 색의 짙은 쪽 */
+export const deepFor = (c: BodyColor): string => c.deep
 
 /** 이 몸통 색일 때 쓸 선 색 */
 export const lineFor = (c: BodyColor): string => ('line' in c ? c.line : LINE_COLOR)
