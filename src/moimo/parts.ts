@@ -47,18 +47,29 @@ const PLAIN_WHITE = '#FFFFFF'
 const PLAIN_ACCENT = '#FFF4F3'
 
 /**
+ * 색을 뒤집어 쓰는 무늬.
+ *
+ * 보통은 바탕이 희고 표시한 데가 이름 색이다. 여기 적힌 무늬만 반대로 —
+ * 몸은 이름 색 그대로 두고 표시한 데를 희게 판다.
+ */
+export const MORPH_INVERT = new Set<number>([2])
+
+/**
  * 이 몸통 색과 무늬로 어떤 색들을 쓸지.
  *
  * 무늬가 없으면 이름이 정한 색이 몸 전체를 칠한다. 무늬가 있으면 바탕은
  * 희게 두고 그 색은 무늬로 간다. 한 마리가 두 색을 갖지 않게 하려는 것이다.
+ * 뒤집어 쓰는 무늬는 그 둘을 맞바꾼다.
  */
 export function toneFor(c: BodyColor, morph: number) {
   const plain = morph === 0
+  const invert = MORPH_INVERT.has(morph)
+  const body = plain || invert
   return {
-    fill: plain ? c.hex : PLAIN_WHITE,
-    line: plain ? lineFor(c) : LINE_COLOR,
-    accent: plain ? c.accent : PLAIN_ACCENT,
-    mark: markFor(c),
+    fill: body ? c.hex : PLAIN_WHITE,
+    line: body ? lineFor(c) : LINE_COLOR,
+    accent: body ? c.accent : PLAIN_ACCENT,
+    mark: invert ? PLAIN_WHITE : markFor(c),
   }
 }
 
@@ -240,10 +251,10 @@ export const edgeFor = (c: BodyColor): 'line' | 'soft' | 'fade' | 'flat' =>
 
 export const REGION_MORPH: Record<number, RegionSpec[]> = {
   1: [{ 부위: '귀' }],                 // 귀 양쪽 + 무늬 파일
-  2: [],                               // 무늬 파일만 — 귀는 건드리지 않는다
+  2: [],                               // 무늬 파일만. 색을 뒤집어 흰 무늬로 판다
   3: [],                               // 무늬 파일만
   4: [{ 부위: '귀', 쪽: '왼' }],       // 왼쪽 귀 + 무늬 파일
-  5: [],                               // 무늬 파일만
+  5: [{ 부위: '귀' }],                 // 귀 양쪽 + 무늬 파일
   // 받침이 없으면 무늬 0 — 아무것도 그리지 않는다
 }
 
