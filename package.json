@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --open /",
     "anchors": "vite --open /anchors.html",
+    "mapping": "vite --open /mapping.html",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "esbuild src/moimo/name.test.ts --bundle --platform=node --format=esm --outfile=node_modules/.tmp/name.test.mjs --log-level=error && node node_modules/.tmp/name.test.mjs"

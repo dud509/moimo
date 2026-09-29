@@ -70,9 +70,6 @@ export function splitName(raw: string): NameParts | null {
 /* 자모 → 파츠 번호                                                     */
 /* ------------------------------------------------------------------ */
 
-const pick = (map: Record<string, number>, jamo: string, fallback: number) =>
-  map[jamo] ?? fallback
-
 /*
  * 파츠를 어느 자모에 줄지는 «흔한 정도» 가 정한다.
  *
@@ -86,27 +83,41 @@ const pick = (map: Record<string, number>, jamo: string, fallback: number) =>
  * 입과 꼬리, 볼과 몸통장식은 같은 묶음을 쓰되 표는 따로 둔다.
  *
  * 성은 통계청 2015 인구주택총조사 성씨 비율, 이름은 1970~2020년대 인기
- * 이름 240여 개로 어림했다. 표 옆 숫자가 그 비율(%)이다.
+ * 이름 240여 개로 어림했다. pct 가 그 비율(%)이다. 매칭표 페이지
+ * (/mapping.html) 가 이 표를 그대로 읽어 그림으로 보여 준다.
  */
 
-/** 몸통 — 성 초성. 김·이·박은 성 전체를 먼저 본다 */
-const BODY_SPECIAL: Record<string, number> = {
-  김: 2,   // 22.4
-  이: 8,   // 15.3
-  박: 6,   //  8.8
+/**
+ * 표 한 줄 — 이 자모들이면 이 파츠.
+ * jamo 가 null 이면 «나머지» 줄이다. 표에 없는 자모는 모두 이 줄로 간다.
+ * '' 는 받침 없음.
+ */
+export type MapRow = { jamo: string[] | null; label?: string; part: number; pct: number; note?: string }
+
+const toMap = (rows: MapRow[]) => {
+  const map: Record<string, number> = {}
+  for (const r of rows) for (const j of r.jamo ?? []) map[j] = r.part
+  const rest = rows.find((r) => !r.jamo)?.part
+  return (jamo: string) => map[jamo] ?? rest!
 }
-const BODY_BY_CHO: Record<string, number> = {
-  ㅇ: 4,   // 11.5
-  ㅈ: 3,   // 11.1
-  ㅅ: 11,  //  6.9
-  ㄱ: 10,  //  6.4
-  ㅊ: 5,   //  5.9
-  ㅎ: 12,  //  5.7
-           //  2.5  나머지 (ㅁㄷㄹㅋㅌㅍ) → 7
-  ㅂ: 9,   //  2.1
-  ㄴ: 1,   //  1.5
-}
-const BODY_REST = 7
+
+/** 몸통 — 성. 김·이·박은 성 전체를 먼저 보고, 아니면 초성으로 떨어진다 */
+const BODY_SURNAME: MapRow[] = [
+  { jamo: ['김'], part: 2, pct: 22.4 },
+  { jamo: ['이'], part: 8, pct: 15.3 },
+  { jamo: ['박'], part: 6, pct: 8.8 },
+]
+const BODY_CHO: MapRow[] = [
+  { jamo: ['ㅇ'], part: 4, pct: 11.5 },
+  { jamo: ['ㅈ'], part: 3, pct: 11.1 },
+  { jamo: ['ㅅ'], part: 11, pct: 6.9 },
+  { jamo: ['ㄱ'], part: 10, pct: 6.4 },
+  { jamo: ['ㅊ'], part: 5, pct: 5.9 },
+  { jamo: ['ㅎ'], part: 12, pct: 5.7 },
+  { jamo: null, label: 'ㅁ ㄷ ㄹ ㅋ ㅌ ㅍ', part: 7, pct: 2.5 },
+  { jamo: ['ㅂ'], part: 9, pct: 2.1 },
+  { jamo: ['ㄴ'], part: 1, pct: 1.5 },
+]
 
 /** 몸통 색깔 — 성 중성 */
 /**
@@ -125,15 +136,15 @@ function colorOf(jung: string, jong: string): number {
   return 6
 }
 
-/** 몸통 무늬 — 성 종성. 받침 없으면(34.5) 무늬 없음. 비율은 받침 있는 성 안에서 */
-const MORPH_BY_JONG: Record<string, number> = {
-  '': 0,
-  ㅁ: 3,   // 39.8
-  ㅇ: 2,   // 23.4
-  ㄴ: 1,   // 20.5
-  ㄱ: 5,   // 15.9
-}
-const MORPH_REST = 4  // 0.3  ㄹ ㅂ ㅅ …
+/** 몸통 무늬 — 성 종성. 받침 없는 성(34.5%)은 무늬가 없다. pct 는 받침 있는 성 안에서 */
+const MORPH: MapRow[] = [
+  { jamo: [''], part: 0, pct: 0, note: '받침 없는 성은 무늬 없음' },
+  { jamo: ['ㅁ'], part: 3, pct: 39.8 },
+  { jamo: ['ㅇ'], part: 2, pct: 23.4 },
+  { jamo: ['ㄴ'], part: 1, pct: 20.5 },
+  { jamo: ['ㄱ'], part: 5, pct: 15.9 },
+  { jamo: null, label: 'ㄹ ㅂ ㅅ …', part: 4, pct: 0.3 },
+]
 
 /**
  * 무늬 바탕 — 이름 첫 글자의 중성.
@@ -148,94 +159,111 @@ const MORPH_REST = 4  // 0.3  ㄹ ㅂ ㅅ …
 const BRIGHT_VOWELS = new Set(['ㅏ', 'ㅑ', 'ㅗ', 'ㅛ', 'ㅐ', 'ㅒ', 'ㅘ', 'ㅚ', 'ㅙ'])
 const toneOf = (jung: string): number => (BRIGHT_VOWELS.has(jung) ? 0 : 1)
 
-/**
- * 눈 — 이름 앞 글자 초성.
- *
+/*
  * 눈 01 과 머리장식 11 은 겹쳐 놓으면 못 볼 꼴이 된다. 둘은 이름의 서로
  * 다른 글자에서 오므로 규칙으로 떼어 놓을 수 없고, 만날 확률만 낮출 수 있다.
  * 그래서 이 둘은 무난함 순서와 상관없이 가장 드문 자모에 묶어 둔다 —
  * 눈 01 은 앞 글자의 ㄹ, 머리장식 11 은 뒤 글자의 ㄷ. «라다» 처럼 되어야
  * 만나므로 사실상 만나지 않는다.
  */
-const EYE: Record<string, number> = {
-  ㅅ: 2,   // 22.5
-  ㅈ: 10,  // 20.8
-  ㅇ: 4,   // 19.2
-  ㅎ: 9,   // 10.0
-  ㅁ: 5,   //  7.9
-  ㄷ: 6,   //  5.8
-  ㄱ: 3,   //  5.8
-           //  4.2  ㅊㅋㅌㅍ → 7
-  ㅂ: 8,   //  1.7
-  ㄴ: 11,  //  1.2
-  ㄹ: 1,   //  0.8  머리장식 11 과 떼어 둔다
-}
-const EYE_REST = 7
+
+/** 눈 — 이름 앞 글자 초성 */
+const EYE: MapRow[] = [
+  { jamo: ['ㅅ'], part: 2, pct: 22.5 },
+  { jamo: ['ㅈ'], part: 10, pct: 20.8 },
+  { jamo: ['ㅇ'], part: 4, pct: 19.2 },
+  { jamo: ['ㅎ'], part: 9, pct: 10.0 },
+  { jamo: ['ㅁ'], part: 5, pct: 7.9 },
+  { jamo: ['ㄷ'], part: 6, pct: 5.8 },
+  { jamo: ['ㄱ'], part: 3, pct: 5.8 },
+  { jamo: null, label: 'ㅊ ㅋ ㅌ ㅍ', part: 7, pct: 4.2 },
+  { jamo: ['ㅂ'], part: 8, pct: 1.7 },
+  { jamo: ['ㄴ'], part: 11, pct: 1.2 },
+  { jamo: ['ㄹ'], part: 1, pct: 0.8, note: '머리장식 11 과 떼어 둔다' },
+]
 
 /** 머리장식 — 이름 뒤 글자 초성 */
-const HAIR: Record<string, number> = {
-  ㅇ: 4,   // 35.4
-  ㅎ: 7,   // 19.6
-  ㅈ: 6,   // 19.6
-  ㅅ: 3,   //  8.8
-  ㅁ: 5,   //  5.8
-  ㄹ: 1,   //  5.4
-  ㅂ: 2,   //  1.7
-  ㄱ: 8,   //  1.2
-           //  1.2  ㅊㅋㅌㅍ → 10
-  ㄴ: 9,   //  1.2
-  ㄷ: 11,  //  0.1  눈 01 과 떼어 둔다
-}
-const HAIR_REST = 10
+const HAIR: MapRow[] = [
+  { jamo: ['ㅇ'], part: 4, pct: 35.4 },
+  { jamo: ['ㅎ'], part: 7, pct: 19.6 },
+  { jamo: ['ㅈ'], part: 6, pct: 19.6 },
+  { jamo: ['ㅅ'], part: 3, pct: 8.8 },
+  { jamo: ['ㅁ'], part: 5, pct: 5.8 },
+  { jamo: ['ㄹ'], part: 1, pct: 5.4 },
+  { jamo: ['ㅂ'], part: 2, pct: 1.7 },
+  { jamo: ['ㄱ'], part: 8, pct: 1.2 },
+  { jamo: null, label: 'ㅊ ㅋ ㅌ ㅍ', part: 10, pct: 1.2 },
+  { jamo: ['ㄴ'], part: 9, pct: 1.2 },
+  { jamo: ['ㄷ'], part: 11, pct: 0.1, note: '눈 01 과 떼어 둔다' },
+]
 
 /** 입 — 이름 앞 글자 중성 */
-const MOUTH: Record<string, number> = {
-  ㅣ: 5,   // 24.2
-  ㅓ: 4,   // 13.8
-  ㅜ: 9,   // 12.1
-  ㅏ: 1,   // 10.8
-  ㅐ: 7, ㅔ: 7, ㅒ: 7, ㅖ: 7,   // 10.4
-  ㅕ: 3,   //  9.2
-  ㅗ: 6,   //  8.3
-  ㅡ: 2,   //  5.8
-}
-const MOUTH_REST = 8  // 5.4  ㅑㅛㅠㅘㅝㅢㅟㅚㅙㅞ
+const MOUTH: MapRow[] = [
+  { jamo: ['ㅣ'], part: 5, pct: 24.2 },
+  { jamo: ['ㅓ'], part: 4, pct: 13.8 },
+  { jamo: ['ㅜ'], part: 9, pct: 12.1 },
+  { jamo: ['ㅏ'], part: 1, pct: 10.8 },
+  { jamo: ['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'], part: 7, pct: 10.4 },
+  { jamo: ['ㅕ'], part: 3, pct: 9.2 },
+  { jamo: ['ㅗ'], part: 6, pct: 8.3 },
+  { jamo: ['ㅡ'], part: 2, pct: 5.8 },
+  { jamo: null, label: 'ㅑ ㅛ ㅠ ㅘ ㅝ ㅢ ㅟ ㅚ ㅙ ㅞ', part: 8, pct: 5.4 },
+]
 
 /** 꼬리 — 이름 뒤 글자 중성 */
-const TAIL: Record<string, number> = {
-  ㅜ: 3,   // 25.8
-  ㅣ: 7,   // 18.8
-  ㅕ: 2,   // 13.8
-           // 12.5  ㅑㅛㅠㅘㅝㅢㅟㅚㅙㅞ → 6
-  ㅓ: 1,   //  7.9
-  ㅏ: 4,   //  7.5
-  ㅡ: 9,   //  6.2
-  ㅗ: 5,   //  5.8
-  ㅐ: 8, ㅔ: 8, ㅒ: 8, ㅖ: 8,   // 1.7
-}
-const TAIL_REST = 6
+const TAIL: MapRow[] = [
+  { jamo: ['ㅜ'], part: 3, pct: 25.8 },
+  { jamo: ['ㅣ'], part: 7, pct: 18.8 },
+  { jamo: ['ㅕ'], part: 2, pct: 13.8 },
+  { jamo: null, label: 'ㅑ ㅛ ㅠ ㅘ ㅝ ㅢ ㅟ ㅚ ㅙ ㅞ', part: 6, pct: 12.5 },
+  { jamo: ['ㅓ'], part: 1, pct: 7.9 },
+  { jamo: ['ㅏ'], part: 4, pct: 7.5 },
+  { jamo: ['ㅡ'], part: 9, pct: 6.2 },
+  { jamo: ['ㅗ'], part: 5, pct: 5.8 },
+  { jamo: ['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'], part: 8, pct: 1.7 },
+]
 
 /** 볼 장식 — 이름 앞 글자 종성. 받침 없음도 그림이 따로 있다 */
-const CHEEK: Record<string, number> = {
-  '': 1,   // 59.6
-  ㄴ: 5,   // 22.9
-  ㅇ: 3,   // 16.7
-           //  0.8  ㄹ ㅂ ㅅ … → 4
-  ㄱ: 2,   //  드묾
-  ㅁ: 6,   //  드묾
-}
-const CHEEK_REST = 4
+const CHEEK: MapRow[] = [
+  { jamo: [''], part: 1, pct: 59.6 },
+  { jamo: ['ㄴ'], part: 5, pct: 22.9 },
+  { jamo: ['ㅇ'], part: 3, pct: 16.7 },
+  { jamo: null, label: 'ㄹ ㅂ ㅅ …', part: 4, pct: 0.8 },
+  { jamo: ['ㄱ'], part: 2, pct: 0.1 },
+  { jamo: ['ㅁ'], part: 6, pct: 0.1 },
+]
 
 /** 몸통 장식 — 이름 뒤 글자 종성 */
-const DECO: Record<string, number> = {
-  ㄴ: 6,   // 48.3
-  '': 3,   // 35.8
-  ㅇ: 5,   //  8.8
-           //  2.9  ㄹ ㅂ ㅅ … → 4
-  ㄱ: 1,   //  2.9
-  ㅁ: 2,   //  1.2
-}
-const DECO_REST = 4
+const DECO: MapRow[] = [
+  { jamo: ['ㄴ'], part: 6, pct: 48.3 },
+  { jamo: [''], part: 3, pct: 35.8 },
+  { jamo: ['ㅇ'], part: 5, pct: 8.8 },
+  { jamo: null, label: 'ㄹ ㅂ ㅅ …', part: 4, pct: 2.9 },
+  { jamo: ['ㄱ'], part: 1, pct: 2.9 },
+  { jamo: ['ㅁ'], part: 2, pct: 1.2 },
+]
+
+/** 매칭표 페이지가 읽는 표. 자리 이름과 어느 글자에서 오는지를 함께 둔다 */
+export const MAPPING = [
+  { slot: 'body', label: '몸통', from: '성 초성', rows: [...BODY_SURNAME, ...BODY_CHO] },
+  { slot: 'morph', label: '몸통 무늬', from: '성 종성', rows: MORPH },
+  { slot: 'eye', label: '눈', from: '이름 앞 글자 초성', rows: EYE },
+  { slot: 'mouth', label: '입', from: '이름 앞 글자 중성', rows: MOUTH },
+  { slot: 'cheek', label: '볼 장식', from: '이름 앞 글자 종성', rows: CHEEK },
+  { slot: 'hair', label: '머리 장식', from: '이름 뒤 글자 초성', rows: HAIR },
+  { slot: 'tail', label: '꼬리', from: '이름 뒤 글자 중성', rows: TAIL },
+  { slot: 'deco', label: '몸통 장식', from: '이름 뒤 글자 종성', rows: DECO },
+] as const satisfies ReadonlyArray<{ slot: keyof MoimoGenes; label: string; from: string; rows: MapRow[] }>
+
+const bodySurname = toMap([...BODY_SURNAME, { jamo: null, part: 0, pct: 0 }])
+const bodyOf = toMap(BODY_CHO)
+const morphOf = toMap(MORPH)
+const eyeOf = toMap(EYE)
+const hairOf = toMap(HAIR)
+const mouthOf = toMap(MOUTH)
+const tailOf = toMap(TAIL)
+const cheekOf = toMap(CHEEK)
+const decoOf = toMap(DECO)
 
 /* ------------------------------------------------------------------ */
 /* 조립                                                                */
@@ -243,16 +271,16 @@ const DECO_REST = 4
 
 export function genesFromParts(p: NameParts): MoimoGenes {
   return {
-    body: BODY_SPECIAL[p.surname] ?? pick(BODY_BY_CHO, p.s.cho, BODY_REST),
+    body: bodySurname(p.surname) || bodyOf(p.s.cho),
     color: colorOf(p.s.jung, p.s.jong),
-    morph: pick(MORPH_BY_JONG, p.s.jong, MORPH_REST),
+    morph: morphOf(p.s.jong),
     tone: toneOf(p.n1.jung),
-    eye: pick(EYE, p.n1.cho, EYE_REST),
-    mouth: pick(MOUTH, p.n1.jung, MOUTH_REST),
-    cheek: pick(CHEEK, p.n1.jong, CHEEK_REST),
-    hair: pick(HAIR, p.n2.cho, HAIR_REST),
-    tail: pick(TAIL, p.n2.jung, TAIL_REST),
-    deco: pick(DECO, p.n2.jong, DECO_REST),
+    eye: eyeOf(p.n1.cho),
+    mouth: mouthOf(p.n1.jung),
+    cheek: cheekOf(p.n1.jong),
+    hair: hairOf(p.n2.cho),
+    tail: tailOf(p.n2.jung),
+    deco: decoOf(p.n2.jong),
   }
 }
 

@@ -301,7 +301,9 @@ export function composeMoimo(
   pieces.sort((a, b) => a.z - b.z)
 
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS} ${CANVAS}">` +
+    // xlink 도 선언해 둔다. 파츠 중에 xlink:href 를 쓰는 것이 있어(볼 03),
+    // <img> 로 띄우면 선언이 없다는 이유로 그림 전체가 깨진다
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${CANVAS} ${CANVAS}">` +
     `<defs>` +
     `<clipPath id="half-l-${uid}"><rect x="0" y="0" width="${C}" height="${CANVAS}"/></clipPath>` +
     `<clipPath id="half-r-${uid}"><rect x="${C}" y="0" width="${C}" height="${CANVAS}"/></clipPath>` +
