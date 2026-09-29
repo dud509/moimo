@@ -318,6 +318,11 @@ export const REGION_MORPH: Record<number, RegionSpec[]> = {
  * 그 무늬에서만 위 표 대신 이것을 쓴다 — 적지 않은 무늬는 위 표 그대로다.
  */
 export const REGION_BODY: Record<number, Record<number, RegionSpec[]>> = {
+  // 몸통 04 는 귀가 얼굴 위로 접혀 내려와, 무늬 3 이 얼굴 자리를 비울 때
+  // 귀까지 뚫린다. 귀를 무늬 위로 한 번 더 칠해 메운다
+  4: {
+    3: [{ 부위: '귀' }],
+  },
   // 몸통 07 은 무늬 1·4 에서만, 그것도 노랑으로 따로 표시해 둔 자리를 칠한다
   7: {
     1: [{ 부위: '귀2' }],
