@@ -57,6 +57,16 @@ const PLAIN_WHITE = '#FFFFFF'
 const PLAIN_ACCENT = '#FFF4F3'
 
 /**
+ * 뒤집지 않는 무늬.
+ *
+ * 무늬 파일은 «칠할 데만 그린 그림» 일 수도, «넓게 칠하고 비울 데를 파낸
+ * 그림» 일 수도 있다. 뒤엣것에 누름 쪽의 뒤집기를 또 걸면 두 번 뒤집혀
+ * 몸이 통째로 짙은 색이 된다. 그런 무늬는 여기 적어 뒤집기를 건너뛴다 —
+ * 흰 바탕 자리에만 짙은 쪽을 깔고 무늬는 제 색으로 둔다.
+ */
+export const MORPH_HOLD = new Set<number>([2])
+
+/**
  * 이 몸통 색과 무늬로 어떤 색들을 쓸지.
  *
  * 무늬가 없으면 이름이 정한 색이 몸 전체를 칠한다. 무늬가 있으면 바탕은
@@ -73,8 +83,8 @@ const PLAIN_ACCENT = '#FFF4F3'
 export function toneFor(c: BodyColor, morph: number, tone = 0) {
   const plain = morph === 0
   const deep = !plain && tone === 1
-  // 뒤집지 않는 색은 무늬를 제 색으로 두고 흰 바탕 자리만 짙은 쪽으로 깐다
-  const held = deep && 'noFlip' in c
+  // 뒤집지 않는 색·무늬는 무늬를 제 색으로 두고 흰 바탕 자리만 짙은 쪽으로 깐다
+  const held = deep && ('noFlip' in c || MORPH_HOLD.has(morph))
   // 무늬가 없거나 뒤집은 쪽이면 몸이 이름 색을 그대로 입는다
   const dressed = plain || (deep && !held)
   return {
