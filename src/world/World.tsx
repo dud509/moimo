@@ -32,13 +32,6 @@ const MOIMO_PX = 104
 /* ------------------------------------------------------------------ */
 
 /**
- * 배경 그림. `public/world/background.png` 를 놓으면 크림색 바탕 위에 깔린다.
- * 없으면 그냥 안 보이고 예전처럼 크림색과 옅은 얼룩만 남는다.
- * 월드 크기(3600×2400)에 맞춰 늘어나므로 그 비율로 그리면 된다.
- */
-const BACKGROUND = '/world/background.jpg'
-
-/**
  * 오브제 그림. `public/items/jar.png` 처럼 놓으면 그 그림을 쓰고,
  * 없으면 지금까지 쓰던 그린 그림으로 돌아간다. 한 개씩 옮겨 갈 수 있다.
  */
@@ -272,7 +265,6 @@ export const World = forwardRef<WorldHandle, Props>(function World(
       onPointerCancel={endPointer}
     >
       <div ref={worldRef} className={`world${glide ? ' glide' : ''}`} style={{ width: WORLD.w, height: WORLD.h }}>
-        <Ground />
 
         {ITEMS.map((it) => (
           <button
@@ -319,12 +311,3 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   )
 })
 
-/* ------------------------------------------------------------------ */
-/* 바닥 — 넣어 둔 배경 그림 한 장                                        */
-/* ------------------------------------------------------------------ */
-
-const Ground = memo(function Ground() {
-  return (
-    <img className="ground-art" src={BACKGROUND} alt="" width={WORLD.w} height={WORLD.h} draggable={false} />
-  )
-})

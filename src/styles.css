@@ -4,6 +4,8 @@
   --cream: #F7EDD1;
   --cream-deep: #F1E4C0;
   --paper: #FFFDF4;
+  /* 마을 바탕. 그림 없이 이 색 한 장으로 깐다 */
+  --ground: #FEFDF8;
   --ink: #38312A;
   --ink-soft: #9C907F;
   --line: #E9DFC6;
@@ -19,7 +21,7 @@ body {
   margin: 0;
   font-family: var(--font);
   color: var(--ink);
-  background: var(--cream);
+  background: var(--ground);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
@@ -34,20 +36,12 @@ button { cursor: pointer; }
 
 .world-box {
   position: absolute; inset: 0; overflow: hidden;
-  cursor: grab; touch-action: none; background: var(--cream);
+  cursor: grab; touch-action: none; background: var(--ground);
 }
 .world-box:active { cursor: grabbing; }
 .world { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
 .world.glide { transition: transform 0.8s cubic-bezier(0.22, 0.9, 0.24, 1); }
 .ground { position: absolute; top: 0; left: 0; pointer-events: none; }
-
-/* 그림 배경 — public/world/background.png 를 놓으면 크림색 위에 깔린다.
-   파일이 없으면 브라우저가 아무것도 그리지 않으므로 그냥 비어 있다 */
-.ground-art {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%;
-  object-fit: cover; pointer-events: none; user-select: none;
-}
 
 /* 소품 — 모이모 아래, 배경 위에 깔리는 작은 그림들 */
 .prop {
