@@ -28,11 +28,11 @@ export const LINE_COLOR = '#38312A'
  */
 export const BODY_COLORS = [
   { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FFFFFF', deep: '#CAE0E5', point: '#F9DEE6' },
-  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF', deep: '#FFF2BB', point: '#D9D6EA' },
+  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF', deep: '#FFF2BB', point: '#DDD6EA' },
   { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6', point: '#CAE0E5' },
   { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', deep: '#FFF0F4', noFlip: true, point: '#F9DEE6' },
   { jamo: 'ㅣ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7', point: '#6B584B' },
-  { jamo: '나머지', name: '연보라', hex: '#E9E6F4', accent: '#FFFFFF', deep: '#D9D6EA', point: '#FFF2BB' },
+  { jamo: '나머지', name: '연보라', hex: '#ECE7F2', accent: '#FFFFFF', deep: '#DDD6EA', point: '#FFF2BB' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
