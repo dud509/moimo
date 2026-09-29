@@ -30,7 +30,7 @@ export const BODY_COLORS = [
   { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FFFFFF', deep: '#CAE0E5', point: '#FFD9A8' },
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF', deep: '#FFF2BB', point: '#A8D8E8' },
   { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6', point: '#BFE3C8' },
-  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79', deep: '#FFF0F4', noFlip: true, point: '#F6B3B1' },
+  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', deep: '#FFF0F4', noFlip: true, point: '#F6B3B1' },
   { jamo: 'ㅣ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7', point: '#FFC2D4' },
   { jamo: '나머지', name: '연보라', hex: '#E9E6F4', accent: '#FFFFFF', deep: '#D9D6EA', point: '#FFE29A' },
 ] as const
