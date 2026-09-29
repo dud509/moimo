@@ -8,7 +8,7 @@
 import {
   BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, regionsFor,
   SLOTS, Z_BODY, Z_MORPH, edgeFor,
-  bodyUrl, composeAnchor, decoFor, fillFor, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor,
+  bodyUrl, composeAnchor, decoFor, fillFor, usesPoint, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor,
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
@@ -288,13 +288,13 @@ export function composeMoimo(
   // 꼬리는 몸통에 이어 붙은 것이라, 무늬가 몸통 바깥을 덮으면 함께 칠한다
   const bodyTone = MORPH_TAIL.has(genes.morph) ? mark : bodyHex
 
-  // 몸통 장식은 몸통에 파묻히지 않게 따로 색을 고른다
+  // 몸통 장식 같은 것은 몸통에 파묻히지 않게 따로 색을 고른다
   const decoHex = decoFor(color)
 
   for (const s of SLOTS) {
     const key = s.key as SlotKey
     const n = genes[s.key as keyof MoimoGenes] as number
-    const base = key === 'tail' ? bodyTone : key === 'deco' ? decoHex : bodyHex
+    const base = key === 'tail' ? bodyTone : usesPoint(key, n) ? decoHex : bodyHex
     push(s.z, partUrl(key, n), fillFor(key, n, base), composeAnchor(table, genes.body, key, n))
   }
 

@@ -186,6 +186,22 @@ export const TINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
   tail: 'all',
   eye: [11],
   deco: [1, 3, 4, 5],   // 02·06 은 제 색을 그대로 쓴다
+  hair: [4, 5],
+}
+
+/**
+ * 몸통 색 대신 포인트 색(point)을 입는 파츠.
+ * 몸 위에 얹히는 장식은 몸통 색이면 파묻히므로 몸통 장식과 같은 짝 색을 쓴다.
+ * TINTED 에도 적혀 있어야 칠해진다.
+ */
+const POINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
+  deco: 'all',
+  hair: [4, 5],
+}
+
+export const usesPoint = (slot: SlotKey, part: number): boolean => {
+  const rule = POINTED[slot]
+  return rule === 'all' || (Array.isArray(rule) && rule.includes(part))
 }
 
 
@@ -206,7 +222,7 @@ export const isTinted = (slot: SlotKey, part: number): boolean => {
 }
 
 /**
- * 몸통 장식에 쓸 색.
+ * 몸통 장식(과 POINTED 에 적힌 파츠)에 쓸 색.
  *
  * 몸통 색을 그대로 쓰면 장식이 몸에 파묻힌다. 색마다 어울리는 짝을
  * 정해 두고 그것을 쓴다 — 무늬가 있든 없든, 뒤집었든 아니든 한 색이다.

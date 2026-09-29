@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  decoFor, fillFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
+  decoFor, fillFor, usesPoint, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
   warnIfNothingToTint,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
@@ -174,7 +174,7 @@ function Figure({
             fill: fillFor(
               s.key, variant[s.key],
               s.key === 'tail' && MORPH_TAIL.has(morph) ? mark
-                : s.key === 'deco' ? decoFor(color)
+                : usesPoint(s.key, variant[s.key]) ? decoFor(color)
                 : fill,
             ),
             line, accent,
