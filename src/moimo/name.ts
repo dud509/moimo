@@ -112,9 +112,19 @@ const MORPH_BY_JONG: Record<string, number> = { '': 0, ㄱ: 1, ㄴ: 2, ㅁ: 3, �
 const BRIGHT_VOWELS = new Set(['ㅏ', 'ㅑ', 'ㅗ', 'ㅛ', 'ㅐ', 'ㅒ', 'ㅘ', 'ㅚ', 'ㅙ'])
 const toneOf = (jung: string): number => (BRIGHT_VOWELS.has(jung) ? 0 : 1)
 
-/** 눈·머리장식 — 초성 */
+/**
+ * 눈·머리장식 — 초성.
+ *
+ * 눈 01 과 머리장식 11 은 겹쳐 놓으면 못 볼 꼴이 된다. 둘은 이름의 서로
+ * 다른 글자에서 오므로 규칙으로 떼어 놓을 수 없고, 만날 확률만 낮출 수 있다.
+ *
+ * 그래서 01 을 가장 드문 초성인 ㄹ 에 맡긴다 — 이름 글자가 ㄹ 로 시작하는
+ * 일은 거의 없다. 머리장식 11 은 ㅊㅋㅌㅍ 계열인데, 그 둘이 한 이름에서
+ * 같이 나오려면 «ㄹ○ + ㅊ○» 처럼 되어야 해서 사실상 만나지 않는다.
+ * 밀려난 ㄱ 은 ㄹ 이 있던 04 로 간다.
+ */
 const CONSONANT_11: Record<string, number> = {
-  ㄱ: 1, ㄴ: 2, ㄷ: 3, ㄹ: 4, ㅁ: 5, ㅂ: 6, ㅅ: 7, ㅇ: 8, ㅈ: 9, ㅎ: 10,
+  ㄹ: 1, ㄴ: 2, ㄷ: 3, ㄱ: 4, ㅁ: 5, ㅂ: 6, ㅅ: 7, ㅇ: 8, ㅈ: 9, ㅎ: 10,
 }
 
 /** 입·꼬리 — 중성 */
@@ -130,34 +140,16 @@ const JONG_6: Record<string, number> = { ㄱ: 1, ㄴ: 2, ㅇ: 3, ㅁ: 4, '': 5 }
 /* 조립                                                                */
 /* ------------------------------------------------------------------ */
 
-/**
- * 같이 나오면 안 되는 짝.
- *
- * 눈과 머리장식은 이름의 서로 다른 글자에서 오므로 어떤 조합이든 나온다.
- * 그런데 그림끼리 겹쳐 못 볼 꼴이 되는 짝이 있다. 그럴 때는 뒤엣것을
- * 옆 번호로 비켜 준다 — 규칙을 통째로 바꾸는 것보다 이 편이 조용하다.
- *
- * 눈 01 은 이름 첫 글자 초성 ㄱ, 머리장식 11 은 둘째 글자 초성 ㅊㅋㅌㅍ 계열이다.
- * 김경태·이기철처럼 흔한 이름이 여기 걸린다.
- */
-const CLASH: { eye: number; hair: number; 대신: number }[] = [
-  { eye: 1, hair: 11, 대신: 10 },
-]
-
 export function genesFromParts(p: NameParts): MoimoGenes {
-  const eye = pick(CONSONANT_11, p.n1.cho, 11)
-  let hair = pick(CONSONANT_11, p.n2.cho, 11)
-  for (const c of CLASH) if (eye === c.eye && hair === c.hair) hair = c.대신
-
   return {
     body: BODY_SPECIAL[p.surname] ?? pick(BODY_BY_CHO, p.s.cho, 12),
     color: colorOf(p.s.jung, p.s.jong),
     morph: pick(MORPH_BY_JONG, p.s.jong, 5),
     tone: toneOf(p.n1.jung),
-    eye,
+    eye: pick(CONSONANT_11, p.n1.cho, 11),
     mouth: pick(VOWEL_9, p.n1.jung, 9),
     cheek: pick(JONG_6, p.n1.jong, 6),
-    hair,
+    hair: pick(CONSONANT_11, p.n2.cho, 11),
     tail: pick(VOWEL_9, p.n2.jung, 9),
     deco: pick(JONG_6, p.n2.jong, 6),
   }
