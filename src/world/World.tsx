@@ -68,7 +68,7 @@ function Prop({ prop, art }: { prop: (typeof PROPS)[number]; art?: Tight }) {
         top: prop.y,
         width: prop.w,
         height: prop.w * art.ratio,
-        transform: `translate(-50%, -50%) rotate(${prop.rot.toFixed(1)}deg) scaleX(${prop.flip ? -1 : 1})`,
+        transform: `translate(-50%, -50%) rotate(${prop.rot.toFixed(1)}deg)`,
       }}
     />
   )

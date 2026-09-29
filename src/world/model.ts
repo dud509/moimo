@@ -184,7 +184,6 @@ export type Prop = {
   w: number
   /** 기울기(도) */
   rot: number
-  flip: boolean
   /** PROP_KINDS 의 몇 번째 그림인지 */
   kind: number
 }
@@ -236,7 +235,9 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
       const x = 90 + rnd() * (WORLD.w - 180)
       const y = 110 + rnd() * (WORLD.h - 200)
       if (!free(x, y, w)) continue
-      out.push({ id: `prop-${i}`, x, y, w, rot: (rnd() - 0.5) * 24, flip: rnd() < 0.5, kind })
+      const rot = (rnd() - 0.5) * 24
+      rnd() // 뒤집기에 쓰던 난수 — 빼면 뒤따르는 소품 자리가 다 바뀐다
+      out.push({ id: `prop-${i}`, x, y, w, rot, kind })
       break
     }
   }
