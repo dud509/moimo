@@ -21,16 +21,18 @@ export const LINE_COLOR = '#38312A'
  *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
  *   deep    누름 쪽일 때 무늬에 쓸 색. 색마다 눈으로 골라 둔 값이다.
  *           진갈색만 짙은 쪽이 없어서 — 더 눌러 봤자 까매진다 — 분홍과 짝지었다
+ *   point   몸통 장식에 쓸 색. 몸통 색과 같으면 장식이 파묻히므로
+ *           색마다 어울리는 짝을 따로 정해 둔다
  *   noFlip  누름 쪽이어도 뒤집지 않는다. 진갈색은 몸이 제 색을 입으면
  *           너무 무거워서, 흰 바탕 자리에 deep 을 깔고 무늬는 제 색으로 둔다
  */
 export const BODY_COLORS = [
-  { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FFFFFF', deep: '#CAE0E5' },
-  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF', deep: '#FFF2BB' },
-  { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6' },
-  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79', deep: '#FFF0F4', noFlip: true },
-  { jamo: 'ㅣ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7' },
-  { jamo: '나머지', name: '연보라', hex: '#E9E6F4', accent: '#FFFFFF', deep: '#D9D6EA' },
+  { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FFFFFF', deep: '#CAE0E5', point: '#FFD9A8' },
+  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF', deep: '#FFF2BB', point: '#A8D8E8' },
+  { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6', point: '#BFE3C8' },
+  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', line: '#A08C79', deep: '#FFF0F4', noFlip: true, point: '#F6B3B1' },
+  { jamo: 'ㅣ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7', point: '#FFC2D4' },
+  { jamo: '나머지', name: '연보라', hex: '#E9E6F4', accent: '#FFFFFF', deep: '#D9D6EA', point: '#FFE29A' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
@@ -191,13 +193,10 @@ export const isTinted = (slot: SlotKey, part: number): boolean => {
 /**
  * 몸통 장식에 쓸 색.
  *
- * 몸통과 같은 색으로 칠하면 장식이 안 보인다. 무늬 색을 따라가되,
- * 그것마저 몸통 색과 같으면 — 무늬 없는 모이모가 그렇다 — 짙은 쪽을 쓴다.
+ * 몸통 색을 그대로 쓰면 장식이 몸에 파묻힌다. 색마다 어울리는 짝을
+ * 정해 두고 그것을 쓴다 — 무늬가 있든 없든, 뒤집었든 아니든 한 색이다.
  */
-export function decoFor(c: BodyColor, morph: number, tone = 0): string {
-  const t = toneFor(c, morph, tone)
-  return t.fill.toUpperCase() === t.mark.toUpperCase() ? deepFor(c) : t.mark
-}
+export const decoFor = (c: BodyColor): string => c.point
 
 /** 이 파츠를 어떤 색으로 채울지 */
 export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>

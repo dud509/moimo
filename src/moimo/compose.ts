@@ -287,7 +287,7 @@ export function composeMoimo(
   const bodyTone = MORPH_TAIL.has(genes.morph) ? mark : bodyHex
 
   // 몸통 장식은 몸통에 파묻히지 않게 따로 색을 고른다
-  const decoHex = decoFor(color, genes.morph, genes.tone)
+  const decoHex = decoFor(color)
 
   for (const s of SLOTS) {
     const key = s.key as SlotKey

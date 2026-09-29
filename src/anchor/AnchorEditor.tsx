@@ -174,7 +174,7 @@ function Figure({
             fill: fillFor(
               s.key, variant[s.key],
               s.key === 'tail' && MORPH_TAIL.has(morph) ? mark
-                : s.key === 'deco' ? decoFor(color, morph, tone)
+                : s.key === 'deco' ? decoFor(color)
                 : fill,
             ),
             line, accent,
