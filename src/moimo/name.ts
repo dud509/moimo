@@ -130,16 +130,34 @@ const JONG_6: Record<string, number> = { ㄱ: 1, ㄴ: 2, ㅇ: 3, ㅁ: 4, '': 5 }
 /* 조립                                                                */
 /* ------------------------------------------------------------------ */
 
+/**
+ * 같이 나오면 안 되는 짝.
+ *
+ * 눈과 머리장식은 이름의 서로 다른 글자에서 오므로 어떤 조합이든 나온다.
+ * 그런데 그림끼리 겹쳐 못 볼 꼴이 되는 짝이 있다. 그럴 때는 뒤엣것을
+ * 옆 번호로 비켜 준다 — 규칙을 통째로 바꾸는 것보다 이 편이 조용하다.
+ *
+ * 눈 01 은 이름 첫 글자 초성 ㄱ, 머리장식 11 은 둘째 글자 초성 ㅊㅋㅌㅍ 계열이다.
+ * 김경태·이기철처럼 흔한 이름이 여기 걸린다.
+ */
+const CLASH: { eye: number; hair: number; 대신: number }[] = [
+  { eye: 1, hair: 11, 대신: 10 },
+]
+
 export function genesFromParts(p: NameParts): MoimoGenes {
+  const eye = pick(CONSONANT_11, p.n1.cho, 11)
+  let hair = pick(CONSONANT_11, p.n2.cho, 11)
+  for (const c of CLASH) if (eye === c.eye && hair === c.hair) hair = c.대신
+
   return {
     body: BODY_SPECIAL[p.surname] ?? pick(BODY_BY_CHO, p.s.cho, 12),
     color: colorOf(p.s.jung, p.s.jong),
     morph: pick(MORPH_BY_JONG, p.s.jong, 5),
     tone: toneOf(p.n1.jung),
-    eye: pick(CONSONANT_11, p.n1.cho, 11),
+    eye,
     mouth: pick(VOWEL_9, p.n1.jung, 9),
     cheek: pick(JONG_6, p.n1.jong, 6),
-    hair: pick(CONSONANT_11, p.n2.cho, 11),
+    hair,
     tail: pick(VOWEL_9, p.n2.jung, 9),
     deco: pick(JONG_6, p.n2.jong, 6),
   }
