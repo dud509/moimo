@@ -40,8 +40,9 @@ export type BodyColor = (typeof BODY_COLORS)[number]
 /** 이 몸통 색의 짙은 쪽 — 무늬를 진하게 넣을 때 쓴다 */
 export const deepFor = (c: BodyColor): string => c.deep
 
-/** 이 몸통 색일 때 쓸 선 색 */
-export const lineFor = (c: BodyColor): string => ('line' in c ? c.line : LINE_COLOR)
+/** 이 몸통 색일 때 쓸 선 색. 적어 두지 않으면 모두 같은 선 색을 쓴다 */
+export const lineFor = (c: BodyColor): string =>
+  'line' in c ? (c as { line: string }).line : LINE_COLOR
 
 /**
  * 이 몸통 색일 때 무늬와 귀를 칠할 색.
