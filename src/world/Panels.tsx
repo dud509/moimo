@@ -21,7 +21,7 @@ export function Jar({
   const parts = splitName(name)
   const genes = genesFromName(name)
   const preview: Resident | null = genes && parts
-    ? { id: 'preview', name: parts.full, genes, x: 0, y: 0, flip: false, phase: 0, at: 0, mine: true }
+    ? { id: 'preview', name: parts.full, genes, x: 0, y: 0, phase: 0, at: 0, mine: true }
     : null
 
   return (

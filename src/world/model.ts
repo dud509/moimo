@@ -60,7 +60,6 @@ export type Resident = {
   genes: MoimoGenes
   x: number
   y: number
-  flip: boolean
   /** 흔들림 위상 */
   phase: number
   at: number
@@ -255,10 +254,14 @@ export function makeResident(
   taken: { x: number; y: number }[] = [],
 ): Resident {
   const { x, y } = spotFor(n, rnd, taken)
+  const id = `${Date.now().toString(36)}-${Math.floor(rnd() * 1e6).toString(36)}`
+  // 모이모는 좌우를 뒤집지 않는다 — 한쪽에만 있는 무늬·장식이 반대로 가 버린다.
+  // 뒤집기에 쓰던 난수는 그대로 뽑아 버린다. 빼면 뒤따르는 값이 밀려
+  // 심어 둔 이웃들의 이름과 자리가 통째로 바뀐다
+  rnd()
   return {
-    id: `${Date.now().toString(36)}-${Math.floor(rnd() * 1e6).toString(36)}`,
+    id,
     name, genes, x, y,
-    flip: rnd() < 0.42,
     phase: rnd(),
     at: Date.now(),
     mine,
@@ -279,10 +282,10 @@ export function seedResidents(count: number): Resident[] {
     const genes = genesFromName(name)
     if (!genes) continue
     const { x, y } = spotFor(out.length, rnd, out)
+    rnd() // 뒤집기에 쓰던 난수 — makeResident 참고
     out.push({
       id: `seed-${out.length}`,
       name, genes, x, y,
-      flip: rnd() < 0.42,
       phase: rnd(),
       at: 0,
       mine: false,

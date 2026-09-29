@@ -300,14 +300,14 @@ export const World = forwardRef<WorldHandle, Props>(function World(
               style={{
                 left: r.x,
                 top: r.y,
-                transform: `translate(-50%, -100%) scaleX(${r.flip ? -1 : 1})`,
+                transform: 'translate(-50%, -100%)',
                 animationDelay: `${(r.phase * -2.8).toFixed(2)}s`,
               }}
               onClick={() => onResident(r)}
             >
               <MoimoImg resident={r} cache={cache} table={table} />
               {(showNames || (hits && hits.has(r.id))) && (
-                <span className="moimo-name" style={{ transform: `translateX(-50%) scaleX(${r.flip ? -1 : 1})` }}>
+                <span className="moimo-name">
                   {r.name}
                 </span>
               )}
