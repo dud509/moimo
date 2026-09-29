@@ -79,7 +79,7 @@ function silhouette(bodySvg: string): string {
   let m: RegExpExecArray | null
   while ((m = re.exec(bodySvg))) {
     const tag = m[0]
-    if (!/fill="(#fff|#ffffff|white|lime|aqua|cyan|#0f0|#00ff00|#0ff|#00ffff)"/i.test(tag)) continue
+    if (!/fill="(#fff|#ffffff|white|lime|aqua|cyan|yellow|#0f0|#00ff00|#0ff|#00ffff|#ff0|#ffff00)"/i.test(tag)) continue
     out.push(tag.replace(/\s(fill|stroke|stroke-[a-z]+|opacity)="[^"]*"/gi, ''))
   }
   return out.join('')

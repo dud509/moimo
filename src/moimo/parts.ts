@@ -122,11 +122,15 @@ export const SOURCE_ACCENT = '#FF00FF'
  *
  * 귀처럼 몸통마다 자리가 다른 자리는 무늬 한 장으로 칠할 수 없다.
  * 그래서 몸통 파일 안에서 그 부위를 눈에 띄는 색으로 칠해 표시해 둔다.
- * 일러스트레이터는 이 색들을 `lime`, `aqua` 로 적어 내보내기도 한다.
+ * 일러스트레이터는 이 색들을 `lime`, `aqua`, `yellow` 로 적어 내보내기도 한다.
  * 평소에는 몸통 색으로 덮어 없는 것처럼 두고, 그 무늬일 때만 칠한다.
+ *
+ * 귀가 둘인 것은 한 몸통에서 무늬마다 다른 자리를 칠하고 싶을 때가 있어서다.
+ * 라임으로 한 벌, 노랑으로 또 한 벌 표시해 두고 무늬별로 골라 쓴다.
  */
 export const MARKS = {
   귀: /fill="(#00ff00|#0f0|lime)"/i,
+  귀2: /fill="(#ffff00|#ff0|yellow)"/i,
 } as const
 
 /** 무늬 파일에서 «칠할 자리» 로 표시해 둔 색 */
@@ -287,7 +291,12 @@ export const REGION_MORPH: Record<number, RegionSpec[]> = {
  * 그 무늬에서만 위 표 대신 이것을 쓴다 — 적지 않은 무늬는 위 표 그대로다.
  */
 export const REGION_BODY: Record<number, Record<number, RegionSpec[]>> = {
-  7: { 5: [] },   // 몸통 07 은 무늬 1·4 에서만 귀를 칠한다
+  // 몸통 07 은 무늬 1·4 에서만 귀를 칠하고, 그 둘이 서로 다른 자리다
+  7: {
+    1: [{ 부위: '귀' }],    // 라임으로 표시한 자리
+    4: [{ 부위: '귀2' }],   // 노랑으로 표시한 자리
+    5: [],
+  },
 }
 
 /** 이 몸통·이 무늬에서 칠할 부위 */
@@ -434,10 +443,10 @@ export function prepareSvg(svg: string, paint: Paint, uid: string): string {
     .replace(/\b(fill|stroke):\s*magenta\b/gi, (_m, a: string) => `${a}:${accent ?? fill}`)
     .replace(/rgb\(\s*255\s*,\s*0\s*,\s*255\s*\)/gi, accent ?? fill)
     // 표시색 — 칠할 일이 없으면 몸통 색으로 덮어 없는 것처럼 둔다.
-    // 라임은 귀 면적, 아쿠아는 무늬 자리다
-    .replace(/#00ff00\b|#0f0\b/gi, ear)
-    .replace(/\b(fill|stroke)="lime"/gi, (_m, a: string) => `${a}="${ear}"`)
-    .replace(/\b(fill|stroke):\s*lime\b/gi, (_m, a: string) => `${a}:${ear}`)
+    // 라임과 노랑은 귀 면적, 아쿠아는 무늬 자리다
+    .replace(/#00ff00\b|#0f0\b|#ffff00\b|#ff0\b/gi, ear)
+    .replace(/\b(fill|stroke)="(lime|yellow)"/gi, (_m, a: string) => `${a}="${ear}"`)
+    .replace(/\b(fill|stroke):\s*(lime|yellow)\b/gi, (_m, a: string) => `${a}:${ear}`)
     .replace(/#00ffff\b|#0ff\b/gi, morph)
     .replace(/\b(fill|stroke)="(aqua|cyan)"/gi, (_m, a: string) => `${a}="${morph}"`)
     .replace(/\b(fill|stroke):\s*(aqua|cyan)\b/gi, (_m, a: string) => `${a}:${morph}`)
