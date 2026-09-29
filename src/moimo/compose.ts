@@ -6,7 +6,7 @@
  */
 
 import {
-  BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, REGION_MORPH,
+  BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, regionsFor,
   SLOTS, Z_BODY, Z_MORPH, edgeFor,
   bodyUrl, composeAnchor, decoFor, fillFor, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor,
   type AnchorTable, type SlotKey,
@@ -111,16 +111,18 @@ export function bodyPieces(opts: {
   color: BodyColor
   /** 0 = 흰 바탕, 1 = 한 톤 누른 바탕 */
   tone?: number
+  /** 몸통 번호 — 몸통마다 따로 정한 부위 규칙을 찾을 때 쓴다 */
+  body?: number
   uid: string
 }): { z: number; svg: string }[] {
-  const { bodyRaw, morphRaw, morph, color, tone, uid } = opts
+  const { bodyRaw, morphRaw, morph, color, tone, body, uid } = opts
   const { fill, line, accent, mark } = toneFor(color, morph, tone)
   const howEdge = edgeFor(color)
   const out: { z: number; svg: string }[] = []
   const paint = (raw: string, z: number) =>
     prepareSvg(raw, { fill, line, accent }, `${uid}${z}`)
 
-  const regions = (REGION_MORPH[morph] ?? []).filter((r) => split_has(bodyRaw, r))
+  const regions = regionsFor(body, morph).filter((r) => split_has(bodyRaw, r))
   const split = bodyRaw ? splitBody(bodyRaw) : null
 
   // 갈라낼 선이 없는 몸통만 통째로 그린다.
@@ -281,7 +283,7 @@ export function composeMoimo(
     : undefined
   const morphRaw = morphUrl ? cache.get(morphUrl) : undefined
 
-  pieces.push(...bodyPieces({ bodyRaw, morphRaw, morph: genes.morph, color, tone: genes.tone, uid }))
+  pieces.push(...bodyPieces({ bodyRaw, morphRaw, morph: genes.morph, color, tone: genes.tone, body: genes.body, uid }))
 
   // 꼬리는 몸통에 이어 붙은 것이라, 무늬가 몸통 바깥을 덮으면 함께 칠한다
   const bodyTone = MORPH_TAIL.has(genes.morph) ? mark : bodyHex

@@ -279,6 +279,21 @@ export const REGION_MORPH: Record<number, RegionSpec[]> = {
   // 받침이 없으면 무늬 0 — 아무것도 그리지 않는다
 }
 
+/**
+ * 몸통마다 따로 정하는 규칙.
+ *
+ * 위 표는 열두 몸통에 똑같이 적용된다. 그런데 몸통에 따라 귀 모양이 달라
+ * 어떤 무늬에서는 칠하지 않는 편이 나을 때가 있다. 여기 적어 둔 몸통은
+ * 그 무늬에서만 위 표 대신 이것을 쓴다 — 적지 않은 무늬는 위 표 그대로다.
+ */
+export const REGION_BODY: Record<number, Record<number, RegionSpec[]>> = {
+  7: { 5: [] },   // 몸통 07 은 무늬 1·4 에서만 귀를 칠한다
+}
+
+/** 이 몸통·이 무늬에서 칠할 부위 */
+export const regionsFor = (body: number | undefined, morph: number): RegionSpec[] =>
+  (body !== undefined ? REGION_BODY[body]?.[morph] : undefined) ?? REGION_MORPH[morph] ?? []
+
 export const Z_BODY = 2
 export const Z_MORPH = 3
 

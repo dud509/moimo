@@ -135,7 +135,7 @@ function BodyStack({
     const pieces = bodyPieces({
       bodyRaw: bodySvg.svg ?? undefined,
       morphRaw: morphSvg.svg ?? undefined,
-      morph, color, tone, uid,
+      morph, color, tone, body, uid,
     })
     return pieces.sort((a, b) => a.z - b.z).map((p) => p.svg).join('')
   }, [bodySvg.svg, morphSvg.svg, morph, color, tone, uid])
