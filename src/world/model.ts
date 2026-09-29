@@ -241,7 +241,10 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
       break
     }
   }
-  return out
+  // 별사탕은 셋 중 하나를 걷어 2/3 만 남긴다.
+  // 뽑는 수를 줄이면 난수가 밀려 상자 자리까지 다 바뀌므로, 다 깔고 나서 솎는다
+  let candy = 0
+  return out.filter((p) => !PROP_KINDS[p.kind].src.includes('starcandy') || ++candy % 3 !== 0)
 }
 
 /**

@@ -148,11 +148,17 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     const vh = el.clientHeight
     const ww = WORLD.w * c.scale
     const wh = WORLD.h * c.scale
+    // 끝까지 줄였으면 마우스 자리와 상관없이 마을을 정중앙에 둔다
+    if (c.scale <= cover() * 1.001) {
+      c.tx = (vw - ww) / 2
+      c.ty = (vh - wh) / 2
+      return c
+    }
     const pad = 140
     c.tx = ww < vw ? (vw - ww) / 2 : Math.min(pad, Math.max(vw - ww - pad, c.tx))
     c.ty = wh < vh ? (vh - wh) / 2 : Math.min(pad, Math.max(vh - wh - pad, c.ty))
     return c
-  }, [])
+  }, [cover])
 
   const flyTo = useCallback((wx: number, wy: number, scale?: number) => {
     const el = boxRef.current
