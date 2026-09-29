@@ -176,10 +176,19 @@ export const World = forwardRef<WorldHandle, Props>(function World(
       ty: el.clientHeight / 2 - CENTER.y * s,
     })
     apply()
-    // 창 크기가 바뀌면 다시 덮을 만큼 당긴다
+    // 창 크기가 바뀌면 다시 덮을 만큼 당긴다.
+    // 배율만 바꾸면 왼쪽 위를 기준으로 커져서 마을이 한쪽으로 쏠리므로,
+    // 바뀌기 전 화면 한가운데 있던 곳을 바뀐 뒤에도 한가운데 둔다
+    let vw = el.clientWidth
+    let vh = el.clientHeight
     const onResize = () => {
       const c = camRef.current
-      camRef.current = clamp({ ...c, scale: Math.max(c.scale, cover()) })
+      const wx = (vw / 2 - c.tx) / c.scale
+      const wy = (vh / 2 - c.ty) / c.scale
+      vw = el.clientWidth
+      vh = el.clientHeight
+      const s = Math.max(c.scale, cover())
+      camRef.current = clamp({ scale: s, tx: vw / 2 - wx * s, ty: vh / 2 - wy * s })
       apply()
     }
     window.addEventListener('resize', onResize)
