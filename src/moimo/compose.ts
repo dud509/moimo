@@ -249,8 +249,8 @@ export function bodyPieces(opts: {
     })
   })
 
-  // 귀 안쪽 분홍은 귀 면적 위로 올린다. 아래 깔리면 귀를 칠할 때 묻힌다
-  if (regions.length && split.inner) out.push({ z: Z_MORPH + 0.3, svg: paint(split.inner, Z_MORPH + 0.3) })
+  // 귀 안쪽은 귀 면적과 무늬 위로 올린다. 아래 깔리면 칠할 때 묻힌다
+  if ((regions.length || morphRaw) && split.inner) out.push({ z: Z_MORPH + 0.3, svg: paint(split.inner, Z_MORPH + 0.3) })
 
   out.push({ z: Z_MORPH + 0.5, svg: paint(split.lines, Z_MORPH + 0.5) })
   return out

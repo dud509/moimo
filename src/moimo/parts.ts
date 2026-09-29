@@ -17,7 +17,8 @@ export const LINE_COLOR = '#38312A'
  * 몸통 색깔 — 성 중성.
  *
  *   hex     몸통 전체 색
- *   accent  몸통 안에서 따로 노는 부분의 색 (배·얼굴판 같은 곳)
+ *   accent  귀 안쪽 색 — 몸통 파일에 마젠타로 칠해 둔 자리. 무늬가 있든 없든
+ *           이 색을 쓴다. 파랑·노랑·분홍은 흰색, 나머지는 분홍
  *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
  *   deep    누름 쪽일 때 무늬에 쓸 색. 색마다 눈으로 골라 둔 값이다.
  *           진갈색만 짙은 쪽이 없어서 — 더 눌러 봤자 까매진다 — 분홍과 짝지었다
@@ -30,9 +31,9 @@ export const BODY_COLORS = [
   { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FFFFFF', deep: '#CAE0E5', point: '#F9DEE6' },
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FFFFFF', deep: '#FFF2BB', point: '#DDD6EA' },
   { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6', point: '#CAE0E5' },
-  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#fff0f0', deep: '#FFF0F4', noFlip: true, point: '#f9dee6' },
-  { jamo: 'ㅣ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7', point: '#6B584B' },
-  { jamo: '나머지', name: '연보라', hex: '#ECE7F2', accent: '#FFFFFF', deep: '#DDD6EA', point: '#FFF2BB' },
+  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#6B584B', accent: '#F9DEE6', deep: '#FFF0F4', noFlip: true, point: '#f9dee6' },
+  { jamo: 'ㅣ', name: '민트', hex: '#E9F4EC', accent: '#F9DEE6', deep: '#D1E8D7', point: '#6B584B' },
+  { jamo: '나머지', name: '연보라', hex: '#ECE7F2', accent: '#F9DEE6', deep: '#DDD6EA', point: '#FFF2BB' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
@@ -52,9 +53,8 @@ export const lineFor = (c: BodyColor): string =>
  */
 export const markFor = (c: BodyColor): string => c.hex
 
-/** 무늬가 없을 때만 쓰는 흰 바탕과 그 선·강조색 */
+/** 무늬가 없을 때만 쓰는 흰 바탕 */
 const PLAIN_WHITE = '#FFFFFF'
-const PLAIN_ACCENT = '#FFF4F3'
 
 /**
  * 뒤집지 않는 무늬.
@@ -90,7 +90,7 @@ export function toneFor(c: BodyColor, morph: number, tone = 0) {
   return {
     fill: dressed ? c.hex : held ? deepFor(c) : PLAIN_WHITE,
     line: dressed ? lineFor(c) : LINE_COLOR,
-    accent: dressed ? c.accent : PLAIN_ACCENT,
+    accent: c.accent,
     mark: deep && !held ? deepFor(c) : markFor(c),
   }
 }
