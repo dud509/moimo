@@ -31,23 +31,25 @@ eq('한 글자는 불가', splitName('김'), null)
 eq('영문만은 불가', splitName('Kim'), null)
 
 // 매핑
-eq('김 → 몸통01', genesFromName('김민수')!.body, 1)
-eq('이 → 몸통02', genesFromName('이민수')!.body, 2)
-eq('박 → 몸통03', genesFromName('박민수')!.body, 3)
-eq('강 → ㄱ 몸통04', genesFromName('강민수')!.body, 4)
-eq('안 → ㅇ 몸통08', genesFromName('안민수')!.body, 8)
-eq('마 → 기타 몸통12', genesFromName('마민수')!.body, 12)
+eq('김 → 몸통02', genesFromName('김민수')!.body, 2)
+eq('이 → 몸통08', genesFromName('이민수')!.body, 8)
+eq('박 → 몸통06', genesFromName('박민수')!.body, 6)
+eq('강 → ㄱ 몸통10', genesFromName('강민수')!.body, 10)
+eq('안 → ㅇ 몸통04', genesFromName('안민수')!.body, 4)
+eq('마 → 기타 몸통07', genesFromName('마민수')!.body, 7)
 eq('김 ㅣ → 색01', genesFromName('김민수')!.color, 1)
 eq('강 ㅏ → 색02', genesFromName('강민수')!.color, 2)
 eq('최 ㅚ → 색06', genesFromName('최민수')!.color, 6)
 eq('김 받침ㅁ → 무늬03', genesFromName('김민수')!.morph, 3)
 eq('나 받침없음 → 무늬0', genesFromName('나민수')!.morph, 0)
 eq('민 ㅁ → 눈05', genesFromName('김민수')!.eye, 5)
-eq('민 ㅣ → 입07', genesFromName('김민수')!.mouth, 7)
-eq('민 받침ㄴ → 볼02', genesFromName('김민수')!.cheek, 2)
-eq('수 ㅅ → 머리07', genesFromName('김민수')!.hair, 7)
-eq('수 ㅜ → 꼬리05', genesFromName('김민수')!.tail, 5)
-eq('수 받침없음 → 몸통장식05', genesFromName('김민수')!.deco, 5)
+eq('민 ㅣ → 입05', genesFromName('김민수')!.mouth, 5)
+eq('민 받침ㄴ → 볼05', genesFromName('김민수')!.cheek, 5)
+eq('수 ㅅ → 머리03', genesFromName('김민수')!.hair, 3)
+eq('수 ㅜ → 꼬리03', genesFromName('김민수')!.tail, 3)
+eq('수 받침없음 → 몸통장식03', genesFromName('김민수')!.deco, 3)
+eq('눈 01 은 앞 글자 ㄹ 에만', genesFromName('김라수')!.eye, 1)
+eq('머리장식 11 은 뒤 글자 ㄷ 에만', genesFromName('김수다')!.hair, 11)
 
 // 같은 이름은 같은 결과
 eq('결정론적', encodeGenes(genesFromName('김민수')!), encodeGenes(genesFromName('김민수')!))
@@ -55,7 +57,7 @@ eq('결정론적', encodeGenes(genesFromName('김민수')!), encodeGenes(genesFr
 // 가족 닮음
 const kims = ['김민수', '김서연', '김도윤'].map((n) => genesFromName(n)!)
 eq('김씨는 몸통·색·무늬가 같다', kims.map((g) => [g.body, g.color, g.morph]),
-   [[1,1,3],[1,1,3],[1,1,3]])
+   [[2,1,3],[2,1,3],[2,1,3]])
 
 // 범위
 const NAMES = ['김민수','이서연','박도윤','최지우','정하준','강예은','조은우','윤시아','장서준','임하윤','한지호','오유진','서건우','신다은','권太']

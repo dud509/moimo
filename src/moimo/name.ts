@@ -73,11 +73,40 @@ export function splitName(raw: string): NameParts | null {
 const pick = (map: Record<string, number>, jamo: string, fallback: number) =>
   map[jamo] ?? fallback
 
+/*
+ * 파츠를 어느 자모에 줄지는 «흔한 정도» 가 정한다.
+ *
+ * 자리마다 자모 묶음을 이름에 자주 나오는 순으로 줄 세우고, 파츠는 무난한
+ * 것부터 튀는 것 순으로 줄 세워 짝지었다. 흔한 자모일수록 무난한 파츠가,
+ * 드문 자모일수록 튀는 파츠가 간다. 튀는 파츠를 받은 모이모는 그만큼 드물다.
+ *
+ * 빈도는 자리마다 따로 쟀다. 같은 초성이라도 이름 앞 글자와 뒤 글자에서
+ * 흔한 정도가 다르다 — ㅇ 은 앞(19%)보다 뒤(35%)에 훨씬 많고, 받침 없음은
+ * 앞 글자의 60% 지만 뒤 글자에서는 ㄴ(48%) 에 밀린다. 그래서 눈과 머리장식,
+ * 입과 꼬리, 볼과 몸통장식은 같은 묶음을 쓰되 표는 따로 둔다.
+ *
+ * 성은 통계청 2015 인구주택총조사 성씨 비율, 이름은 1970~2020년대 인기
+ * 이름 240여 개로 어림했다. 표 옆 숫자가 그 비율(%)이다.
+ */
+
 /** 몸통 — 성 초성. 김·이·박은 성 전체를 먼저 본다 */
-const BODY_BY_CHO: Record<string, number> = {
-  ㄱ: 4, ㄴ: 5, ㅂ: 6, ㅅ: 7, ㅇ: 8, ㅈ: 9, ㅊ: 10, ㅎ: 11,
+const BODY_SPECIAL: Record<string, number> = {
+  김: 2,   // 22.4
+  이: 8,   // 15.3
+  박: 6,   //  8.8
 }
-const BODY_SPECIAL: Record<string, number> = { 김: 1, 이: 2, 박: 3 }
+const BODY_BY_CHO: Record<string, number> = {
+  ㅇ: 4,   // 11.5
+  ㅈ: 3,   // 11.1
+  ㅅ: 11,  //  6.9
+  ㄱ: 10,  //  6.4
+  ㅊ: 5,   //  5.9
+  ㅎ: 12,  //  5.7
+           //  2.5  나머지 (ㅁㄷㄹㅋㅌㅍ) → 7
+  ㅂ: 9,   //  2.1
+  ㄴ: 1,   //  1.5
+}
+const BODY_REST = 7
 
 /** 몸통 색깔 — 성 중성 */
 /**
@@ -96,8 +125,15 @@ function colorOf(jung: string, jong: string): number {
   return 6
 }
 
-/** 몸통 무늬 — 성 종성. 받침 없으면 무늬 없음 */
-const MORPH_BY_JONG: Record<string, number> = { '': 0, ㄱ: 1, ㄴ: 2, ㅁ: 3, ㅇ: 4 }
+/** 몸통 무늬 — 성 종성. 받침 없으면(34.5) 무늬 없음. 비율은 받침 있는 성 안에서 */
+const MORPH_BY_JONG: Record<string, number> = {
+  '': 0,
+  ㅁ: 3,   // 39.8
+  ㅇ: 2,   // 23.4
+  ㄴ: 1,   // 20.5
+  ㄱ: 5,   // 15.9
+}
+const MORPH_REST = 4  // 0.3  ㄹ ㅂ ㅅ …
 
 /**
  * 무늬 바탕 — 이름 첫 글자의 중성.
@@ -113,28 +149,93 @@ const BRIGHT_VOWELS = new Set(['ㅏ', 'ㅑ', 'ㅗ', 'ㅛ', 'ㅐ', 'ㅒ', 'ㅘ', 
 const toneOf = (jung: string): number => (BRIGHT_VOWELS.has(jung) ? 0 : 1)
 
 /**
- * 눈·머리장식 — 초성.
+ * 눈 — 이름 앞 글자 초성.
  *
  * 눈 01 과 머리장식 11 은 겹쳐 놓으면 못 볼 꼴이 된다. 둘은 이름의 서로
  * 다른 글자에서 오므로 규칙으로 떼어 놓을 수 없고, 만날 확률만 낮출 수 있다.
- *
- * 그래서 01 을 가장 드문 초성인 ㄹ 에 맡긴다 — 이름 글자가 ㄹ 로 시작하는
- * 일은 거의 없다. 머리장식 11 은 ㅊㅋㅌㅍ 계열인데, 그 둘이 한 이름에서
- * 같이 나오려면 «ㄹ○ + ㅊ○» 처럼 되어야 해서 사실상 만나지 않는다.
- * 밀려난 ㄱ 은 ㄹ 이 있던 04 로 간다.
+ * 그래서 이 둘은 무난함 순서와 상관없이 가장 드문 자모에 묶어 둔다 —
+ * 눈 01 은 앞 글자의 ㄹ, 머리장식 11 은 뒤 글자의 ㄷ. «라다» 처럼 되어야
+ * 만나므로 사실상 만나지 않는다.
  */
-const CONSONANT_11: Record<string, number> = {
-  ㄹ: 1, ㄴ: 2, ㄷ: 3, ㄱ: 4, ㅁ: 5, ㅂ: 6, ㅅ: 7, ㅇ: 8, ㅈ: 9, ㅎ: 10,
+const EYE: Record<string, number> = {
+  ㅅ: 2,   // 22.5
+  ㅈ: 10,  // 20.8
+  ㅇ: 4,   // 19.2
+  ㅎ: 9,   // 10.0
+  ㅁ: 5,   //  7.9
+  ㄷ: 6,   //  5.8
+  ㄱ: 3,   //  5.8
+           //  4.2  ㅊㅋㅌㅍ → 7
+  ㅂ: 8,   //  1.7
+  ㄴ: 11,  //  1.2
+  ㄹ: 1,   //  0.8  머리장식 11 과 떼어 둔다
 }
+const EYE_REST = 7
 
-/** 입·꼬리 — 중성 */
-const VOWEL_9: Record<string, number> = {
-  ㅏ: 1, ㅓ: 2, ㅕ: 3, ㅗ: 4, ㅜ: 5, ㅡ: 6, ㅣ: 7,
-  ㅐ: 8, ㅔ: 8, ㅒ: 8, ㅖ: 8,
+/** 머리장식 — 이름 뒤 글자 초성 */
+const HAIR: Record<string, number> = {
+  ㅇ: 4,   // 35.4
+  ㅎ: 7,   // 19.6
+  ㅈ: 6,   // 19.6
+  ㅅ: 3,   //  8.8
+  ㅁ: 5,   //  5.8
+  ㄹ: 1,   //  5.4
+  ㅂ: 2,   //  1.7
+  ㄱ: 8,   //  1.2
+           //  1.2  ㅊㅋㅌㅍ → 10
+  ㄴ: 9,   //  1.2
+  ㄷ: 11,  //  0.1  눈 01 과 떼어 둔다
 }
+const HAIR_REST = 10
 
-/** 볼장식·몸통장식 — 종성. 받침 없음도 그림이 따로 있다 */
-const JONG_6: Record<string, number> = { ㄱ: 1, ㄴ: 2, ㅇ: 3, ㅁ: 4, '': 5 }
+/** 입 — 이름 앞 글자 중성 */
+const MOUTH: Record<string, number> = {
+  ㅣ: 5,   // 24.2
+  ㅓ: 4,   // 13.8
+  ㅜ: 9,   // 12.1
+  ㅏ: 1,   // 10.8
+  ㅐ: 7, ㅔ: 7, ㅒ: 7, ㅖ: 7,   // 10.4
+  ㅕ: 3,   //  9.2
+  ㅗ: 6,   //  8.3
+  ㅡ: 2,   //  5.8
+}
+const MOUTH_REST = 8  // 5.4  ㅑㅛㅠㅘㅝㅢㅟㅚㅙㅞ
+
+/** 꼬리 — 이름 뒤 글자 중성 */
+const TAIL: Record<string, number> = {
+  ㅜ: 3,   // 25.8
+  ㅣ: 7,   // 18.8
+  ㅕ: 2,   // 13.8
+           // 12.5  ㅑㅛㅠㅘㅝㅢㅟㅚㅙㅞ → 6
+  ㅓ: 1,   //  7.9
+  ㅏ: 4,   //  7.5
+  ㅡ: 9,   //  6.2
+  ㅗ: 5,   //  5.8
+  ㅐ: 8, ㅔ: 8, ㅒ: 8, ㅖ: 8,   // 1.7
+}
+const TAIL_REST = 6
+
+/** 볼 장식 — 이름 앞 글자 종성. 받침 없음도 그림이 따로 있다 */
+const CHEEK: Record<string, number> = {
+  '': 1,   // 59.6
+  ㄴ: 5,   // 22.9
+  ㅇ: 3,   // 16.7
+           //  0.8  ㄹ ㅂ ㅅ … → 4
+  ㄱ: 2,   //  드묾
+  ㅁ: 6,   //  드묾
+}
+const CHEEK_REST = 4
+
+/** 몸통 장식 — 이름 뒤 글자 종성 */
+const DECO: Record<string, number> = {
+  ㄴ: 6,   // 48.3
+  '': 3,   // 35.8
+  ㅇ: 5,   //  8.8
+           //  2.9  ㄹ ㅂ ㅅ … → 4
+  ㄱ: 1,   //  2.9
+  ㅁ: 2,   //  1.2
+}
+const DECO_REST = 4
 
 /* ------------------------------------------------------------------ */
 /* 조립                                                                */
@@ -142,16 +243,16 @@ const JONG_6: Record<string, number> = { ㄱ: 1, ㄴ: 2, ㅇ: 3, ㅁ: 4, '': 5 }
 
 export function genesFromParts(p: NameParts): MoimoGenes {
   return {
-    body: BODY_SPECIAL[p.surname] ?? pick(BODY_BY_CHO, p.s.cho, 12),
+    body: BODY_SPECIAL[p.surname] ?? pick(BODY_BY_CHO, p.s.cho, BODY_REST),
     color: colorOf(p.s.jung, p.s.jong),
-    morph: pick(MORPH_BY_JONG, p.s.jong, 5),
+    morph: pick(MORPH_BY_JONG, p.s.jong, MORPH_REST),
     tone: toneOf(p.n1.jung),
-    eye: pick(CONSONANT_11, p.n1.cho, 11),
-    mouth: pick(VOWEL_9, p.n1.jung, 9),
-    cheek: pick(JONG_6, p.n1.jong, 6),
-    hair: pick(CONSONANT_11, p.n2.cho, 11),
-    tail: pick(VOWEL_9, p.n2.jung, 9),
-    deco: pick(JONG_6, p.n2.jong, 6),
+    eye: pick(EYE, p.n1.cho, EYE_REST),
+    mouth: pick(MOUTH, p.n1.jung, MOUTH_REST),
+    cheek: pick(CHEEK, p.n1.jong, CHEEK_REST),
+    hair: pick(HAIR, p.n2.cho, HAIR_REST),
+    tail: pick(TAIL, p.n2.jung, TAIL_REST),
+    deco: pick(DECO, p.n2.jong, DECO_REST),
   }
 }
 
