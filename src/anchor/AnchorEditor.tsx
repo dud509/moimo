@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  decoFor, fillFor, usesPoint, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
+  decoFor, fillFor, isUnderHead, usesPoint, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
   warnIfNothingToTint,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
@@ -16,7 +16,7 @@ const SCOPES: { key: Scope; label: string; hint: string }[] = [
   { key: 'part',  label: '이 파츠',         hint: '몸통 12종 × 이 파츠 하나' },
   { key: 'one',   label: '이 조합만',       hint: '이 몸통 하나 × 이 파츠 하나' },
 ]
-import { bodyPieces } from '../moimo/compose'
+import { bodyPieces, headMask } from '../moimo/compose'
 import { useSvg } from './useSvg'
 import initial from '../data/anchors.json'
 
@@ -24,7 +24,30 @@ const DISP = 0.86 // 화면에 512 캔버스를 얼마로 줄여 보여줄지
 
 /* ---------------- 한 겹 ---------------- */
 
-function Layer({
+function Layer(props: {
+  urls: string | string[]
+  paint: Paint
+  anchor: Anchor
+  z: number
+  dim: boolean
+  label: string
+  warn?: (svg: string) => void
+  /** 머리 자리를 가릴 가리개 — 머리 밑으로 들어가는 파츠만 */
+  mask?: string
+}) {
+  const { mask, z } = props
+  const inner = <LayerInner {...props} />
+  if (!mask) return inner
+  // 파츠는 제자리로 옮겨 그리고, 가리개는 캔버스에 붙박아 머리 자리만 도려낸다
+  const m = `url("${mask}")`
+  return (
+    <div className="layer" style={{ zIndex: z, maskImage: m, WebkitMaskImage: m, maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }}>
+      {inner}
+    </div>
+  )
+}
+
+function LayerInner({
   urls, paint, anchor, z, dim, label, warn,
 }: {
   urls: string | string[]
@@ -163,6 +186,13 @@ function Figure({
   warnTint?: boolean
 }) {
   const { fill, line, accent, mark } = toneFor(color, morph, tone)
+  const bodySvg = useSvg(bodyUrl(body)).svg
+  const headUri = useMemo(() => bodySvg
+    ? 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS} ${CANVAS}">` +
+      `<defs>${headMask(bodySvg, 'hm')}</defs>` +
+      `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="#000" mask="url(#hm)"/></svg>`)
+    : undefined, [bodySvg])
   return (
     <>
       <BodyStack body={body} morph={morph} color={color} tone={tone} dim={soloSlot != null} />
@@ -183,6 +213,7 @@ function Figure({
           z={s.z}
           dim={soloSlot != null && soloSlot !== s.key}
           label={s.label}
+          mask={isUnderHead(s.key, variant[s.key]) ? headUri : undefined}
           warn={warnTint ? (raw) => warnIfNothingToTint(s.key, variant[s.key], raw) : undefined}
         />
       ))}

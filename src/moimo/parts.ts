@@ -229,6 +229,27 @@ export const isTinted = (slot: SlotKey, part: number): boolean => {
  */
 export const decoFor = (c: BodyColor): string => c.point
 
+/**
+ * 머리 밑으로 들어가는 파츠.
+ *
+ * 몸통장식 06(어깨 날개)은 꼬리와 몸통보다는 위, 머리보다는 아래에 있어야
+ * 한다. 몸통 파일은 머리와 몸통이 한 겹이라 그 사이에 끼울 수가 없어서,
+ * 위에 그리되 머리 자리만 가려 머리 밑으로 들어간 것처럼 보이게 한다.
+ */
+const UNDER_HEAD: Partial<Record<SlotKey, number[]>> = {
+  deco: [6],
+}
+
+export const isUnderHead = (slot: SlotKey, part: number): boolean =>
+  UNDER_HEAD[slot]?.includes(part) ?? false
+
+/**
+ * 몸통 파일에서 이 높이보다 위에서 시작하는 도형은 머리(귀 포함)다.
+ * 열두 몸통 모두 머리와 귀는 y=250 위에서, 몸통통과 팔다리는 y=307 에서
+ * 시작한다.
+ */
+export const HEAD_TOP_LIMIT = 290
+
 /** 이 파츠를 어떤 색으로 채울지 */
 export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>
   isTinted(slot, part) ? bodyHex : FILL_COLOR
