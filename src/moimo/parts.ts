@@ -462,6 +462,11 @@ export function prepareSvg(svg: string, paint: Paint, uid: string): string {
     .replace(/\b(fill|stroke)="(aqua|cyan)"/gi, (_m, a: string) => `${a}="${morph}"`)
     .replace(/\b(fill|stroke):\s*(aqua|cyan)\b/gi, (_m, a: string) => `${a}:${morph}`)
     .replace(/#([0-9a-f]{6})\b/gi, (m: string, hex: string) => (isLineGrey(hex) ? line : m))
+    // 선 꺾이는 곳은 언제나 둥글게. 손으로 그린 선은 아주 짧은 마디에서 방향이
+    // 홱 꺾이는 데가 있어, 뾰족하게 이으면 그 자리로 가시가 삐져나온다.
+    // 파일에 넣어 둬도 일러스트에서 다시 내보내면 빠지므로 여기서 건다
+    .replace(/stroke-linejoin(="|:\s*)[a-z-]+/gi, 'stroke-linejoin$1round')
+    .replace(/<(path|polyline|polygon|line|circle|ellipse|rect)\b(?![^>]*stroke-linejoin)([^>]*\bstroke=)/gi, '<$1 stroke-linejoin="round"$2')
     .replace(/\bid="([^"]+)"/g, (_m, id: string) => `id="${id}-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, (_m, id: string) => `url(#${id}-${uid})`)
     .replace(/\b(xlink:href|href)="#([^"]+)"/g, (_m, a: string, id: string) => `${a}="#${id}-${uid}"`)
