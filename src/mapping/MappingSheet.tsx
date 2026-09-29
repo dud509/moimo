@@ -2,6 +2,8 @@
  * 매칭표 — 자모가 어느 파츠로 가는지 그림으로 본다.
  *
  * name.ts 의 표를 그대로 읽으므로 매칭을 고치면 이 페이지도 따라 바뀐다.
+ * 매칭이 두 벌(흔한 정도·닮은 모양)이라 위에서 골라 본다. 주소 뒤에
+ * ?map=freq 나 ?map=shape 를 붙여도 된다.
  * 한 자리만 바꾸고 나머지는 가장 흔한 파츠로 채운 모이모를 그려서,
  * 파츠가 몸에 붙었을 때 어떻게 보이는지를 함께 본다.
  */
@@ -9,7 +11,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import anchorsJson from '../data/anchors.json'
 import { composeMoimo, loadParts, moimoDataUri, type PartsCache } from '../moimo/compose'
-import { MAPPING, type MapRow, type MoimoGenes } from '../moimo/name'
+import { ACTIVE_MAPPING, MAPPINGS, type MappingId, type MapRow, type MoimoGenes } from '../moimo/name'
 import { BODY_COLORS, normalizeTable, type AnchorTable } from '../moimo/parts'
 
 /** 이 자리에서 가장 흔한 줄의 파츠 */
@@ -17,12 +19,17 @@ const commonest = (rows: readonly MapRow[]) =>
   [...rows].filter((r) => r.pct > 0).sort((a, b) => b.pct - a.pct)[0].part
 
 /** 나머지를 채울 바탕 — 자리마다 가장 흔한 파츠. 무늬는 없이 둔다 */
-const BASE: MoimoGenes = {
-  ...(Object.fromEntries(MAPPING.map((m) => [m.slot, commonest(m.rows)])) as Record<string, number>),
+const baseFor = (id: MappingId): MoimoGenes => ({
+  ...(Object.fromEntries(MAPPINGS[id].slots.map((m) => [m.slot, commonest(m.rows)])) as Record<string, number>),
   color: 2,
   morph: 0,
   tone: 0,
-} as MoimoGenes
+} as MoimoGenes)
+
+const initialMap = (): MappingId => {
+  const q = new URLSearchParams(location.search).get('map')
+  return q === 'freq' || q === 'shape' ? q : ACTIVE_MAPPING
+}
 
 /** 무늬는 노랑 흰 바탕에서 잘 안 보여서, 파랑을 한 톤 눌러 입혀 본다 */
 const MORPH_LOOK = { color: 1, tone: 1 }
@@ -59,17 +66,34 @@ function Moimo({ genes, crop, cache, table }: {
 export default function MappingSheet() {
   const [cache, setCache] = useState<PartsCache | null>(null)
   const table = useMemo<AnchorTable>(() => normalizeTable(anchorsJson), [])
+  const [mapId, setMapId] = useState<MappingId>(initialMap)
   useEffect(() => { loadParts().then(setCache) }, [])
 
+  const choose = (id: MappingId) => {
+    setMapId(id)
+    history.replaceState(null, '', `?map=${id}`)
+  }
+
   if (!cache) return <div className="booting">파츠를 부르는 중…</div>
+
+  const mapping = MAPPINGS[mapId]
+  const BASE = baseFor(mapId)
 
   return (
     <main className="sheet">
       <header>
         <h1>모이모 매칭표</h1>
+        <nav className="tabs">
+          {Object.values(MAPPINGS).map((m) => (
+            <button key={m.id} className={m.id === mapId ? 'on' : ''} onClick={() => choose(m.id)}>
+              {m.name}
+              {m.id === ACTIVE_MAPPING && <small>월드에서 쓰는 중</small>}
+            </button>
+          ))}
+        </nav>
         <p>
-          자리마다 <b>흔한 자모 → 드문 자모</b> 순으로 늘어놓았다. 흔한 자모일수록 무난한 파츠,
-          드문 자모일수록 튀는 파츠가 간다. 막대는 그 자리에서 그 자모가 나오는 비율이다.
+          <b>{mapping.desc}.</b> 자리마다 흔한 자모부터 늘어놓았고, 막대는 그 자리에서 그 자모가
+          나오는 비율이다. 그림은 그 자리만 바꾸고 나머지는 가장 흔한 파츠로 채운 모이모다.
         </p>
       </header>
 
@@ -88,7 +112,7 @@ export default function MappingSheet() {
         </div>
       </section>
 
-      {MAPPING.map((m) => {
+      {mapping.slots.map((m) => {
         const rows = [...m.rows].sort((a, b) => b.pct - a.pct)
         const max = Math.max(...rows.map((r) => r.pct))
         const crop = CROP[m.slot]
@@ -105,6 +129,7 @@ export default function MappingSheet() {
                     {r.pct > 0 && (
                       <span className="bar"><i style={{ width: `${(r.pct / max) * 100}%` }} /><em>{r.pct}%</em></span>
                     )}
+                    {r.why && <span className="why">{r.why}</span>}
                     {r.note && <span className="note">{r.note}</span>}
                   </figcaption>
                 </figure>
