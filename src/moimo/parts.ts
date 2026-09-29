@@ -18,7 +18,7 @@ export const LINE_COLOR = '#38312A'
  *
  *   hex     몸통 전체 색
  *   accent  귀 안쪽 색 — 몸통 파일에 마젠타로 칠해 둔 자리. 무늬가 있든 없든
- *           이 색을 쓴다. 파랑·노랑은 분홍, 나머지는 흰색
+ *           이 색을 쓴다. 파랑·노랑·진갈색은 분홍, 나머지는 흰색
  *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
  *   deep    누름 쪽일 때 무늬에 쓸 색. 색마다 눈으로 골라 둔 값이다.
  *           진갈색만 짙은 쪽이 없어서 — 더 눌러 봤자 까매진다 — 분홍과 짝지었다
@@ -31,7 +31,7 @@ export const BODY_COLORS = [
   { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FCE6E9', deep: '#CAE0E5', point: '#F9DEE6' },
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FCE6E9', deep: '#FFF2BB', point: '#DDD6EA' },
   { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6', point: '#CAE0E5' },
-  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#665040', accent: '#FFFFFF', deep: '#FFF0F4', noFlip: true, point: '#f9dee6' },
+  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#665040', accent: '#FCE6E9', deep: '#FFF0F4', noFlip: true, point: '#f9dee6' },
   { jamo: 'ㅣ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7', point: '#665040' },
   { jamo: '나머지', name: '연보라', hex: '#ECE7F2', accent: '#FFFFFF', deep: '#DDD6EA', point: '#FFF2BB' },
 ] as const
