@@ -133,27 +133,41 @@ function shapeTop(tag: string): number {
   return top
 }
 
-/**
- * 머리(귀 포함) 자리를 뺀 가리개. 이것을 씌운 파츠는 머리 밑으로 들어간
- * 것처럼 보인다. 머리 테두리 선까지 덮도록 도형을 선 굵기만큼 부풀린다.
- */
-export function headMask(bodyRaw: string, id: string): string {
-  const shapes: string[] = []
-  const re = /<(path|polygon|circle|ellipse|rect)\b[^>]*\/>/gi
+/** 몸통 파일에서 머리(귀 포함)에 속한 도형. lines 면 선만, 아니면 면만 */
+function headTags(bodyRaw: string, lines: boolean): string[] {
+  const out: string[] = []
+  const re = /<(path|polyline|polygon|line|circle|ellipse|rect)\b[^>]*\/>/gi
   let m: RegExpExecArray | null
   while ((m = re.exec(bodyRaw))) {
     const tag = m[0]
-    if (/fill="none"/i.test(tag)) continue
+    if (/fill="none"/i.test(tag) !== lines) continue
     if (shapeTop(tag) >= HEAD_TOP_LIMIT) continue
-    shapes.push(tag.replace(/\s(fill|stroke|stroke-[a-z]+|opacity|class|style)="[^"]*"/gi, ''))
+    out.push(tag)
   }
+  return out
+}
+
+/**
+ * 머리(귀 포함) 자리를 뺀 가리개. 이것을 씌운 파츠는 머리 밑으로 들어간
+ * 것처럼 보인다.
+ *
+ * 가리개 가장자리는 머리 테두리 선 안쪽에 둔다. 선보다 넓게 가리면 그
+ * 틈으로 아래 색이 비쳐 흰 줄이 생긴다. 대신 가린 파츠 위에 머리 선을
+ * 다시 그어(headLines) 경계를 덮는다.
+ */
+export function headMask(bodyRaw: string, id: string): string {
+  const shapes = headTags(bodyRaw, false)
+    .map((t) => t.replace(/\s(fill|stroke|stroke-[a-z]+|opacity|class|style)="[^"]*"/gi, ''))
   return (
     `<mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="${CANVAS}" height="${CANVAS}">` +
     `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="#fff"/>` +
-    `<g fill="#000" stroke="#000" stroke-width="5" stroke-linejoin="round">${shapes.join('')}</g>` +
+    `<g fill="#000" stroke="#000" stroke-width="2" stroke-linejoin="round">${shapes.join('')}</g>` +
     `</mask>`
   )
 }
+
+/** 머리 밑으로 들어간 파츠 위에 다시 그을 머리 선 (색은 prepareSvg 가 입힌다) */
+export const headLines = (bodyRaw: string): string => headTags(bodyRaw, true).join('')
 
 function layer(inner: string, a: ReturnType<typeof composeAnchor>, uid: string): string {
   const t = `translate(${C + a.x} ${C + a.y}) rotate(${a.r}) scale(${a.s} ${syOf(a)}) translate(${-C} ${-C})`
@@ -344,7 +358,8 @@ export function composeMoimo(
     let svg = layer(innards(prepareSvg(raw, { fill, line, accent }, uid + z)), anchor, uid)
     if (underHead && bodyRaw) {
       const id = `hm-${uid}-${z}`
-      svg = `<defs>${headMask(bodyRaw, id)}</defs><g mask="url(#${id})">${svg}</g>`
+      svg = `<defs>${headMask(bodyRaw, id)}</defs><g mask="url(#${id})">${svg}</g>` +
+        prepareSvg(headLines(bodyRaw), { fill, line, accent }, `${uid}hl${z}`)
     }
     pieces.push({ z, svg })
   }

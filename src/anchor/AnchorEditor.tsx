@@ -16,7 +16,7 @@ const SCOPES: { key: Scope; label: string; hint: string }[] = [
   { key: 'part',  label: '이 파츠',         hint: '몸통 12종 × 이 파츠 하나' },
   { key: 'one',   label: '이 조합만',       hint: '이 몸통 하나 × 이 파츠 하나' },
 ]
-import { bodyPieces, headMask } from '../moimo/compose'
+import { bodyPieces, headLines, headMask } from '../moimo/compose'
 import { useSvg } from './useSvg'
 import initial from '../data/anchors.json'
 
@@ -34,16 +34,27 @@ function Layer(props: {
   warn?: (svg: string) => void
   /** 머리 자리를 가릴 가리개 — 머리 밑으로 들어가는 파츠만 */
   mask?: string
+  /** 가린 파츠 위에 다시 그을 머리 선 (색 입힌 SVG) */
+  cover?: string
 }) {
-  const { mask, z } = props
+  const { mask, cover, z, dim } = props
   const inner = <LayerInner {...props} />
   if (!mask) return inner
   // 파츠는 제자리로 옮겨 그리고, 가리개는 캔버스에 붙박아 머리 자리만 도려낸다
   const m = `url("${mask}")`
   return (
-    <div className="layer" style={{ zIndex: z, maskImage: m, WebkitMaskImage: m, maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }}>
-      {inner}
-    </div>
+    <>
+      <div className="layer" style={{ zIndex: z, maskImage: m, WebkitMaskImage: m, maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }}>
+        {inner}
+      </div>
+      {cover && (
+        <div
+          className="layer"
+          style={{ zIndex: z, opacity: dim ? 0.28 : 1 }}
+          dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 ${CANVAS} ${CANVAS}">${cover}</svg>` }}
+        />
+      )}
+    </>
   )
 }
 
@@ -193,6 +204,10 @@ function Figure({
       `<defs>${headMask(bodySvg, 'hm')}</defs>` +
       `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="#000" mask="url(#hm)"/></svg>`)
     : undefined, [bodySvg])
+  const headCover = useMemo(
+    () => (bodySvg ? prepareSvg(headLines(bodySvg), { fill, line, accent }, 'hl') : undefined),
+    [bodySvg, fill, line, accent],
+  )
   return (
     <>
       <BodyStack body={body} morph={morph} color={color} tone={tone} dim={soloSlot != null} />
@@ -214,6 +229,7 @@ function Figure({
           dim={soloSlot != null && soloSlot !== s.key}
           label={s.label}
           mask={isUnderHead(s.key, variant[s.key]) ? headUri : undefined}
+          cover={isUnderHead(s.key, variant[s.key]) ? headCover : undefined}
           warn={warnTint ? (raw) => warnIfNothingToTint(s.key, variant[s.key], raw) : undefined}
         />
       ))}
