@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  decoFor, fillFor, MORPH_TAIL, normalizeFill, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
+  decoFor, fillFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
   warnIfNothingToTint,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
@@ -25,13 +25,10 @@ const DISP = 0.86 // 화면에 512 캔버스를 얼마로 줄여 보여줄지
 /* ---------------- 한 겹 ---------------- */
 
 function Layer({
-  urls, paint, anchor, z, dim, label, warn, slot, part,
+  urls, paint, anchor, z, dim, label, warn,
 }: {
   urls: string | string[]
   paint: Paint
-  /** 갈아입는 파츠인지 보고 표시색을 맞추려고 */
-  slot: SlotKey
-  part: number
   anchor: Anchor
   z: number
   dim: boolean
@@ -40,10 +37,7 @@ function Layer({
 }) {
   const uid = useId().replace(/:/g, '')
   const { svg, missing } = useSvg(urls)
-  const html = useMemo(
-    () => (svg ? prepareSvg(normalizeFill(svg, slot, part), paint, uid) : ''),
-    [svg, paint, uid, slot, part],
-  )
+  const html = useMemo(() => (svg ? prepareSvg(svg, paint, uid) : ''), [svg, paint, uid])
 
   useEffect(() => { if (svg) warn?.(svg) }, [svg, warn])
 
@@ -176,8 +170,6 @@ function Figure({
         <Layer
           key={s.key}
           urls={partUrl(s.key, variant[s.key])}
-          slot={s.key}
-          part={variant[s.key]}
           paint={{
             fill: fillFor(
               s.key, variant[s.key],

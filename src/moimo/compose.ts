@@ -8,7 +8,7 @@
 import {
   BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, REGION_MORPH,
   SLOTS, Z_BODY, Z_MORPH, edgeFor,
-  bodyUrl, composeAnchor, decoFor, fillFor, isSvgText, morphUrls, normalizeFill, partUrl, prepareSvg, syOf, toneFor,
+  bodyUrl, composeAnchor, decoFor, fillFor, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor,
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
@@ -265,16 +265,12 @@ export function composeMoimo(
 
   const pieces: { z: number; svg: string }[] = []
 
-  const push = (
-    z: number, url: string, fill: string, anchor: ReturnType<typeof composeAnchor>,
-    slot: SlotKey, part: number,
-  ) => {
+  const push = (z: number, url: string, fill: string, anchor: ReturnType<typeof composeAnchor>) => {
     const raw = cache.get(url)
     if (!raw) return
-    const src = normalizeFill(raw, slot, part)
     pieces.push({
       z,
-      svg: layer(innards(prepareSvg(src, { fill, line, accent }, uid + z)), anchor, uid),
+      svg: layer(innards(prepareSvg(raw, { fill, line, accent }, uid + z)), anchor, uid),
     })
   }
 
@@ -297,7 +293,7 @@ export function composeMoimo(
     const key = s.key as SlotKey
     const n = genes[s.key as keyof MoimoGenes] as number
     const base = key === 'tail' ? bodyTone : key === 'deco' ? decoHex : bodyHex
-    push(s.z, partUrl(key, n), fillFor(key, n, base), composeAnchor(table, genes.body, key, n), key, n)
+    push(s.z, partUrl(key, n), fillFor(key, n, base), composeAnchor(table, genes.body, key, n))
   }
 
   pieces.sort((a, b) => a.z - b.z)

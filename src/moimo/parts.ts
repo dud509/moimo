@@ -171,23 +171,11 @@ export const TINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
   deco: [1, 3, 4, 5],   // 02·06 은 제 색을 그대로 쓴다
 }
 
-/**
- * 갈아입을 자리를 표시해 둔 또 하나의 색.
- *
- * 흰색으로 칠해 두는 것이 원칙이지만, 일러스트에서 흰 바탕과 구별하려고
- * 연분홍으로 칠해 둔 파일이 있다. 갈아입는 파츠에서만 이 색을 흰색과
- * 같이 본다 — 머리장식 03 처럼 진짜 분홍으로 쓴 파일이 있어서다.
- */
-export const SOURCE_FILL_ALT = '#FFEEF3'
-
-/** 갈아입는 파츠면 표시색을 흰색으로 맞춰 둔다 */
-export const normalizeFill = (svg: string, slot: SlotKey, part: number): string =>
-  isTinted(slot, part) ? svg.replace(/#ffeef3\b/gi, SOURCE_FILL) : svg
 
 /** 몸통 색으로 갈아입힐 흰 영역이 정말 있는지 — 없으면 개발 중에 알려준다 */
 export function warnIfNothingToTint(slot: SlotKey, part: number, svg: string) {
   if (!isTinted(slot, part)) return
-  if (/#ffffff\b|#fff\b|#ffeef3\b|(fill|stroke)="white"|(fill|stroke):\s*white/i.test(svg)) return
+  if (/#ffffff\b|#fff\b|(fill|stroke)="white"|(fill|stroke):\s*white/i.test(svg)) return
   console.warn(
     `[모이모] ${slot} ${String(part).padStart(2, '0')} 은 TINTED 에 적혀 있지만 ` +
     `파일 안에 흰 영역이 없어 몸통 색이 입혀지지 않습니다. ` +
