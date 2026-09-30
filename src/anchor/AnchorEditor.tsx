@@ -279,7 +279,11 @@ export default function AnchorEditor() {
   const [confirmWipe, setConfirmWipe] = useState(false)
 
   const stageRef = useRef<HTMLDivElement>(null)
+  const colRef = useRef<HTMLElement>(null)
   const dragRef = useRef<{ x: number; y: number } | null>(null)
+  /** 화면 확대 — 파츠가 아니라 무대 전체를 크게 본다 */
+  const [view, setView] = useState(1)
+  const disp = DISP * view
 
   const color = BODY_COLORS[colorIdx]
 
@@ -357,15 +361,15 @@ export default function AnchorEditor() {
     const d = dragRef.current
     if (!d || !sel) return
     const a = current(sel)
-    patch(sel, { x: a.x + (e.clientX - d.x) / DISP, y: a.y + (e.clientY - d.y) / DISP })
+    patch(sel, { x: a.x + (e.clientX - d.x) / disp, y: a.y + (e.clientY - d.y) / disp })
     dragRef.current = { x: e.clientX, y: e.clientY }
   }
 
   const onPointerUp = () => { dragRef.current = null }
 
-  const onWheel = (e: React.WheelEvent) => {
+  /** 무대 안의 휠 — 고른 파츠의 크기 */
+  const scalePart = (e: WheelEvent) => {
     if (!sel) return
-    e.preventDefault()
     const a = current(sel)
     const k = Math.exp(-e.deltaY * 0.0012)
     const clamp = (v: number) => Math.max(0.1, Math.min(4, v))
@@ -375,11 +379,45 @@ export default function AnchorEditor() {
       : { s: clamp(a.s * k), sy: clamp(syOf(a) * k) })
   }
 
+  // 무대 안에서는 파츠 크기, 무대 밖에서는 화면 전체를 키우고 줄인다.
+  // 트랙패드 오므리기(ctrl+휠)가 브라우저 확대로 새지 않게 직접 붙잡는다 —
+  // React 의 휠 이벤트는 막을 수가 없다
+  const wheelRef = useRef(scalePart)
+  wheelRef.current = scalePart
+  useEffect(() => {
+    const col = colRef.current
+    if (!col) return
+    const onWheel = (e: WheelEvent) => {
+      const inStage = stageRef.current?.contains(e.target as Node)
+      if (inStage) {
+        e.preventDefault()
+        wheelRef.current(e)
+        return
+      }
+      // 무대 밖(위 도구 막대 포함): 오므리기·휠 모두 화면 확대.
+      // 파츠 줄은 옆으로 넘겨 보는 곳이라 건드리지 않는다
+      const el = e.target as HTMLElement
+      if (el.closest('.strip')) return
+      if (el.closest('select') && !e.ctrlKey) return
+      e.preventDefault()
+      const k = Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015))
+      setView((v) => Math.max(0.5, Math.min(4, v * k)))
+    }
+    col.addEventListener('wheel', onWheel, { passive: false })
+    return () => col.removeEventListener('wheel', onWheel)
+  }, [])
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!sel) return
       const tag = (e.target as HTMLElement)?.tagName
       if (tag === 'INPUT' || tag === 'SELECT') return
+      // 화면 확대 — 파츠를 고르지 않아도 된다
+      if (!e.metaKey && !e.ctrlKey) {
+        if (e.key === '=' || e.key === '+') { e.preventDefault(); setView((v) => Math.min(4, v * 1.25)); return }
+        if (e.key === '-') { e.preventDefault(); setView((v) => Math.max(0.5, v / 1.25)); return }
+        if (e.key === '0') { e.preventDefault(); setView(1); return }
+      }
+      if (!sel) return
       const a = current(sel)
       const step = e.shiftKey ? 10 : 1
       const moves: Record<string, () => void> = {
@@ -454,7 +492,7 @@ export default function AnchorEditor() {
       </aside>
 
       {/* 가운데: 무대 */}
-      <main className="col stage-col">
+      <main className="col stage-col" ref={colRef}>
         <div className="stage-tools">
           <div className="swatches">
             {BODY_COLORS.map((c, i) => (
@@ -549,14 +587,13 @@ export default function AnchorEditor() {
         <div
           className="stage"
           ref={stageRef}
-          style={{ width: CANVAS * DISP, height: CANVAS * DISP }}
+          style={{ width: CANVAS * disp, height: CANVAS * disp }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          onWheel={onWheel}
         >
-          <div className="canvas" style={{ width: CANVAS, height: CANVAS, zoom: DISP }}>
+          <div className="canvas" style={{ width: CANVAS, height: CANVAS, zoom: disp }}>
             <div className="guides">
               <i className="gv" /><i className="gh" />
             </div>
@@ -606,6 +643,8 @@ export default function AnchorEditor() {
           {sheet === 'off' ? (
             <>
               <b>드래그</b> 이동 · <b>휠</b> 크기(<b>Shift+휠</b> 가로만) · <b>←↑↓→</b> 1px(Shift 10px) · <b>[ ]</b> 회전
+              {' · '}네모 밖 <b>휠</b>·<b>- =</b> 화면 {Math.round(view * 100)}%
+              {view !== 1 && <button className="view-reset" onClick={() => setView(1)}>되돌리기</button>}
               <br />
               지금 움직이는 것:{' '}
               <b>
