@@ -4,8 +4,8 @@ import { genesFromName, randomKoreanName, splitName, type MoimoGenes } from '../
  *  마을 인구는 여기서 조절한다                                          *
  * ================================================================== */
 
-/** 13인치(1440×900) 화면에 심어둘 이웃 수. 화면이 넓으면 그만큼 더 심는다 */
-export const SEED_COUNT = 170
+/** 처음 심어 둘 이웃 수 — 화면 크기와 상관없이 같다 */
+export const SEED_COUNT = 200
 
 /**
  * 한 화면에 둘 수 있는 최대 인원.
@@ -357,29 +357,76 @@ export function makeResident(
 }
 
 /** 처음 온 사람에게도 마을이 비어 보이지 않도록 심어두는 이웃들 */
-export function seedResidents(count: number): Resident[] {
+export function seedResidents(count: number, taken: { x: number; y: number }[] = []): Resident[] {
   let s = 20260914
   const rnd = () => {
     s = (s * 1664525 + 1013904223) >>> 0
     return s / 4294967296
   }
   const out: Resident[] = []
+  const all = [...taken]
   for (let i = 0; out.length < count && i < count * 3; i++) {
     const name = randomKoreanName(rnd)
     const genes = genesFromName(name)
     if (!genes) continue
-    const { x, y } = spotFor(out.length, rnd, out)
-    rnd() // 뒤집기에 쓰던 난수 — makeResident 참고
-    out.push({
+    const spot = scatterSpot(rnd, all)
+    if (!spot) break
+    const r: Resident = {
       id: `seed-${out.length}`,
-      name, genes, x, y,
+      name, genes, x: spot.x, y: spot.y,
       phase: rnd(),
       at: 0,
       mine: false,
-    })
+    }
+    out.push(r)
+    all.push(r)
   }
   return out
 }
+
+/**
+ * 심어 둘 이웃의 자리.
+ *
+ * 가운데(유리병)로 갈수록 북적이고 가장자리로 갈수록 성기다. 다만 가장자리도
+ * 아예 비지는 않게 바닥 밀도(EDGE_DENSITY)를 남겨 둔다 — 마을을 끝까지
+ * 줄여 봐도 둘레가 텅 비어 보이지 않게.
+ *
+ * 마을 아무 데나 뽑고, 가운데서 먼 자리일수록 자주 버린다.
+ */
+function scatterSpot(rnd: () => number, taken: { x: number; y: number }[]): { x: number; y: number } | null {
+  // 모두 같은 간격으로 떨어져 서면 줄 맞춘 것처럼 보인다. 간격을 한 마리씩
+  // 다르게 두고, 가끔은 이미 선 이웃 곁에 바짝 붙여 두셋씩 모여 서게 한다
+  const gap = MIN_GAP * (0.62 + rnd() * 0.5)
+  const huddle = taken.length > 0 && rnd() < HUDDLE
+  for (let attempt = 0; attempt < 3000; attempt++) {
+    let x: number
+    let y: number
+    if (huddle && attempt < 60) {
+      const t = taken[Math.floor(rnd() * taken.length)]
+      const a = rnd() * Math.PI * 2
+      const d = MIN_GAP * (0.65 + rnd() * 0.5)
+      x = t.x + Math.cos(a) * d * 1.3
+      y = t.y + Math.sin(a) * d * 0.7
+    } else {
+      x = 150 + rnd() * (WORLD.w - 300)
+      y = 220 + rnd() * (WORLD.h - 340)
+      // 마을 모양대로 납작한 타원 거리 — 0 이 한가운데, 1 이 가장자리
+      const r = Math.hypot((x - CENTER.x) / CENTER.x, (y - CENTER.y) / CENTER.y)
+      const density = EDGE_DENSITY + (1 - EDGE_DENSITY) * Math.exp(-((r / CROWD_R) ** 2))
+      if (rnd() > density) continue
+    }
+    if (standsFree(x, y, gap, taken)) return { x, y }
+  }
+  return null
+}
+
+/** 이웃 곁에 붙어 서는 비율 — 두셋씩 모인 무리가 생긴다 */
+const HUDDLE = 0.3
+
+/** 가장자리에 남겨 둘 밀도 — 한가운데를 1 로 본 값 */
+const EDGE_DENSITY = 0.12
+/** 북적이는 무리의 반경 — 마을 반폭을 1 로 본 값 */
+const CROWD_R = 0.36
 
 /* ------------------------------------------------------------------ */
 /* 저장 — 지금은 이 브라우저에만. 나중에 서버로 갈아끼운다               */
@@ -405,9 +452,8 @@ function usable(r: unknown): r is Resident {
  * 27인치에서 90명만 심으면 가운데만 북적이고 둘레가 휑하다.
  * 넓이에 비례해 늘리되 상한은 넘기지 않는다.
  */
-export function seedCountFor(vw: number, vh: number): number {
-  const k = (vw * vh) / (1440 * 900)
-  return Math.round(Math.min(MAX_RESIDENTS, Math.max(40, SEED_COUNT * k)))
+export function seedCountFor(_vw: number, _vh: number): number {
+  return Math.min(MAX_RESIDENTS, SEED_COUNT)
 }
 
 /**
@@ -430,7 +476,7 @@ function settle(list: Resident[]): Resident[] {
   return out
 }
 
-export function loadWorld(seeds = SEED_COUNT): Resident[] {
+export function loadWorld(seeds_ = SEED_COUNT): Resident[] {
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
@@ -443,13 +489,20 @@ export function loadWorld(seeds = SEED_COUNT): Resident[] {
           const g = genesFromName(r.name)
           return g ? { ...r, genes: g } : r
         })
-        if (ok.length) return settle(ok)
+        if (ok.length) {
+          // 직접 만든 모이모는 서 있던 자리를 지키고, 심어 둔 이웃은 그
+          // 둘레에 새로 흩어 놓는다 — 배치 규칙이 바뀌어도 이웃이 옛 자리에
+          // 몰려 있지 않게
+          const mine = settle(ok.filter((r: Resident) => r.mine))
+          const seeds = seedResidents(seeds_, mine)
+          return [...seeds, ...mine]
+        }
       }
     }
   } catch {
     /* 저장소를 못 읽어도 마을은 열려야 한다 */
   }
-  return seedResidents(seeds)
+  return seedResidents(seeds_)
 }
 
 export function saveWorld(list: Resident[]) {
@@ -462,7 +515,7 @@ export function resetWorld() {
 
 /**
  * 상한을 넘으면 심어둔 이웃부터 내보낸다.
- * 바깥쪽(나중에 심은 쪽)부터 비우므로 가운데 밀도는 그대로 남는다.
+ * 심어 둔 이웃은 뒤에 심은 쪽부터 비운다.
  */
 export function trimWorld(list: Resident[]): Resident[] {
   if (list.length <= MAX_RESIDENTS) return list
