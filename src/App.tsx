@@ -70,11 +70,66 @@ export default function App() {
     window.setTimeout(() => setToast((t) => (t === text ? null : t)), 2600)
   }, [])
 
+  /*
+   * 오브제 페이지 — 오브제를 누르면 그쪽으로 다가간 뒤 페이지로 넘어간다.
+   * 주소 뒤에 #jar 처럼 붙여 두어 브라우저의 뒤로 가기로도 마을에 돌아온다.
+   * 돌아오면 들어가기 전에 보던 자리로 물러난다.
+   */
+  const backCam = useRef<Camera | null>(null)
+  const pushed = useRef(false)
+  const restoreOnPop = useRef(true)
+
+  const restoreCamera = useCallback(() => {
+    const c = backCam.current
+    backCam.current = null
+    if (!c) return
+    const box = document.querySelector('.world-box')
+    const vw = box?.clientWidth ?? window.innerWidth
+    const vh = box?.clientHeight ?? window.innerHeight
+    worldRef.current?.flyTo((vw / 2 - c.tx) / c.scale, (vh / 2 - c.ty) / c.scale, c.scale)
+  }, [])
+
+  /** 페이지를 닫고 마을로 — restore 면 들어가기 전 자리로 물러난다 */
+  const leave = useCallback((restore = true) => {
+    if (pushed.current) {
+      // 뒤로 가기와 같은 길로 닫는다. 닫는 일은 popstate 가 한다
+      restoreOnPop.current = restore
+      pushed.current = false
+      window.history.back()
+      return
+    }
+    if (window.location.hash) window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    setPanel(null)
+    if (restore) restoreCamera()
+    else backCam.current = null
+  }, [restoreCamera])
+
+  useEffect(() => {
+    const onPop = () => {
+      const id = window.location.hash.slice(1)
+      if (ITEMS.some((it) => it.id === id)) { setPanel(id as ItemId); return }
+      pushed.current = false
+      setPanel(null)
+      if (restoreOnPop.current) restoreCamera()
+      else backCam.current = null
+      restoreOnPop.current = true
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [restoreCamera])
+
+  // 주소에 #jar 처럼 붙어 있으면 그 페이지로 바로 연다
+  useEffect(() => {
+    if (!settled) return
+    const id = window.location.hash.slice(1)
+    if (ITEMS.some((it) => it.id === id)) setPanel(id as ItemId)
+  }, [settled])
+
   const send = useCallback((name: string, note: string) => {
     setResidents((prev) => {
       const r = residentFromName(name, prev.length, note || undefined, prev)
       if (!r) return prev
-      setPanel(null)
+      leave(false)
       setArrived(r.id)
       window.setTimeout(() => {
         worldRef.current?.flyTo(r.x, r.y, Math.max(0.8, worldRef.current.camera().scale))
@@ -83,7 +138,7 @@ export default function App() {
       say(`${r.name} 도착! 마을이 한 명 더 북적여요`)
       return trimWorld([...prev, r])
     })
-  }, [say])
+  }, [say, leave])
 
   /** 마을 노래를 켜고 끈다. 파일이 없으면 그 사실을 알린다 */
   const toggleMusic = useCallback(() => {
@@ -112,15 +167,21 @@ export default function App() {
     if (id === 'music') { toggleMusic(); return }
     const it = ITEMS.find((x) => x.id === id)!
     setSelected(null)
-    worldRef.current?.flyTo(it.x, it.y, Math.max(0.75, worldRef.current.camera().scale))
-    window.setTimeout(() => setPanel(id), 360)
+    // 오브제 쪽으로 성큼 다가간 뒤 페이지로 넘어간다
+    backCam.current = worldRef.current?.camera() ?? null
+    worldRef.current?.flyTo(it.x, it.y, 1.9)
+    window.setTimeout(() => {
+      setPanel(id)
+      window.history.pushState({ page: id }, '', `#${id}`)
+      pushed.current = true
+    }, 620)
   }, [toggleMusic])
 
   const focus = useCallback((r: Resident) => {
-    setPanel(null)
+    leave(false)
     worldRef.current?.flyTo(r.x, r.y, 1.3)
     window.setTimeout(() => setSelected(r), 420)
-  }, [])
+  }, [leave])
 
   const hits = useMemo(() => {
     const q = query.trim()
@@ -136,7 +197,7 @@ export default function App() {
     )
   }
 
-  const common = { cache, table, onClose: () => setPanel(null) }
+  const common = { cache, table, onClose: () => leave(true) }
 
   return (
     <div className="app">
@@ -149,7 +210,7 @@ export default function App() {
         showNames={showNames}
         hits={hits}
         onItem={openItem}
-        onResident={(r) => { setPanel(null); setSelected(r) }}
+        onResident={(r) => { setSelected(r) }}
         onCamera={setCamera}
       />
 
@@ -185,26 +246,35 @@ export default function App() {
         <Card resident={selected} cache={cache} table={table} onClose={() => setSelected(null)} />
       )}
 
-      {panel && (
-        <div className="scrim" onClick={() => setPanel(null)}>
-          <div className="scrim-inner" onClick={(e) => e.stopPropagation()}>
-            {panel === 'jar' && <Jar {...common} onSend={send} count={residents.length} />}
-            {panel === 'camera' && <CameraPanel {...common} residents={residents} />}
-            {panel === 'album' && <Album {...common} residents={residents} onFocus={focus} />}
-            {panel === 'glass' && (
-              <Glass
-                {...common}
-                residents={residents}
-                query={query}
-                setQuery={setQuery}
-                showNames={showNames}
-                setShowNames={setShowNames}
-                onFocus={focus}
-              />
-            )}
+      {panel && (() => {
+        const it = ITEMS.find((x) => x.id === panel)!
+        return (
+          <div className="page" key={panel}>
+            <button className="page-back" onClick={() => leave(true)}>← 마을로</button>
+            <aside className="page-hero">
+              <img src={it.src} alt="" draggable={false} />
+              <b>{it.name}</b>
+              <i>{it.tag}</i>
+            </aside>
+            <section className="page-body">
+              {panel === 'jar' && <Jar {...common} onSend={send} count={residents.length} />}
+              {panel === 'camera' && <CameraPanel {...common} residents={residents} />}
+              {panel === 'album' && <Album {...common} residents={residents} onFocus={focus} />}
+              {panel === 'glass' && (
+                <Glass
+                  {...common}
+                  residents={residents}
+                  query={query}
+                  setQuery={setQuery}
+                  showNames={showNames}
+                  setShowNames={setShowNames}
+                  onFocus={focus}
+                />
+              )}
+            </section>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {toast && <div className="toast">{toast}</div>}
       <span className="world-size" hidden>{WORLD.w}×{WORLD.h}</span>

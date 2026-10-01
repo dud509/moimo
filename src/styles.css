@@ -213,6 +213,49 @@ button { cursor: pointer; }
 .fab:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--accent-deep); }
 .fab:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--accent-deep); }
 
+/* ---------------- 오브제 페이지 ---------------- */
+
+/* 오브제를 누르면 넘어가는 페이지. 왼쪽에 오브제 그림, 오른쪽에 할 일 */
+.page {
+  position: absolute; inset: 0; z-index: 30;
+  display: grid; grid-template-columns: minmax(280px, 40%) 1fr;
+  background: var(--ground);
+  animation: page-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+@keyframes page-in { from { opacity: 0; transform: scale(1.04) } to { opacity: 1; transform: none } }
+.page-back {
+  position: absolute; top: 22px; left: 22px; z-index: 2;
+  padding: 10px 18px; border-radius: 999px;
+  background: var(--paper); border: 2.5px solid var(--ink);
+  font-size: 14px; font-weight: 800;
+}
+.page-back:hover { background: var(--ink); color: var(--paper); }
+.page-hero {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: 80px 32px 40px;
+}
+.page-hero img {
+  width: min(82%, 420px); max-height: 56vh; object-fit: contain;
+  filter: drop-shadow(0 10px 14px rgba(112, 94, 76, 0.16));
+  animation: hero-in 0.6s cubic-bezier(0.2, 1.2, 0.4, 1) 0.05s both;
+}
+@keyframes hero-in { from { transform: translateY(18px) scale(0.9); opacity: 0 } to { transform: none; opacity: 1 } }
+.page-hero b { margin-top: 14px; font-size: 26px; font-weight: 900; letter-spacing: -0.02em; }
+.page-hero i {
+  font-style: normal; font-size: 13px; font-weight: 800; color: #fff;
+  background: var(--accent); padding: 4px 12px; border-radius: 999px;
+}
+.page-body { display: flex; padding: 40px 40px 40px 0; min-height: 0; }
+/* 페이지 안에서는 시트가 오른쪽을 꽉 채운다 */
+.page-body .sheet { max-height: none; height: 100%; animation: none; }
+.page-body .sheet.narrow { max-width: none; }
+@media (max-width: 760px) {
+  .page { grid-template-columns: 1fr; grid-template-rows: auto 1fr; overflow: auto; }
+  .page-hero { padding: 72px 20px 8px; }
+  .page-hero img { width: 46%; max-height: 28vh; }
+  .page-body { padding: 12px 16px 24px; }
+}
+
 /* ---------------- 시트 ---------------- */
 
 .scrim {
