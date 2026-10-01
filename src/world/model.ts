@@ -24,6 +24,17 @@ export const MAX_RESIDENTS = 420
 export const WORLD = { w: 3600, h: 2400 }
 export const CENTER = { x: 1800, y: 1200 }
 
+/**
+ * 시안 한 장 — 처음 열었을 때 화면을 꽉 채우는 네모.
+ * 꾸밈 오브제는 이 가장자리에 걸쳐 잘려 보이고, 모이모는 이 테두리에 걸쳐
+ * 서지 않는다(처음 화면에서 잘려 보이지 않게). 줄이면 바깥 마을도 보인다.
+ * 시안(1466×978) 의 1px 이 마을의 1.3336px 이다.
+ */
+export const FRAME = { x0: 822, y0: 548, x1: 2778, y1: 1852 }
+
+/** 테두리에서 이만큼은 비켜 선다 — 아래는 메뉴 띠에 가리지 않게 더 넉넉히 */
+const EDGE = { side: 12, top: 16, bottom: 96 }
+
 import type { Footprint } from './footprint'
 
 export type ItemId = 'jar' | 'camera' | 'album' | 'glass' | 'music'
@@ -153,6 +164,13 @@ const GUARDS = [...ITEMS, ...DECOR, ...GUIDES].map(guard)
 /** 이 자리에 서도 되나 — 오브제를 가리지 않고 이웃과도 떨어져 있나 */
 function standsFree(x: number, y: number, gap: number, taken: { x: number; y: number }[]): boolean {
   if (x < 120 || x > WORLD.w - 120 || y < 140 || y > WORLD.h - 110) return false
+  // 처음 화면(FRAME) 테두리에 걸쳐 서지 않는다 — 안이든 밖이든 한쪽에만
+  const inL = x - MOIMO_W / 2 >= FRAME.x0 + EDGE.side
+  const inR = x + MOIMO_W / 2 <= FRAME.x1 - EDGE.side
+  const inT = y - MOIMO_W >= FRAME.y0 + EDGE.top
+  const inB = y <= FRAME.y1 - EDGE.bottom
+  const outside = x + MOIMO_W / 2 < FRAME.x0 || x - MOIMO_W / 2 > FRAME.x1 || y < FRAME.y0 || y - MOIMO_W > FRAME.y1
+  if (!(inL && inR && inT && inB) && !outside) return false
   // x,y 는 발치이고 몸은 그 위로 올라가므로 몸 한가운데를 기준으로 잰다
   const by = y - MOIMO_W / 2
   // 그림과 겹쳐도 되는 것은 그 앞에 섰을 때뿐이다. 발바닥이 그림 외곽선
@@ -291,8 +309,7 @@ const CANDY_LAYOUT: [number, number, number][] = [
   [2423, 1801, 0],
 ]
 
-/** 시안이 덮는 네모 — 이 안은 CANDY_LAYOUT 이 채우고 바깥은 흩뿌린다 */
-const DESIGN = { x0: 822, y0: 548, x1: 2778, y1: 1852 }
+
 
 /** 시안 바깥에 흩뿌릴 별사탕 수 — 시안 안과 비슷한 밀도가 되게 */
 export const PROP_COUNT = 80
@@ -321,7 +338,7 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
 
   const free = (x: number, y: number) => {
     if (x < 90 || x > WORLD.w - 90 || y < 110 || y > WORLD.h - 90) return false
-    if (x > DESIGN.x0 - w && x < DESIGN.x1 + w && y > DESIGN.y0 - w && y < DESIGN.y1 + w) return false
+    if (x > FRAME.x0 - w && x < FRAME.x1 + w && y > FRAME.y0 - w && y < FRAME.y1 + w) return false
     for (const g of GUARDS) {
       if (Math.abs(x - g.cx) < g.hw + w * 0.75 && Math.abs(y - g.cy) < g.hh + w * 0.75) return false
     }

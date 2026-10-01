@@ -4,7 +4,7 @@ import {
 import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { ItemArt } from './Items'
-import { CANDY_LINE_PX, CANDY_W, DECOR, GUIDES, ITEMS, MOIMO_W, OBJECT_LINE_PX, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Placed, type Resident } from './model'
+import { CANDY_LINE_PX, CANDY_W, DECOR, FRAME, GUIDES, ITEMS, MOIMO_W, OBJECT_LINE_PX, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Placed, type Resident } from './model'
 import { useTightArt, type Tight } from './tight'
 
 /** 여백을 잘라내고 쓸 그림들 — 오브제와 소품 */
@@ -41,8 +41,6 @@ const FLOOR_SCALE = 0.26
 /** 끝까지 줄였을 때 보이는 마을의 몫 — 가로·세로 각각 */
 const VIEW_SHARE = 0.66
 const MAX_SCALE = 2.2
-/** 처음 열었을 때의 배율 — 화면 크기와 무관하게 같은 크기로 보이도록 고정 */
-const HOME_SCALE = 0.75
 const MOIMO_PX = MOIMO_W
 
 
@@ -151,17 +149,27 @@ export const World = forwardRef<WorldHandle, Props>(function World(
    * 화면을 빈틈없이 덮는 배율.
    * 27인치처럼 넓은 화면에서 마을이 가운데 작게 떠 있고 둘레가 비는 것을 막는다.
    */
+  /**
+   * 가장 줄였을 때의 배율.
+   * 화면을 빈틈없이 덮되, 마을의 2/3 남짓까지만 보인다 — 다 보이게 두면
+   * 모이모가 콩알만 해지고 둘레가 허전해 보인다.
+   */
   const cover = useCallback(() => {
     const el = boxRef.current
     if (!el) return FLOOR_SCALE
     return Math.max(
       FLOOR_SCALE,
       el.clientWidth / WORLD.w, el.clientHeight / WORLD.h,
-      // 끝까지 줄여도 마을의 2/3 남짓까지만 보인다. 다 보이게 두면 모이모가
-      // 콩알만 해지고 둘레가 허전해 보인다
       el.clientWidth / (WORLD.w * VIEW_SHARE), el.clientHeight / (WORLD.h * VIEW_SHARE),
     )
   }, [])
+
+  /** 처음 열었을 때의 배율 — 시안 한 장(FRAME)이 화면을 꽉 채운다 */
+  const home = useCallback(() => {
+    const el = boxRef.current
+    if (!el) return cover()
+    return Math.max(cover(), el.clientWidth / (FRAME.x1 - FRAME.x0), el.clientHeight / (FRAME.y1 - FRAME.y0))
+  }, [cover])
 
   const clamp = useCallback((c: Camera): Camera => {
     const el = boxRef.current
@@ -176,9 +184,8 @@ export const World = forwardRef<WorldHandle, Props>(function World(
       c.ty = (vh - wh) / 2
       return c
     }
-    const pad = 140
-    c.tx = ww < vw ? (vw - ww) / 2 : Math.min(pad, Math.max(vw - ww - pad, c.tx))
-    c.ty = wh < vh ? (vh - wh) / 2 : Math.min(pad, Math.max(vh - wh - pad, c.ty))
+    c.tx = ww < vw ? (vw - ww) / 2 : Math.min(0, Math.max(vw - ww, c.tx))
+    c.ty = wh < vh ? (vh - wh) / 2 : Math.min(0, Math.max(vh - wh, c.ty))
     return c
   }, [cover])
 
@@ -197,7 +204,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   useEffect(() => {
     const el = boxRef.current
     if (!el) return
-    const s = Math.max(HOME_SCALE, cover())
+    const s = home()
     camRef.current = clamp({
       scale: s,
       tx: el.clientWidth / 2 - CENTER.x * s,
@@ -221,7 +228,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
-  }, [apply, clamp, cover])
+  }, [apply, clamp, cover, home])
 
   const zoomAt = useCallback((sx: number, sy: number, factor: number) => {
     const c = camRef.current
