@@ -4,7 +4,7 @@ import {
 import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { ItemArt } from './Items'
-import { DECOR, GUIDES, ITEMS, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Placed, type Resident } from './model'
+import { DECOR, GUIDES, ITEMS, MOIMO_W, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Placed, type Resident } from './model'
 import { useTightArt, type Tight } from './tight'
 
 /** 여백을 잘라내고 쓸 그림들 — 오브제와 소품 */
@@ -35,7 +35,7 @@ const FLOOR_SCALE = 0.26
 const MAX_SCALE = 2.2
 /** 처음 열었을 때의 배율 — 화면 크기와 무관하게 같은 크기로 보이도록 고정 */
 const HOME_SCALE = 0.75
-const MOIMO_PX = 104
+const MOIMO_PX = MOIMO_W
 
 
 /* ------------------------------------------------------------------ */

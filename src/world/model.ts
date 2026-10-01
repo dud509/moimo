@@ -97,7 +97,7 @@ export type Resident = {
 const GOLDEN = Math.PI * (3 - Math.sqrt(5))
 
 /** 모이모가 화면에 놓이는 크기. 겹침을 따질 때 쓴다 */
-export const MOIMO_W = 104
+export const MOIMO_W = 120
 /**
  * 둘 사이에 두는 거리.
  * 어깨가 닿을 만큼은 붙어 서야 와글와글해 보인다 —
@@ -237,8 +237,12 @@ export type Prop = {
   kind: number
 }
 
-/** 별사탕 크기 — 모두 같다 */
-export const CANDY_W = 53
+/**
+ * 별사탕 크기 — 모두 같다.
+ * 크기는 오브제 >>>> 모이모 > 별사탕. 모이모 그림은 캔버스의 절반 남짓만
+ * 차지하므로(120 이면 몸집 60~70) 별사탕은 그보다 작게 둔다.
+ */
+export const CANDY_W = 36
 
 /**
  * 처음 화면에 보이는 별사탕 — 시안에 찍힌 자리 그대로다.
