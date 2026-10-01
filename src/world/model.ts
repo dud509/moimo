@@ -54,25 +54,25 @@ export type Item = Placed & {
  * 1px 이 마을의 1.333px 이고, 시안 한가운데가 마을 한가운데(CENTER)다.
  */
 export const ITEMS: Item[] = [
-  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', src: '/items/jar02.svg',  x: 1811, y: 1211, w: 337, ratio: 1.23 },
-  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 899,  w: 256, ratio: 1.053 },
-  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2372, y: 864,  w: 360, ratio: 0.774 },
-  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1656, w: 197, ratio: 1.172 },
+  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', src: '/items/jar02.svg',  x: 1811, y: 1212, w: 337, ratio: 1.23 },
+  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 900, w: 257, ratio: 1.053 },
+  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774 },
+  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1657, w: 197, ratio: 1.172 },
 ]
 
 /** 누를 수 없는 오브제 — 마을을 꾸미는 큰 물건들 */
 export const DECOR: Placed[] = [
-  { src: '/items/inbox02.svg', x: 924,  y: 769,  w: 235, ratio: 0.836 },
-  { src: '/items/gift.svg',    x: 1571, y: 752,  w: 225, ratio: 0.967 },
+  { src: '/items/inbox02.svg', x: 897, y: 770, w: 285, ratio: 0.836 },
+  { src: '/items/gift.svg',    x: 1572, y: 753, w: 227, ratio: 0.967 },
   { src: '/items/book.svg',    x: 1159, y: 1315, w: 347, ratio: 0.775 },
-  { src: '/items/inbox01.svg', x: 2622, y: 1305, w: 387, ratio: 0.854 },
-  { src: '/items/box01.svg',   x: 1991, y: 1689, w: 288, ratio: 0.915 },
+  { src: '/items/inbox01.svg', x: 2668, y: 1306, w: 448, ratio: 0.854 },
+  { src: '/items/box01.svg',   x: 1990, y: 1691, w: 289, ratio: 0.915 },
 ]
 
 /** 유리병 곁에 서 있는 안내 캐릭터 둘 */
 export const GUIDES: Placed[] = [
-  { src: '/items/guide01.svg', x: 1644, y: 1029, w: 89, ratio: 0.983 },
-  { src: '/items/guide02.svg', x: 1991, y: 1123, w: 96, ratio: 1.069 },
+  { src: '/items/guide01.svg', x: 1991, y: 1124, w: 96, ratio: 0.983 },
+  { src: '/items/guide02.svg', x: 1645, y: 1030, w: 89, ratio: 1.069 },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -105,8 +105,12 @@ export const MIN_GAP = Math.ceil(MOIMO_W * 0.72)
 /** 그림이 화면에서 차지하는 네모 — 한가운데와 반폭·반높이 */
 function guard(p: Placed) {
   const pad = 14
-  return { cx: p.x, cy: p.y, hw: p.w / 2 + pad, hh: (p.w * p.ratio) / 2 + pad }
+  const h = p.w * p.ratio
+  return { cx: p.x, cy: p.y, hw: p.w / 2 + pad, hh: h / 2 + pad, bottom: p.y + h / 2 }
 }
+
+/** 그림 앞에 설 때 발이 그림 바닥선보다 이만큼은 아래(앞)에 있어야 한다 */
+const FRONT_GAP = 6
 
 /** 모이모와 별사탕이 비켜 서야 하는 그림들 */
 const GUARDS = [...ITEMS, ...DECOR, ...GUIDES].map(guard)
@@ -116,8 +120,13 @@ function standsFree(x: number, y: number, gap: number, taken: { x: number; y: nu
   if (x < 120 || x > WORLD.w - 120 || y < 140 || y > WORLD.h - 110) return false
   // x,y 는 발치이고 몸은 그 위로 올라가므로 몸 한가운데를 기준으로 잰다
   const by = y - MOIMO_W / 2
+  // 그림과 겹쳐도 되는 것은 그 앞에 섰을 때뿐이다 — 발이 그림 바닥선보다
+  // 아래(앞)에 있어야 한다. 발이 그림 윗부분에 걸리면 그 위에 올라탄 것처럼
+  // 떠 보인다
   for (const g of GUARDS) {
-    if (Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2) return false
+    const overlaps = Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2
+    // y 는 그림 상자의 바닥이고 실제 발바닥은 그보다 1/4 위에 있다
+    if (overlaps && y - MOIMO_W * 0.25 < g.bottom + FRONT_GAP) return false
   }
   // 소품과는 겹치지 않는다. 소품은 무리 바깥에 있으니 둘레에서만 마주친다
   for (const p of PROPS) {
@@ -176,15 +185,14 @@ export function spotFor(
 
 /**
  * 소품 한 종류 — 지금은 별사탕 네 빛깔. 큰 상자들은 오브제(DECOR)로 옮겼다.
- * `weight` 는 많이 깔릴수록 크다.
  */
-export type PropKind = { src: string; min: number; max: number; weight: number }
+export type PropKind = { src: string }
 
 export const PROP_KINDS: PropKind[] = [
-  { src: '/items/starcandy01.svg', min: 40, max: 56, weight: 1 },
-  { src: '/items/starcandy02.svg', min: 40, max: 56, weight: 1 },
-  { src: '/items/starcandy03.svg', min: 40, max: 56, weight: 1 },
-  { src: '/items/starcandy04.svg', min: 40, max: 56, weight: 1 },
+  { src: '/items/starcandy01.svg' },
+  { src: '/items/starcandy02.svg' },
+  { src: '/items/starcandy03.svg' },
+  { src: '/items/starcandy04.svg' },
 ]
 
 export type Prop = {
@@ -199,20 +207,62 @@ export type Prop = {
   kind: number
 }
 
-/** 마을 전체에 흩뿌릴 별사탕 수. 시안처럼 성기게 — 한 화면에 마흔 개 남짓 */
-export const PROP_COUNT = 150
+/** 별사탕 크기 — 모두 같다 */
+export const CANDY_W = 53
+
+/**
+ * 처음 화면에 보이는 별사탕 — 시안에 찍힌 자리 그대로다.
+ * [x, y, 종류] 이고 종류는 PROP_KINDS 의 순서(0 분홍, 1 하양, 2 파랑, 3 노랑).
+ * 유리병·별사탕 상자 그림 안에 이미 그려진 것은 빼고 바닥에 흩어진 것만 옮겼다.
+ */
+const CANDY_LAYOUT: [number, number, number][] = [
+  [1100, 652, 1],
+  [1913, 708, 1],
+  [2216, 645, 2],
+  [2303, 661, 0],
+  [1465, 788, 2],
+  [1671, 839, 3],
+  [1741, 824, 0],
+  [2137, 957, 1],
+  [2565, 1021, 2],
+  [2416, 1119, 3],
+  [1075, 1108, 2],
+  [1136, 1129, 0],
+  [918, 1175, 1],
+  [1303, 1195, 3],
+  [1399, 1175, 2],
+  [1693, 1465, 3],
+  [1725, 1451, 2],
+  [1940, 1465, 0],
+  [1843, 1535, 1],
+  [2141, 1539, 0],
+  [2076, 1571, 2],
+  [1036, 1585, 1],
+  [1167, 1565, 2],
+  [1153, 1688, 0],
+  [1213, 1728, 3],
+  [1479, 1791, 2],
+  [2000, 1812, 2],
+  [2031, 1797, 3],
+  [1880, 1844, 1],
+  [2423, 1801, 0],
+]
+
+/** 시안이 덮는 네모 — 이 안은 CANDY_LAYOUT 이 채우고 바깥은 흩뿌린다 */
+const DESIGN = { x0: 822, y0: 548, x1: 2778, y1: 1852 }
+
+/** 시안 바깥에 흩뿌릴 별사탕 수 — 시안 안과 비슷한 밀도가 되게 */
+export const PROP_COUNT = 80
 
 /** 기울여 놓으면 네모가 그만큼 커진다. 자리를 잴 때 얹어 준다 */
 const ROT_PAD = 1.2
-/** 무게를 다 더한 값 — 종류를 뽑을 때 쓴다 */
-const WEIGHT_SUM = PROP_KINDS.reduce((a, k) => a + k.weight, 0)
 
 /**
- * 소품을 흩뿌린다.
+ * 별사탕을 놓는다.
  *
- * 마을 구석구석에 고르게 깔린다 — 가운데를 비워 두지 않는다.
- * 오브제도 소품끼리도 비켜 가고, 모이모는 이 자리를 피해서 선다.
- * 소품과 모이모는 한 바닥에 나란히 놓이지 겹쳐 쌓이지 않는다.
+ * 처음 화면 안은 시안대로, 바깥은 시안과 같은 크기·비슷한 밀도로 흩뿌린다.
+ * 흩뿌리는 것은 오브제와 시안 네모를 비켜 가고, 서로 넉넉히 떨어진다.
+ * 모이모는 이 자리를 피해서 선다.
  */
 export function scatterProps(count = PROP_COUNT): Prop[] {
   let s = 19980423
@@ -221,32 +271,29 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
     return s / 4294967296
   }
 
-  const out: Prop[] = []
-  const free = (x: number, y: number, w: number) => {
+  const w = CANDY_W
+  const out: Prop[] = CANDY_LAYOUT.map(([x, y, kind], i) => ({
+    id: `candy-${i}`, x, y, w, kind, rot: (rnd() - 0.5) * 30,
+  }))
+
+  const free = (x: number, y: number) => {
     if (x < 90 || x > WORLD.w - 90 || y < 110 || y > WORLD.h - 90) return false
+    if (x > DESIGN.x0 - w && x < DESIGN.x1 + w && y > DESIGN.y0 - w && y < DESIGN.y1 + w) return false
     for (const g of GUARDS) {
       if (Math.abs(x - g.cx) < g.hw + w * 0.75 && Math.abs(y - g.cy) < g.hh + w * 0.75) return false
     }
-    // 별사탕끼리는 넉넉히 떨어뜨려 성기게 흩어 놓는다
     for (const p of out) {
-      const d = (w + p.w) * 1.8
-      if (Math.abs(x - p.x) < d && Math.abs(y - p.y) < d) return false
+      if (Math.abs(x - p.x) < w * 3.6 && Math.abs(y - p.y) < w * 3.6) return false
     }
     return true
   }
 
   for (let i = 0; i < count; i++) {
-    let t = rnd() * WEIGHT_SUM
-    let kind = 0
-    while (kind < PROP_KINDS.length - 1 && (t -= PROP_KINDS[kind].weight) > 0) kind++
-    const k = PROP_KINDS[kind]
-    const w = Math.round(k.min + rnd() * (k.max - k.min))
-    for (let attempt = 0; attempt < 90; attempt++) {
+    for (let attempt = 0; attempt < 120; attempt++) {
       const x = 90 + rnd() * (WORLD.w - 180)
       const y = 110 + rnd() * (WORLD.h - 200)
-      if (!free(x, y, w)) continue
-      const rot = (rnd() - 0.5) * 24
-      out.push({ id: `prop-${i}`, x, y, w, rot, kind })
+      if (!free(x, y)) continue
+      out.push({ id: `prop-${i}`, x, y, w, kind: Math.floor(rnd() * PROP_KINDS.length), rot: (rnd() - 0.5) * 30 })
       break
     }
   }
