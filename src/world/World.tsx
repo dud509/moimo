@@ -4,7 +4,7 @@ import {
 import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { ItemArt } from './Items'
-import { DECOR, GUIDES, ITEMS, MOIMO_W, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Placed, type Resident } from './model'
+import { CANDY_LINE_PX, CANDY_W, DECOR, GUIDES, ITEMS, MOIMO_W, OBJECT_LINE_PX, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Placed, type Resident } from './model'
 import { useTightArt, type Tight } from './tight'
 
 /** 여백을 잘라내고 쓸 그림들 — 오브제와 소품 */
@@ -14,6 +14,12 @@ const ART_SRCS = [
   ...GUIDES.map((g) => g.src),
   ...PROP_KINDS.map((k) => k.src),
 ]
+
+/** 그림마다 [화면에 놓이는 폭, 맞출 선 굵기] — 선 굵기를 화면 기준으로 맞춘다 */
+const ART_LINES: Record<string, readonly [number, number]> = Object.fromEntries([
+  ...[...ITEMS, ...DECOR, ...GUIDES].map((p) => [p.src, [p.w, OBJECT_LINE_PX]]),
+  ...PROP_KINDS.map((k) => [k.src, [CANDY_W, CANDY_LINE_PX]]),
+])
 
 /** 그림 한 점이 놓이는 자리 — x, y 가 한가운데 */
 const placeStyle = (p: Placed, art?: Tight): React.CSSProperties => {
@@ -32,6 +38,8 @@ export type WorldHandle = {
 
 /** 아무리 줄여도 이 아래로는 안 간다 */
 const FLOOR_SCALE = 0.26
+/** 끝까지 줄였을 때 보이는 마을의 몫 — 가로·세로 각각 */
+const VIEW_SHARE = 0.66
 const MAX_SCALE = 2.2
 /** 처음 열었을 때의 배율 — 화면 크기와 무관하게 같은 크기로 보이도록 고정 */
 const HOME_SCALE = 0.75
@@ -122,7 +130,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   { residents, cache, table, onItem, onResident, arrivedId, showNames, hits, onCamera },
   ref,
 ) {
-  const art = useTightArt(ART_SRCS)
+  const art = useTightArt(ART_SRCS, ART_LINES)
   const boxRef = useRef<HTMLDivElement>(null)
   const worldRef = useRef<HTMLDivElement>(null)
   const camRef = useRef<Camera>({ tx: 0, ty: 0, scale: 0.6 })
@@ -146,7 +154,13 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   const cover = useCallback(() => {
     const el = boxRef.current
     if (!el) return FLOOR_SCALE
-    return Math.max(FLOOR_SCALE, el.clientWidth / WORLD.w, el.clientHeight / WORLD.h)
+    return Math.max(
+      FLOOR_SCALE,
+      el.clientWidth / WORLD.w, el.clientHeight / WORLD.h,
+      // 끝까지 줄여도 마을의 2/3 남짓까지만 보인다. 다 보이게 두면 모이모가
+      // 콩알만 해지고 둘레가 허전해 보인다
+      el.clientWidth / (WORLD.w * VIEW_SHARE), el.clientHeight / (WORLD.h * VIEW_SHARE),
+    )
   }, [])
 
   const clamp = useCallback((c: Camera): Camera => {

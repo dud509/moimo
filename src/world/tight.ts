@@ -17,7 +17,11 @@ export type Tight = { url: string; ratio: number }
  * 네모(getBBox)를 얻어 viewBox 를 거기에 맞춘다. 아트보드가 크든 작든
  * 화면에 놓이는 크기는 적어 준 그대로가 된다.
  */
-export function useTightArt(srcs: readonly string[]): Record<string, Tight> {
+export function useTightArt(
+  srcs: readonly string[],
+  /** 그림마다 [화면에 놓이는 폭, 화면(마을 좌표)에서 맞출 선 굵기 px] */
+  lines?: Readonly<Record<string, readonly [number, number]>>,
+): Record<string, Tight> {
   const key = srcs.join('|')
   const [art, setArt] = useState<Record<string, Tight>>({})
 
@@ -45,6 +49,18 @@ export function useTightArt(srcs: readonly string[]): Record<string, Tight> {
         const w = b.width + pad * 2
         const h = b.height + pad * 2
         svg.setAttribute('viewBox', `${b.x - pad} ${b.y - pad} ${w} ${h}`)
+        // 선 굵기를 화면 기준으로 맞춘다. 그림마다 줄여 놓는 비율이 달라
+        // 파일 속 숫자가 같아도 화면에서는 굵기가 제각각이 된다. 가장 굵은
+        // 선을 lineTo 에 맞추고 나머지 선은 그 비율대로 따라간다
+        const [shown, lineTo] = lines?.[src] ?? [0, 0]
+        if (shown && lineTo) {
+          const strokes = [...svg.querySelectorAll('[stroke-width]')]
+          const max = Math.max(0, ...strokes.map((e) => Number(e.getAttribute('stroke-width')) || 0))
+          if (max > 0) {
+            const k = lineTo / (max * (shown / w))
+            for (const e of strokes) e.setAttribute('stroke-width', String(Number(e.getAttribute('stroke-width')) * k))
+          }
+        }
         svg.removeAttribute('width')
         svg.removeAttribute('height')
         const url = URL.createObjectURL(new Blob([svg.outerHTML], { type: 'image/svg+xml' }))
