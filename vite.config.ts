@@ -61,6 +61,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         anchors: resolve(__dirname, 'anchors.html'),
         mapping: resolve(__dirname, 'mapping.html'),
+        compare: resolve(__dirname, 'compare.html'),
       },
     },
   },
