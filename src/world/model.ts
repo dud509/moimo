@@ -5,7 +5,7 @@ import { genesFromName, randomKoreanName, splitName, type MoimoGenes } from '../
  * ================================================================== */
 
 /** 처음 심어 둘 이웃 수 — 화면 크기와 상관없이 같다 */
-export const SEED_COUNT = 200
+export const SEED_COUNT = 300
 
 /**
  * 한 화면에 둘 수 있는 최대 인원.
