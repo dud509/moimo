@@ -24,6 +24,8 @@ export const MAX_RESIDENTS = 420
 export const WORLD = { w: 3600, h: 2400 }
 export const CENTER = { x: 1800, y: 1200 }
 
+import type { Footprint } from './footprint'
+
 export type ItemId = 'jar' | 'camera' | 'album' | 'glass' | 'music'
 
 /**
@@ -40,6 +42,7 @@ export type Placed = {
   w: number
   ratio: number
 }
+
 
 export type Item = Placed & {
   id: ItemId
@@ -102,15 +105,38 @@ export const MOIMO_W = 104
  */
 export const MIN_GAP = Math.ceil(MOIMO_W * 0.72)
 
-/** 그림이 화면에서 차지하는 네모 — 한가운데와 반폭·반높이 */
+/** 그림이 화면에서 차지하는 네모 */
 function guard(p: Placed) {
   const pad = 14
   const h = p.w * p.ratio
-  return { cx: p.x, cy: p.y, hw: p.w / 2 + pad, hh: h / 2 + pad, bottom: p.y + h / 2 }
+  return { p, cx: p.x, cy: p.y, hw: p.w / 2 + pad, hh: h / 2 + pad, x0: p.x - p.w / 2, y0: p.y - h / 2, h }
 }
 
-/** 그림 앞에 설 때 발이 그림 바닥선보다 이만큼은 아래(앞)에 있어야 한다 */
-const FRONT_GAP = 6
+/**
+ * 오브제마다 잰 외곽선. 그림이 뜨기 전에는 비어 있고, 그동안은 오브제
+ * 네모 전체를 피한다. footprint.ts 가 재서 setFootprints 로 넣는다.
+ */
+let FOOTPRINTS: Record<string, Footprint> = {}
+export function setFootprints(f: Record<string, Footprint>) { FOOTPRINTS = f }
+
+/** 그림 위로 이만큼까지는 발을 디디지 않는다 — 바로 뒤에 붙어 서면 올라탄 듯 보인다 */
+const ABOVE = 8
+/** 그림 바닥선에서 이만큼 위까지는 디뎌도 된다 — 앞에 서서 바닥선에 발이 닿는 정도 */
+const BASE = 6
+
+/** 이 점이 그림 위(발을 디딜 수 없는 곳)인가 */
+function onArt(g: ReturnType<typeof guard>, f: Footprint, px: number, py: number): boolean {
+  const i = Math.floor(((px - g.x0) / g.p.w) * f.length)
+  if (i < 0 || i >= f.length) return false
+  const col = f[i]
+  if (!col) return false
+  const top = g.y0 + col[0] * g.h - ABOVE
+  const bottom = g.y0 + col[1] * g.h - BASE
+  return py > top && py < bottom
+}
+
+/** 발바닥 폭의 절반 — 발 양끝도 금지 자리에 걸리면 안 된다 */
+const FOOT_HALF = 22
 
 /** 모이모와 별사탕이 비켜 서야 하는 그림들 */
 const GUARDS = [...ITEMS, ...DECOR, ...GUIDES].map(guard)
@@ -120,13 +146,17 @@ function standsFree(x: number, y: number, gap: number, taken: { x: number; y: nu
   if (x < 120 || x > WORLD.w - 120 || y < 140 || y > WORLD.h - 110) return false
   // x,y 는 발치이고 몸은 그 위로 올라가므로 몸 한가운데를 기준으로 잰다
   const by = y - MOIMO_W / 2
-  // 그림과 겹쳐도 되는 것은 그 앞에 섰을 때뿐이다 — 발이 그림 바닥선보다
-  // 아래(앞)에 있어야 한다. 발이 그림 윗부분에 걸리면 그 위에 올라탄 것처럼
-  // 떠 보인다
+  // 그림과 겹쳐도 되는 것은 그 앞에 섰을 때뿐이다. 발바닥이 그림 외곽선
+  // 안에 들어가면 그 위에 올라탄 것처럼 떠 보인다.
+  // y 는 그림 상자의 바닥이고 실제 발바닥은 그보다 1/4 위에 있다
+  const fy = y - MOIMO_W * 0.25
   for (const g of GUARDS) {
-    const overlaps = Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2
-    // y 는 그림 상자의 바닥이고 실제 발바닥은 그보다 1/4 위에 있다
-    if (overlaps && y - MOIMO_W * 0.25 < g.bottom + FRONT_GAP) return false
+    const f = FOOTPRINTS[g.p.src]
+    const nearBox = Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2
+    if (!nearBox) continue
+    // 외곽선을 못 쟀거나 안내 캐릭터면 네모 전체를 피한다
+    if (!f || GUIDES.includes(g.p)) return false
+    if (onArt(g, f, x, fy) || onArt(g, f, x - FOOT_HALF, fy) || onArt(g, f, x + FOOT_HALF, fy)) return false
   }
   // 소품과는 겹치지 않는다. 소품은 무리 바깥에 있으니 둘레에서만 마주친다
   for (const p of PROPS) {

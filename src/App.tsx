@@ -4,8 +4,9 @@ import { normalizeTable, type AnchorTable } from './moimo/parts'
 import anchorsJson from './data/anchors.json'
 import { World, type Camera, type WorldHandle } from './world/World'
 import { Album, Camera as CameraPanel, Card, Glass, Jar } from './world/Panels'
+import { measureFootprints } from './world/footprint'
 import {
-  ITEMS, WORLD, loadWorld, residentFromName, resetWorld, saveWorld, seedCountFor, trimWorld,
+  DECOR, ITEMS, WORLD, loadWorld, setFootprints, residentFromName, resetWorld, saveWorld, seedCountFor, trimWorld,
   type ItemId, type Resident,
 } from './world/model'
 import './styles.css'
@@ -37,7 +38,9 @@ function Brand() {
 
 export default function App() {
   const [cache, setCache] = useState<PartsCache | null>(null)
-  const [residents, setResidents] = useState<Resident[]>(() => trimWorld(loadWorld(seedCountFor(window.innerWidth, window.innerHeight))))
+  // 모이모는 오브제 외곽선을 잰 뒤에 세운다 — 그림 위에 올라타지 않게
+  const [residents, setResidents] = useState<Resident[]>([])
+  const [settled, setSettled] = useState(false)
   const [panel, setPanel] = useState<ItemId | null>(null)
   const [selected, setSelected] = useState<Resident | null>(null)
   const [arrived, setArrived] = useState<string | null>(null)
@@ -52,7 +55,15 @@ export default function App() {
   const table = useMemo<AnchorTable>(() => normalizeTable(anchorsJson), [])
 
   useEffect(() => { loadParts().then(setCache) }, [])
-  useEffect(() => { saveWorld(residents) }, [residents])
+  useEffect(() => {
+    measureFootprints([...ITEMS, ...DECOR].map((p) => p.src)).then((f) => {
+      setFootprints(f)
+      setResidents(trimWorld(loadWorld(seedCountFor(window.innerWidth, window.innerHeight))))
+      setSettled(true)
+    })
+  }, [])
+  // 다 세우기 전의 빈 마을을 저장하면 저장된 모이모가 날아간다
+  useEffect(() => { if (settled) saveWorld(residents) }, [residents, settled])
 
   const say = useCallback((text: string) => {
     setToast(text)
@@ -117,7 +128,7 @@ export default function App() {
     return new Set(residents.filter((r) => r.name.includes(q)).map((r) => r.id))
   }, [residents, query])
 
-  if (!cache) {
+  if (!cache || !settled) {
     return (
       <div className="booting">
         <p>모이모를 부르는 중…</p>
