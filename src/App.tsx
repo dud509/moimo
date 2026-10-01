@@ -101,7 +101,7 @@ export default function App() {
     if (id === 'music') { toggleMusic(); return }
     const it = ITEMS.find((x) => x.id === id)!
     setSelected(null)
-    worldRef.current?.flyTo(it.x, it.y - 40, Math.max(0.75, worldRef.current.camera().scale))
+    worldRef.current?.flyTo(it.x, it.y, Math.max(0.75, worldRef.current.camera().scale))
     window.setTimeout(() => setPanel(id), 360)
   }, [toggleMusic])
 

@@ -4,14 +4,25 @@ import {
 import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { ItemArt } from './Items'
-import { ITEMS, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Resident } from './model'
+import { DECOR, GUIDES, ITEMS, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Placed, type Resident } from './model'
 import { useTightArt, type Tight } from './tight'
 
 /** 여백을 잘라내고 쓸 그림들 — 오브제와 소품 */
 const ART_SRCS = [
-  ...ITEMS.map((it) => `/items/${it.id}.svg`),
+  ...ITEMS.map((it) => it.src),
+  ...DECOR.map((d) => d.src),
+  ...GUIDES.map((g) => g.src),
   ...PROP_KINDS.map((k) => k.src),
 ]
+
+/** 그림 한 점이 놓이는 자리 — x, y 가 한가운데 */
+const placeStyle = (p: Placed, art?: Tight): React.CSSProperties => {
+  const h = p.w * (art?.ratio ?? p.ratio)
+  return { left: p.x - p.w / 2, top: p.y - h / 2, width: p.w, height: h }
+}
+
+/** 바닥에 깔리는 옅은 그림자. 한가운데가 가장 짙고 가장자리로 갈수록 사라진다 */
+const Shadow = () => <span className="shadow" aria-hidden />
 
 export type Camera = { tx: number; ty: number; scale: number }
 export type WorldHandle = {
@@ -31,10 +42,7 @@ const MOIMO_PX = 104
 /* 그림으로 갈아 끼울 수 있는 것들                                      */
 /* ------------------------------------------------------------------ */
 
-/**
- * 오브제 그림. `public/items/jar.png` 처럼 놓으면 그 그림을 쓰고,
- * 없으면 지금까지 쓰던 그린 그림으로 돌아간다. 한 개씩 옮겨 갈 수 있다.
- */
+/** 오브제 그림. 파일을 못 읽었으면 예전에 코드로 그린 그림으로 내려간다 */
 function ItemImage({ item, art }: { item: Item; art?: Tight }) {
   // 그림을 못 읽었으면 지금까지 쓰던 그린 그림으로 내려간다
   if (!art) {
@@ -281,19 +289,34 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     >
       <div ref={worldRef} className={`world${glide ? ' glide' : ''}`} style={{ width: WORLD.w, height: WORLD.h }}>
 
+        {DECOR.map((d) => (
+          <div key={d.src} className="decor" style={placeStyle(d, art[d.src])}>
+            <Shadow />
+            {art[d.src] && <img className="item-art" src={art[d.src].url} alt="" draggable={false} />}
+          </div>
+        ))}
+
         {ITEMS.map((it) => (
           <button
             key={it.id}
             className="item"
-            style={{ left: it.x, top: it.y, width: it.w, height: it.w }}
+            style={placeStyle(it, art[it.src])}
             onClick={() => { if (!drag.current) onItem(it.id) }}
           >
-            <ItemImage item={it} art={art[`/items/${it.id}.svg`]} />
+            <Shadow />
+            <ItemImage item={it} art={art[it.src]} />
             <span className="item-label">
               <b>{it.name}</b>
               <i>{it.tag}</i>
             </span>
           </button>
+        ))}
+
+        {GUIDES.map((g) => (
+          <div key={g.src} className="guide" style={placeStyle(g, art[g.src])}>
+            <Shadow />
+            {art[g.src] && <img className="item-art" src={art[g.src].url} alt="" draggable={false} />}
+          </div>
         ))}
 
         {stage.map((s) => {
@@ -308,10 +331,10 @@ export const World = forwardRef<WorldHandle, Props>(function World(
                 left: r.x,
                 top: r.y,
                 transform: 'translate(-50%, -100%)',
-                animationDelay: `${(r.phase * -2.8).toFixed(2)}s`,
               }}
               onClick={() => onResident(r)}
             >
+              <Shadow />
               <MoimoImg resident={r} cache={cache} table={table} />
               {(showNames || (hits && hits.has(r.id))) && (
                 <span className="moimo-name">

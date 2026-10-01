@@ -26,30 +26,53 @@ export const CENTER = { x: 1800, y: 1200 }
 
 export type ItemId = 'jar' | 'camera' | 'album' | 'glass' | 'music'
 
-export type Item = {
+/**
+ * 마을에 놓인 그림 한 점.
+ *
+ * x, y 는 그림의 «한가운데» 다. w 는 화면에 보이는 폭(px) 이고, 여백은
+ * 잘라내고 재므로 아트보드 크기와 상관없다. ratio 는 세로/가로 비로,
+ * 모이모와 별사탕이 비켜 설 자리를 그림이 뜨기 전에 미리 재려고 적어 둔다.
+ */
+export type Placed = {
+  src: string
+  x: number
+  y: number
+  w: number
+  ratio: number
+}
+
+export type Item = Placed & {
   id: ItemId
   name: string
   tag: string
-  x: number
-  y: number
-  /** 화면에 보이는 폭(px) — 여백은 잘라내고 재므로 아트보드 크기와 상관없다 */
-  w: number
-  /** 모이모가 겹치지 않게 비워둘 반경 */
-  keepout: number
 }
 
 /**
- * 마을에 놓인 오브제.
+ * 누를 수 있는 오브제.
  *
- * 처음 열었을 때 네 개가 한 화면에 다 들어오도록 유리병을 가운데 두고
- * 네 귀퉁이로 벌려 둔다. 오른쪽 아래는 비어 있다 —
- * 플레이어는 그림이 아직 없어 빼 두었고, 노래는 아래 띠에서 켠다.
+ * 자리는 시안 그림(1466×978, 처음 배율 0.75)에서 옮겨 왔다 — 시안의
+ * 1px 이 마을의 1.333px 이고, 시안 한가운데가 마을 한가운데(CENTER)다.
  */
 export const ITEMS: Item[] = [
-  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', x: 1800, y: 1180, w: 340, keepout: 210 },
-  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', x: 1080, y: 830,  w: 260, keepout: 165 },
-  { id: 'album',  name: '앨범',         tag: '기록과 방명록', x: 2520, y: 830,  w: 280, keepout: 165 },
-  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', x: 1080, y: 1620, w: 240, keepout: 150 },
+  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', src: '/items/jar02.svg',  x: 1811, y: 1211, w: 337, ratio: 1.23 },
+  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 899,  w: 256, ratio: 1.053 },
+  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2372, y: 864,  w: 360, ratio: 0.774 },
+  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1656, w: 197, ratio: 1.172 },
+]
+
+/** 누를 수 없는 오브제 — 마을을 꾸미는 큰 물건들 */
+export const DECOR: Placed[] = [
+  { src: '/items/inbox02.svg', x: 924,  y: 769,  w: 235, ratio: 0.836 },
+  { src: '/items/gift.svg',    x: 1571, y: 752,  w: 225, ratio: 0.967 },
+  { src: '/items/book.svg',    x: 1159, y: 1315, w: 347, ratio: 0.775 },
+  { src: '/items/inbox01.svg', x: 2622, y: 1305, w: 387, ratio: 0.854 },
+  { src: '/items/box01.svg',   x: 1991, y: 1689, w: 288, ratio: 0.915 },
+]
+
+/** 유리병 곁에 서 있는 안내 캐릭터 둘 */
+export const GUIDES: Placed[] = [
+  { src: '/items/guide01.svg', x: 1644, y: 1029, w: 89, ratio: 0.983 },
+  { src: '/items/guide02.svg', x: 1991, y: 1123, w: 96, ratio: 1.069 },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -79,25 +102,31 @@ export const MOIMO_W = 104
  */
 export const MIN_GAP = Math.ceil(MOIMO_W * 0.72)
 
-/**
- * 오브제가 화면에서 차지하는 네모.
- *
- * x,y 는 왼쪽 위 모서리가 아니라 «아래 한가운데» 다. 그리기에서 위로
- * 86% 만큼 끌어올리기 때문이다. 이름표가 아래로 조금 더 나온다.
- */
-const ITEM_LIFT = 0.86
-const ITEM_LABEL = 46
-
-function itemGuard(it: Item) {
+/** 그림이 화면에서 차지하는 네모 — 한가운데와 반폭·반높이 */
+function guard(p: Placed) {
   const pad = 14
-  const top = it.y - ITEM_LIFT * it.w
-  const bottom = it.y + (1 - ITEM_LIFT) * it.w + ITEM_LABEL
-  return {
-    cx: it.x,
-    cy: (top + bottom) / 2,
-    hw: it.w / 2 + pad,
-    hh: (bottom - top) / 2 + pad,
+  return { cx: p.x, cy: p.y, hw: p.w / 2 + pad, hh: (p.w * p.ratio) / 2 + pad }
+}
+
+/** 모이모와 별사탕이 비켜 서야 하는 그림들 */
+const GUARDS = [...ITEMS, ...DECOR, ...GUIDES].map(guard)
+
+/** 이 자리에 서도 되나 — 오브제를 가리지 않고 이웃과도 떨어져 있나 */
+function standsFree(x: number, y: number, gap: number, taken: { x: number; y: number }[]): boolean {
+  if (x < 120 || x > WORLD.w - 120 || y < 140 || y > WORLD.h - 110) return false
+  // x,y 는 발치이고 몸은 그 위로 올라가므로 몸 한가운데를 기준으로 잰다
+  const by = y - MOIMO_W / 2
+  for (const g of GUARDS) {
+    if (Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2) return false
   }
+  // 소품과는 겹치지 않는다. 소품은 무리 바깥에 있으니 둘레에서만 마주친다
+  for (const p of PROPS) {
+    const d = (MOIMO_W + p.w * ROT_PAD) / 2
+    if (Math.abs(x - p.x) < d && Math.abs(by - p.y) < d) return false
+  }
+  // 모이모끼리는 아예 겹치지 않는다. 가운데 거리로 재면 모서리끼리 물려서 네모로 잰다
+  for (const t of taken) if (Math.abs(x - t.x) < gap && Math.abs(y - t.y) < gap) return false
+  return true
 }
 
 /**
@@ -114,24 +143,7 @@ export function spotFor(
   rnd: () => number,
   taken: { x: number; y: number }[] = [],
 ): { x: number; y: number } {
-  /** 이 자리에 서도 되나 — 오브제를 가리지 않고 이웃과도 떨어져 있나 */
-  const free = (x: number, y: number, gap: number) => {
-    if (x < 120 || x > WORLD.w - 120 || y < 140 || y > WORLD.h - 110) return false
-    // x,y 는 발치이고 몸은 그 위로 올라가므로 몸 한가운데를 기준으로 잰다
-    const by = y - MOIMO_W / 2
-    for (const it of ITEMS) {
-      const g = itemGuard(it)
-      if (Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2) return false
-    }
-    // 소품과는 겹치지 않는다. 소품은 무리 바깥에 있으니 둘레에서만 마주친다
-    for (const p of PROPS) {
-      const d = (MOIMO_W + p.w * ROT_PAD) / 2
-      if (Math.abs(x - p.x) < d && Math.abs(by - p.y) < d) return false
-    }
-    // 모이모끼리는 아예 겹치지 않는다. 가운데 거리로 재면 모서리끼리 물려서 네모로 잰다
-    for (const t of taken) if (Math.abs(x - t.x) < gap && Math.abs(y - t.y) < gap) return false
-    return true
-  }
+  const free = (x: number, y: number, gap: number) => standsFree(x, y, gap, taken)
 
   for (let attempt = 0; attempt < 500; attempt++) {
     const k = n + attempt * 0.41
@@ -163,17 +175,16 @@ export function spotFor(
 /* ------------------------------------------------------------------ */
 
 /**
- * 소품 한 종류.
- * `weight` 는 많이 깔릴수록 크다. 별사탕은 흩뿌리고 상자는 드문드문.
+ * 소품 한 종류 — 지금은 별사탕 네 빛깔. 큰 상자들은 오브제(DECOR)로 옮겼다.
+ * `weight` 는 많이 깔릴수록 크다.
  */
 export type PropKind = { src: string; min: number; max: number; weight: number }
 
 export const PROP_KINDS: PropKind[] = [
-  { src: '/items/starcandy01.svg', min: 26, max: 48, weight: 5 },
-  { src: '/items/starcandy02.svg', min: 26, max: 48, weight: 5 },
-  { src: '/items/starcandy03.svg', min: 26, max: 48, weight: 5 },
-  { src: '/items/box01.svg',       min: 96, max: 152, weight: 1 },
-  { src: '/items/box02.svg',       min: 96, max: 152, weight: 1 },
+  { src: '/items/starcandy01.svg', min: 40, max: 56, weight: 1 },
+  { src: '/items/starcandy02.svg', min: 40, max: 56, weight: 1 },
+  { src: '/items/starcandy03.svg', min: 40, max: 56, weight: 1 },
+  { src: '/items/starcandy04.svg', min: 40, max: 56, weight: 1 },
 ]
 
 export type Prop = {
@@ -188,8 +199,8 @@ export type Prop = {
   kind: number
 }
 
-/** 마을 전체에 흩뿌릴 소품 수 */
-export const PROP_COUNT = 360
+/** 마을 전체에 흩뿌릴 별사탕 수. 시안처럼 성기게 — 한 화면에 마흔 개 남짓 */
+export const PROP_COUNT = 150
 
 /** 기울여 놓으면 네모가 그만큼 커진다. 자리를 잴 때 얹어 준다 */
 const ROT_PAD = 1.2
@@ -213,13 +224,12 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
   const out: Prop[] = []
   const free = (x: number, y: number, w: number) => {
     if (x < 90 || x > WORLD.w - 90 || y < 110 || y > WORLD.h - 90) return false
-    for (const it of ITEMS) {
-      const g = itemGuard(it)
+    for (const g of GUARDS) {
       if (Math.abs(x - g.cx) < g.hw + w * 0.75 && Math.abs(y - g.cy) < g.hh + w * 0.75) return false
     }
-    // 소품끼리도 네모로 재서 붙지 않게 한다
+    // 별사탕끼리는 넉넉히 떨어뜨려 성기게 흩어 놓는다
     for (const p of out) {
-      const d = (w + p.w) * ROT_PAD / 2
+      const d = (w + p.w) * 1.8
       if (Math.abs(x - p.x) < d && Math.abs(y - p.y) < d) return false
     }
     return true
@@ -236,15 +246,11 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
       const y = 110 + rnd() * (WORLD.h - 200)
       if (!free(x, y, w)) continue
       const rot = (rnd() - 0.5) * 24
-      rnd() // 뒤집기에 쓰던 난수 — 빼면 뒤따르는 소품 자리가 다 바뀐다
       out.push({ id: `prop-${i}`, x, y, w, rot, kind })
       break
     }
   }
-  // 별사탕은 셋 중 하나를 걷어 2/3 만 남긴다.
-  // 뽑는 수를 줄이면 난수가 밀려 상자 자리까지 다 바뀌므로, 다 깔고 나서 솎는다
-  let candy = 0
-  return out.filter((p) => !PROP_KINDS[p.kind].src.includes('starcandy') || ++candy % 3 !== 0)
+  return out
 }
 
 /**
@@ -327,6 +333,26 @@ export function seedCountFor(vw: number, vh: number): number {
   return Math.round(Math.min(MAX_RESIDENTS, Math.max(40, SEED_COUNT * k)))
 }
 
+/**
+ * 저장된 마을을 지금 배치에 맞춘다.
+ *
+ * 오브제나 별사탕 자리가 바뀌면 예전에 서 있던 모이모가 그 위에 겹친다.
+ * 그런 모이모만 빈자리로 옮기고, 나머지는 서 있던 자리를 그대로 지킨다.
+ */
+function settle(list: Resident[]): Resident[] {
+  let s = 20261001
+  const rnd = () => {
+    s = (s * 1664525 + 1013904223) >>> 0
+    return s / 4294967296
+  }
+  const out: Resident[] = []
+  list.forEach((r, i) => {
+    if (standsFree(r.x, r.y, MIN_GAP, out)) { out.push(r); return }
+    out.push({ ...r, ...spotFor(i, rnd, out) })
+  })
+  return out
+}
+
 export function loadWorld(seeds = SEED_COUNT): Resident[] {
   try {
     const raw = localStorage.getItem(KEY)
@@ -340,7 +366,7 @@ export function loadWorld(seeds = SEED_COUNT): Resident[] {
           const g = genesFromName(r.name)
           return g ? { ...r, genes: g } : r
         })
-        if (ok.length) return ok
+        if (ok.length) return settle(ok)
       }
     }
   } catch {
