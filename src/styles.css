@@ -61,18 +61,33 @@ button { cursor: pointer; }
 }
 
 /*
- * 바닥에 깔리는 옅은 그림자.
- * 그림 아래 가운데에 납작한 타원을 깔고, 한가운데에서 가장자리로 갈수록
- * 사라지게 한다. 오브제·모이모·안내 캐릭터가 같이 쓴다.
+ * 바닥에 붙은 그림자.
+ * 그림이 바닥에 닿는 선에 한가운데를 맞춰 납작한 타원을 깐다. 아래로
+ * 내려가 있으면 그림이 떠 보이므로, 절반은 그림 밑으로 숨고 절반만
+ * 바깥으로 살짝 번지게 한다. 오브제·모이모·안내 캐릭터가 같이 쓴다.
  */
 .shadow {
   position: absolute; left: 50%; bottom: 0; z-index: 0;
-  width: 86%; aspect-ratio: 5 / 1;
-  transform: translate(-50%, 42%);
+  width: 84%; aspect-ratio: 6 / 1;
+  transform: translate(-50%, 50%);
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(112, 94, 76, 0.2), rgba(112, 94, 76, 0.07) 60%, rgba(112, 94, 76, 0));
+  background: radial-gradient(closest-side, rgba(112, 94, 76, 0.26), rgba(112, 94, 76, 0.12) 55%, rgba(112, 94, 76, 0));
   pointer-events: none;
 }
+
+/*
+ * 오브제는 타원 대신 그림 모양을 따라 아래로 번지는 그림자를 쓴다.
+ * 노트나 상자처럼 비스듬히 누운 것은 바닥에 닿는 면이 대각선이라,
+ * 맨 아래 꼭짓점 밑에 타원을 깔면 그림이 떠 보인다.
+ */
+.decor .shadow, .item .shadow { display: none; }
+.decor .item-art, .item .item-art {
+  filter: drop-shadow(0 5px 5px rgba(112, 94, 76, 0.16)) drop-shadow(0 1px 1.5px rgba(112, 94, 76, 0.12));
+}
+
+/* 층 — 오브제는 늘 아래, 별사탕·모이모·안내 캐릭터는 그 위 */
+.decor, .item { z-index: 1; }
+.guide, .moimo, .prop { z-index: 2; }
 
 /* 오브제 — 누를 수 있는 것 */
 .item {
@@ -81,8 +96,7 @@ button { cursor: pointer; }
   transform-origin: 50% 100%;
   transition: transform 0.22s ease;
 }
-.item:hover { transform: translateY(-4px) scale(1.02); z-index: 10; }
-.item:hover .shadow { opacity: 0.75; }
+.item:hover { transform: scale(1.03); }
 .item:hover .item-label { opacity: 1; transform: translate(-50%, 0); }
 /* 이름표는 평소엔 숨겨 두고 올려 보면 나온다 — 시안처럼 그림만 보이게 */
 .item-label {
@@ -117,8 +131,9 @@ button { cursor: pointer; }
 .art svg { width: 100%; height: 100%; display: block; }
 .moimo .art { position: relative; z-index: 1; pointer-events: none; }
 /* 발치(그림 높이의 약 3/4)에 맞춰 깐다 */
-.moimo .shadow { width: 62%; bottom: 21%; transform: translate(-50%, 50%); }
-.moimo:hover { z-index: 5; }
+/* 발바닥이 그림 높이의 75% 에 있다 — 거기에 한가운데를 맞춘다 */
+.moimo .shadow { width: 52%; bottom: 25%; }
+.moimo:hover { z-index: 3; }
 .moimo.dim { opacity: 0.22; }
 .moimo.mine::after {
   content: ''; position: absolute; left: 50%; top: -4px;
