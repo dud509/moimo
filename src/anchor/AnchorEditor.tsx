@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  decoFor, fillFor, isUnderHead, usesPoint, wantsDeepCheek, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
+  decoFor, fillFor, isUnderHead, usesPoint, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
   warnIfNothingToTint,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
@@ -223,7 +223,6 @@ function Figure({
                 : fill,
             ),
             line, accent,
-            deepCheek: s.key === 'cheek' && wantsDeepCheek(color),
           }}
           anchor={composeAnchor(table, body, s.key, variant[s.key])}
           z={s.z}
