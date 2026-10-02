@@ -24,14 +24,16 @@ export const LINE_COLOR = '#38312A'
  *           진갈색만 짙은 쪽이 없어서 — 더 눌러 봤자 까매진다 — 분홍과 짝지었다
  *   point   몸통 장식에 쓸 색. 몸통 색과 같으면 장식이 파묻히므로
  *           색마다 어울리는 짝을 따로 정해 둔다
+ *   deepCheek 볼 장식을 한 단계 진하게. 볼 색이 아주 옅어서 분홍 얼굴이나
+ *           진갈색 몸통 위에서는 묻힌다 (deepenCheek)
  *   noFlip  누름 쪽이어도 뒤집지 않는다. 진갈색은 몸이 제 색을 입으면
  *           너무 무거워서, 흰 바탕 자리에 deep 을 깔고 무늬는 제 색으로 둔다
  */
 export const BODY_COLORS = [
   { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FCE6E9', deep: '#CAE0E5', point: '#F9DEE6' },
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FCE6E9', deep: '#FFF2BB', point: '#DDD6EA' },
-  { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6', point: '#CAE0E5' },
-  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#665040', accent: '#FCE6E9', deep: '#FFF0F4', noFlip: true, point: '#f9dee6' },
+  { jamo: 'ㅓ', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6', point: '#CAE0E5', deepCheek: true },
+  { jamo: 'ㅗㅜ', name: '진갈색', hex: '#665040', accent: '#FCE6E9', deep: '#FFF0F4', noFlip: true, point: '#f9dee6', deepCheek: true },
   { jamo: 'ㅣ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7', point: '#665040' },
   { jamo: '나머지', name: '연보라', hex: '#ECE7F2', accent: '#FFFFFF', deep: '#DDD6EA', point: '#FFF2BB' },
 ] as const
@@ -466,7 +468,50 @@ export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part:
  *    일러스트레이터가 뽑은 id("_몸통", "radial-gradient")가 파일마다 같아서
  *    그대로 두면 그라디언트가 엉뚱한 파츠를 가리킨다.
  */
-export type Paint = { fill: string; line: string; accent?: string; ear?: string; morph?: string }
+export type Paint = {
+  fill: string; line: string; accent?: string; ear?: string; morph?: string
+  /** 볼 장식을 진하게 — deepenCheek */
+  deepCheek?: boolean
+}
+
+/** 이 몸통 색이면 볼 장식을 진하게 칠한다 */
+export const wantsDeepCheek = (c: BodyColor): boolean => 'deepCheek' in c
+
+/** 진한 볼에서 줄무늬 볼(선)이 쓸 색 — 갈색 얼굴에서도 보이는 장밋빛 */
+const CHEEK_LINE = '#E3879C'
+
+/**
+ * 볼 장식 색을 한 단계 진하게 — 채도를 올리고 명도를 내린다.
+ * 분홍 볼은 장밋빛으로, 노란 볼은 진한 노랑으로 간다. 선으로 그린 볼은
+ * 선 색 대신 장밋빛을 쓴다.
+ */
+function deepenCheek(svg: string, line: string): string {
+  const deepen = (hex: string): string => {
+    const n = parseInt(hex, 16)
+    let r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255
+    const max = Math.max(r, g, b), min = Math.min(r, g, b)
+    let h = 0, sat = 0
+    let l = (max + min) / 2
+    if (max !== min) {
+      const d = max - min
+      sat = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+      h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+      h /= 6
+    }
+    sat = Math.min(1, sat + 0.3)
+    l = Math.max(0, l - 0.2)
+    const q = l < 0.5 ? l * (1 + sat) : l + sat - l * sat
+    const p = 2 * l - q
+    const ch = (t: number) => {
+      t = (t + 1) % 1
+      return t < 1 / 6 ? p + (q - p) * 6 * t : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p
+    }
+    ;[r, g, b] = sat === 0 ? [l, l, l] : [ch(h + 1 / 3), ch(h), ch(h - 1 / 3)]
+    return '#' + [r, g, b].map((v) => Math.round(v * 255).toString(16).padStart(2, '0')).join('')
+  }
+  return svg.replace(/#([0-9a-f]{6})\b/gi, (m, hex: string) =>
+    m.toLowerCase() === line.toLowerCase() ? CHEEK_LINE : deepen(hex))
+}
 
 /**
  * 받아온 것이 정말 SVG 인지.
@@ -482,7 +527,7 @@ export function prepareSvg(svg: string, paint: Paint, uid: string): string {
   const { fill, line, accent } = paint
   const ear = paint.ear ?? fill
   const morph = paint.morph ?? fill
-  return svg
+  const out = svg
     // 흰색은 #ffffff, #fff, white 어느 표기로 나와도 잡는다
     .replace(/#ffffff\b/gi, fill)
     .replace(/#fff\b/gi, fill)
@@ -512,4 +557,6 @@ export function prepareSvg(svg: string, paint: Paint, uid: string): string {
     .replace(/\bid="([^"]+)"/g, (_m, id: string) => `id="${id}-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, (_m, id: string) => `url(#${id}-${uid})`)
     .replace(/\b(xlink:href|href)="#([^"]+)"/g, (_m, a: string, id: string) => `${a}="#${id}-${uid}"`)
+  // 볼 장식을 진하게 — 색을 다 바꾼 뒤에 건다
+  return paint.deepCheek ? deepenCheek(out, line) : out
 }
