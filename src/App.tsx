@@ -18,6 +18,15 @@ import './styles.css'
  */
 const HIDE_BRAND = false
 
+/**
+ * 첫 클릭에 노래를 저절로 튼다. 브라우저는 사람이 화면을 한 번 누르기 전에는
+ * 소리를 막으므로, 첫 클릭·터치 때 작은 소리로 시작한다. false 면 오른쪽 위
+ * 소리 버튼을 눌러야만 나온다.
+ */
+const AUTO_MUSIC = false
+/** 노래 소리 크기 (0~1) */
+const MUSIC_VOLUME = 0.35
+
 function Brand() {
   const [png, setPng] = useState(true)
   if (HIDE_BRAND) return <div className="brand" />
@@ -141,26 +150,40 @@ export default function App() {
   }, [say, leave])
 
   /** 마을 노래를 켜고 끈다. 파일이 없으면 그 사실을 알린다 */
-  const toggleMusic = useCallback(() => {
+  const audio = useCallback(() => {
     let a = audioRef.current
     if (!a) {
       a = new Audio('/sound/moimo.mp3')
       a.loop = true
-      a.volume = 0.45
+      a.volume = MUSIC_VOLUME
       a.addEventListener('ended', () => setPlaying(false))
       audioRef.current = a
     }
+    return a
+  }, [])
+
+  const toggleMusic = useCallback(() => {
+    const a = audio()
     if (playing) {
       a.pause()
       setPlaying(false)
-      say('노래를 껐어요')
       return
     }
     a.play().then(
-      () => { setPlaying(true); say('마을에 노래가 흐릅니다') },
+      () => setPlaying(true),
       () => say('public/sound/moimo.mp3 을 넣어주세요'),
     )
-  }, [playing, say])
+  }, [audio, playing, say])
+
+  // 첫 클릭에 은은하게 — AUTO_MUSIC 이 켜져 있을 때만
+  useEffect(() => {
+    if (!AUTO_MUSIC) return
+    const start = () => {
+      audio().play().then(() => setPlaying(true), () => { /* 파일이 없으면 조용히 넘어간다 */ })
+    }
+    window.addEventListener('pointerdown', start, { once: true })
+    return () => window.removeEventListener('pointerdown', start)
+  }, [audio])
 
   const openItem = useCallback((id: ItemId) => {
     // 플레이어는 시트를 열지 않고 그 자리에서 켜고 끈다
@@ -216,9 +239,30 @@ export default function App() {
 
       <header className="topbar">
         <Brand />
-        <div className="counter">
-          <span>지금 모여 있는 모이모</span>
-          <b>{residents.length.toLocaleString('ko-KR')}</b>
+        <div className="top-right">
+          <div className="counter">
+            <span>지금 모여 있는 모이모</span>
+            <b>{residents.length.toLocaleString('ko-KR')}</b>
+          </div>
+          {/* 노래 — 꼭 필요한 기능은 아니라 구석에 작게 둔다. 처음엔 꺼져 있다 */}
+          <button
+            className={`sound-btn${playing ? ' on' : ''}`}
+            onClick={toggleMusic}
+            aria-label={playing ? '노래 끄기' : '노래 켜기'}
+            title={playing ? '노래 끄기' : '노래 켜기'}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" />
+              {playing ? (
+                <>
+                  <path d="M15.5 9a4 4 0 0 1 0 6" />
+                  <path d="M18 6.5a7.5 7.5 0 0 1 0 11" />
+                </>
+              ) : (
+                <path d="M16 9.5l5 5M21 9.5l-5 5" />
+              )}
+            </svg>
+          </button>
         </div>
       </header>
 
@@ -226,8 +270,6 @@ export default function App() {
         {ITEMS.map((it) => (
           <button key={it.id} onClick={() => openItem(it.id)}>{it.name}</button>
         ))}
-        {/* 플레이어는 그림이 아직 없어 마을에 세우지 않는다. 노래는 여기서 켠다 */}
-        <button onClick={toggleMusic}>{playing ? '노래 끄기' : '노래 켜기'}</button>
         <button
           className="ghost"
           onClick={() => {

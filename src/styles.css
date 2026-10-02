@@ -180,9 +180,16 @@ button { cursor: pointer; }
   text-shadow: 0 2px 0 var(--cream), 0 0 14px var(--cream);
 }
 .brand-sub { display: block; font-size: 11px; font-weight: 800; letter-spacing: 0.18em; color: var(--ink-soft); }
+/* 오른쪽 위 — 모인 수와 소리 버튼 */
+.top-right { margin-left: auto; display: flex; align-items: center; gap: 8px; pointer-events: auto; }
+.sound-btn {
+  display: grid; place-items: center; width: 46px; height: 46px; padding: 0;
+  background: var(--paper); border: 2.5px solid var(--ink); border-radius: 50%;
+  color: var(--ink-soft);
+}
+.sound-btn.on { color: var(--ink); background: #FFF3D9; }
+.sound-btn:hover { color: var(--ink); }
 .counter {
-  /* 로고가 흐름에서 빠졌으므로 스스로 오른쪽으로 붙는다 */
-  margin-left: auto;
   pointer-events: auto; display: flex; align-items: center; gap: 10px;
   padding: 10px 18px; background: var(--paper);
   border: 2.5px solid var(--ink); border-radius: 999px;
