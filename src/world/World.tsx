@@ -15,6 +15,13 @@ const ART_SRCS = [
   ...PROP_KINDS.map((k) => k.src),
 ]
 
+/**
+ * 손에 든 돋보기. w 는 화면 폭(px), ratio 는 그림의 세로/가로,
+ * cx·cy 는 렌즈 한가운데(그림 네모를 0~1 로 본 값), rx·ry 는 렌즈 반지름
+ * (rx 는 폭, ry 는 높이에 대한 몫). 돋보기 그림에서 렌즈 안쪽 테를 잰 값이다.
+ */
+const LENS = { w: 290, ratio: 1.172, cx: 0.58, cy: 0.29, rx: 0.35, ry: 0.245 }
+
 /** 그림마다 [화면에 놓이는 폭, 맞출 선 굵기] — 선 굵기를 화면 기준으로 맞춘다 */
 const ART_LINES: Record<string, readonly [number, number]> = Object.fromEntries([
   ...[...ITEMS, ...DECOR, ...GUIDES].map((p) => [p.src, [p.w, OBJECT_LINE_PX]]),
@@ -121,14 +128,49 @@ type Props = {
   showNames: boolean
   /** 검색어에 걸린 주민 */
   hits: Set<string> | null
+  /** 돋보기를 들고 있나 — 렌즈 안의 모이모만 이름표가 뜬다 */
+  lens?: boolean
   onCamera?: (c: Camera) => void
 }
 
 export const World = forwardRef<WorldHandle, Props>(function World(
-  { residents, cache, table, onItem, onResident, arrivedId, showNames, hits, onCamera },
+  { residents, cache, table, onItem, onResident, arrivedId, showNames, hits, lens = false, onCamera },
   ref,
 ) {
   const art = useTightArt(ART_SRCS, ART_LINES)
+
+  /*
+   * 돋보기 — 들고 있으면 마우스를 따라다니고, 렌즈 안에 들어온 모이모만
+   * 이름표가 뜬다. 렌즈 자리는 돋보기 그림에서 잰 값이다.
+   */
+  const lensRef = useRef<HTMLDivElement>(null)
+  const pointer = useRef<{ x: number; y: number } | null>(null)
+  const [underLens, setUnderLens] = useState<Set<string>>(new Set())
+  const underKey = useRef('')
+  const residentsRef = useRef(residents)
+  residentsRef.current = residents
+
+  /** 렌즈 아래 모이모를 다시 센다 — 마우스나 화면이 움직일 때 */
+  const peek = useCallback(() => {
+    const p = pointer.current
+    const el = lensRef.current
+    if (!p) return
+    if (el) el.style.transform = `translate(${p.x - LENS.w * LENS.cx}px, ${p.y - LENS.w * LENS.ratio * LENS.cy}px)`
+    const c = camRef.current
+    const ids: string[] = []
+    for (const r of residentsRef.current) {
+      const sx = r.x * c.scale + c.tx
+      const sy = (r.y - MOIMO_W * 0.55) * c.scale + c.ty
+      const dx = (sx - p.x) / (LENS.w * LENS.rx)
+      const dy = (sy - p.y) / (LENS.w * LENS.ratio * LENS.ry)
+      if (dx * dx + dy * dy <= 1) ids.push(r.id)
+    }
+    const key = ids.join('|')
+    if (key !== underKey.current) {
+      underKey.current = key
+      setUnderLens(new Set(ids))
+    }
+  }, [])
   const boxRef = useRef<HTMLDivElement>(null)
   const worldRef = useRef<HTMLDivElement>(null)
   const camRef = useRef<Camera>({ tx: 0, ty: 0, scale: 0.6 })
@@ -143,7 +185,8 @@ export const World = forwardRef<WorldHandle, Props>(function World(
       worldRef.current.style.transform = `translate3d(${c.tx}px, ${c.ty}px, 0) scale(${c.scale})`
     }
     onCamera?.({ ...c })
-  }, [onCamera])
+    peek()
+  }, [onCamera, peek])
 
   /**
    * 화면을 빈틈없이 덮는 배율.
@@ -258,6 +301,11 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   }
 
   const onPointerMove = (e: React.PointerEvent) => {
+    if (lens) {
+      const rect = boxRef.current!.getBoundingClientRect()
+      pointer.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+      peek()
+    }
     if (pinch.current.has(e.pointerId)) pinch.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     if (pinch.current.size === 2 && pinchStart.current) {
       const [a, b] = [...pinch.current.values()]
@@ -301,7 +349,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   return (
     <div
       ref={boxRef}
-      className="world-box"
+      className={`world-box${lens ? ' holding-lens' : ''}`}
       onWheel={onWheel}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -320,7 +368,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
         {ITEMS.map((it) => (
           <button
             key={it.id}
-            className="item"
+            className={`item${lens && it.id === 'glass' ? ' lifted' : ''}`}
             style={placeStyle(it, art[it.src])}
             onClick={() => { if (!drag.current) onItem(it.id) }}
           >
@@ -357,7 +405,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             >
               <Shadow />
               <MoimoImg resident={r} cache={cache} table={table} />
-              {(showNames || (hits && hits.has(r.id))) && (
+              {(showNames || (hits && hits.has(r.id)) || (lens && underLens.has(r.id))) && (
                 <span className="moimo-name">
                   {r.name}
                 </span>
@@ -366,6 +414,12 @@ export const World = forwardRef<WorldHandle, Props>(function World(
           )
         })}
       </div>
+
+      {lens && (
+        <div className="lens" ref={lensRef} style={{ width: LENS.w, height: LENS.w * LENS.ratio }}>
+          {art['/items/glass.svg'] && <img src={art['/items/glass.svg'].url} alt="" draggable={false} />}
+        </div>
+      )}
     </div>
   )
 })

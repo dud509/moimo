@@ -55,6 +55,8 @@ export default function App() {
   const [arrived, setArrived] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [showNames, setShowNames] = useState(false)
+  /** 돋보기를 들고 있나 — 렌즈에 대 본 모이모의 이름이 보인다 */
+  const [lens, setLens] = useState(false)
   const [query, setQuery] = useState('')
   const [, setCamera] = useState<Camera>({ tx: 0, ty: 0, scale: 0.6 })
 
@@ -127,6 +129,14 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPop)
   }, [restoreCamera])
 
+  // Esc 로 돋보기를 내려놓는다
+  useEffect(() => {
+    if (!lens) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLens(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lens])
+
   // 주소에 #jar 처럼 붙어 있으면 그 페이지로 바로 연다
   useEffect(() => {
     if (!settled) return
@@ -188,6 +198,8 @@ export default function App() {
   const openItem = useCallback((id: ItemId) => {
     // 플레이어는 시트를 열지 않고 그 자리에서 켜고 끈다
     if (id === 'music') { toggleMusic(); return }
+    // 돋보기는 페이지로 가지 않고 손에 든다
+    if (id === 'glass') { setSelected(null); setLens((v) => !v); return }
     const it = ITEMS.find((x) => x.id === id)!
     setSelected(null)
     // 오브제 쪽으로 성큼 다가간 뒤 페이지로 넘어간다
@@ -232,6 +244,7 @@ export default function App() {
         arrivedId={arrived}
         showNames={showNames}
         hits={hits}
+        lens={lens}
         onItem={openItem}
         onResident={(r) => { setSelected(r) }}
         onCamera={setCamera}
@@ -281,6 +294,13 @@ export default function App() {
           초기화
         </button>
       </nav>
+
+      {lens && (
+        <div className="lens-hint">
+          모이모에 돋보기를 대 보세요
+          <button onClick={() => setLens(false)}>내려놓기</button>
+        </div>
+      )}
 
       <button className="fab" onClick={() => openItem('jar')}>＋ 모이모 만들기</button>
 
