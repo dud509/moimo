@@ -201,7 +201,7 @@ export const TINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
   tail: 'all',
   eye: [11],
   deco: [1, 3, 4, 5],   // 02·06 은 제 색을 그대로 쓴다
-  hair: [4],
+  hair: [3, 4],
 }
 
 /**
@@ -211,7 +211,7 @@ export const TINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
  */
 const POINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
   deco: 'all',
-  hair: [4],
+  hair: [3, 4],
 }
 
 export const usesPoint = (slot: SlotKey, part: number): boolean => {
