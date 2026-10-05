@@ -352,11 +352,11 @@ const SHAPE_TAIL: MapRow[] = [
 ]
 
 const SHAPE_CHEEK: MapRow[] = [
-  { jamo: [''], part: 5, pct: 45.3, why: '받침이 없으니 가장 옅은 볼' },
-  { jamo: ['지'], part: 6, pct: 9.6, why: '지 는 흔해서 받침 없음에서 떼어 반짝이는 노란 볼을 준다' },
+  { jamo: [''], part: 1, pct: 45.3, why: '받침이 없으니 꾸밈 없는 동그란 분홍 볼' },
   { jamo: ['ㄴ', 'ㄷ'], part: 2, pct: 22.1, why: 'ㄴ·ㄷ 의 곧은 획처럼 줄 그은 볼' },
-  { jamo: ['ㅇ'], part: 3, pct: 21.7, why: 'ㅇ 처럼 동그랗게 번진 볼' },
-  { jamo: ['ㄱ', 'ㅁ', 'ㅂ'], part: 1, pct: 0.7, why: 'ㄱ·ㅁ 처럼 모난 받침은 꽉 찬 분홍 볼' },
+  { jamo: ['ㅇ'], part: 5, pct: 21.7, why: 'ㅇ 처럼 빙글 도는 나선 볼' },
+  { jamo: ['지'], part: 6, pct: 9.6, why: '지 는 흔해서 받침 없음에서 떼어 반짝이는 노란 볼을 준다' },
+  { jamo: ['ㄱ', 'ㅁ', 'ㅂ'], part: 3, pct: 0.7, why: 'ㅁ 처럼 꽉 차게 번진 볼' },
   { jamo: null, label: 'ㄹ ㅅ ㅈ ㅊ …', part: 4, pct: 0.6, why: '드문 받침은 빗금이 여럿 그어진 볼' },
 ]
 
