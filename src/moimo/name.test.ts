@@ -75,7 +75,9 @@ eq('모양: 정 받침ㅇ → 머리 덮는 무늬05', genesFromName('정민수'
 eq('모양: 연 ㅇ → 동그란 눈10', genesFromName('김연수', 'shape')!.eye, 10)
 eq('모양: 수 ㅜ → 꼬리01', genesFromName('김민수', 'shape')!.tail, 1)
 eq('모양: 우 ㅜ → 입06', genesFromName('김우진', 'shape')!.mouth, 6)
-eq('모양: 희 ㅎ → 체리 머리02', genesFromName('김민희', 'shape')!.hair, 2)
+eq('모양: 희 ㅎ → 달걀 머리08', genesFromName('김민희', 'shape')!.hair, 8)
+eq('모양: 현 → 초록 꼭지 머리05', genesFromName('김지현', 'shape')!.hair, 5)
+eq('모양: 우 ㅇ → 체리 머리02', genesFromName('김지우', 'shape')!.hair, 2)
 
 // 같은 이름은 같은 결과
 eq('결정론적', encodeGenes(genesFromName('김민수')!), encodeGenes(genesFromName('김민수')!))
