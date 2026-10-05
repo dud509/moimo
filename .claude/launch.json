@@ -4,8 +4,8 @@
     {
       "name": "moimo",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--port", "5173", "--strictPort"],
-      "port": 5173
+      "runtimeArgs": ["vite", "--port", "5273", "--strictPort"],
+      "port": 5273
     }
   ]
 }
