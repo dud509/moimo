@@ -175,7 +175,9 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   const worldRef = useRef<HTMLDivElement>(null)
   const camRef = useRef<Camera>({ tx: 0, ty: 0, scale: 0.6 })
   const [glide, setGlide] = useState(false)
-  const drag = useRef<{ id: number; x: number; y: number; moved: boolean } | null>(null)
+  const drag = useRef<{ id: number; x: number; y: number; sx: number; sy: number; moved: boolean } | null>(null)
+  /** 방금 끌기를 마쳤나 — 끌고 손을 뗀 자리의 클릭은 무시한다 */
+  const dragged = useRef(false)
   const pinch = useRef<Map<number, { x: number; y: number }>>(new Map())
   const pinchStart = useRef<{ dist: number; scale: number } | null>(null)
 
@@ -296,8 +298,9 @@ export const World = forwardRef<WorldHandle, Props>(function World(
       return
     }
     setGlide(false)
-    drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false }
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    // 누르자마자 마우스를 붙잡으면 모이모·오브제 클릭이 마을에 먹혀 버린다.
+    // 실제로 끌기 시작했을 때만 붙잡는다 (onPointerMove)
+    drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, moved: false }
   }
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -317,9 +320,14 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     }
     const d = drag.current
     if (!d || d.id !== e.pointerId) return
+    if (!d.moved) {
+      // 조금 흔들린 것은 클릭으로 본다. 이만큼 움직여야 끌기다
+      if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 5) return
+      d.moved = true
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    }
     const dx = e.clientX - d.x
     const dy = e.clientY - d.y
-    if (!d.moved && Math.hypot(dx, dy) > 4) d.moved = true
     d.x = e.clientX
     d.y = e.clientY
     const c = camRef.current
@@ -330,7 +338,13 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   const endPointer = (e: React.PointerEvent) => {
     pinch.current.delete(e.pointerId)
     if (pinch.current.size < 2) pinchStart.current = null
-    if (drag.current?.id === e.pointerId) drag.current = null
+    if (drag.current?.id === e.pointerId) {
+      if (drag.current.moved) {
+        dragged.current = true
+        window.setTimeout(() => { dragged.current = false }, 0)
+      }
+      drag.current = null
+    }
   }
 
   /**
@@ -370,7 +384,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             key={it.id}
             className={`item${lens && it.id === 'glass' ? ' lifted' : ''}`}
             style={placeStyle(it, art[it.src])}
-            onClick={() => { if (!drag.current) onItem(it.id) }}
+            onClick={() => { if (!dragged.current) onItem(it.id) }}
           >
             <Shadow />
             <ItemImage item={it} art={art[it.src]} />
@@ -401,7 +415,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
                 top: r.y,
                 transform: 'translate(-50%, -100%)',
               }}
-              onClick={() => onResident(r)}
+              onClick={() => { if (!dragged.current) onResident(r) }}
             >
               <Shadow />
               <MoimoImg resident={r} cache={cache} table={table} />
