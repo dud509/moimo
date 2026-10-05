@@ -244,10 +244,10 @@ const BACK: Partial<Record<SlotKey, number[]>> = {
 /**
  * 눈·입보다 위로 올라가는 파츠.
  *
- * 볼장식 05(나선)는 눈 위에 겹쳐 그려야 한다. 머리장식보다는 아래다.
+ * 여기 적은 파츠는 눈·입 위, 머리장식 아래에 그린다.
  */
 const OVER_FACE: Partial<Record<SlotKey, number[]>> = {
-  cheek: [5],
+  // 볼장식 05 를 눈 위로 올려 봤다가 다시 내렸다. 필요하면 번호를 적는다
 }
 
 /** 이 파츠를 몇 번째 층에 그릴지 */
