@@ -36,6 +36,7 @@ export const FRAME = { x0: 822, y0: 548, x1: 2778, y1: 1852 }
 const EDGE = { side: 12, top: 16, bottom: 96 }
 
 import type { Footprint } from './footprint'
+import { VILLAGERS } from './villagers'
 
 export type ItemId = 'jar' | 'camera' | 'album' | 'glass' | 'music'
 
@@ -395,8 +396,15 @@ export function seedResidents(count: number, taken: { x: number; y: number }[] =
   }
   const out: Resident[] = []
   const all = [...taken]
+  // 정해 둔 이름을 먼저 넣고 나머지는 지어서 채운 뒤, 골고루 흩어지게 섞는다
+  const names = VILLAGERS.slice(0, count)
+  while (names.length < count) names.push(randomKoreanName(rnd))
+  for (let i = names.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1))
+    ;[names[i], names[j]] = [names[j], names[i]]
+  }
   for (let i = 0; out.length < count && i < count * 3; i++) {
-    const name = randomKoreanName(rnd)
+    const name = names[i % names.length]
     const genes = genesFromName(name)
     if (!genes) continue
     const spot = scatterSpot(rnd, all)
