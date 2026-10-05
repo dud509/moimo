@@ -19,7 +19,8 @@ export const LINE_COLOR = '#38312A'
  *   hex     몸통 전체 색
  *   accent  귀 안쪽 색 — 몸통 파일에 마젠타로 칠해 둔 자리. 무늬가 있든 없든
  *           이 색을 쓴다. 파랑·노랑·진갈색은 분홍, 나머지는 흰색
- *   line    이 몸통일 때만 다르게 쓸 선 색. 없으면 LINE_COLOR
+ *   line    이 몸통의 선 색. 몸통 색에 물든 선을 쓴다 — 진갈색은 짝인
+ *           분홍 쪽으로 물든 어두운 선. 없으면 LINE_COLOR
  *   deep    누름 쪽일 때 무늬에 쓸 색. 색마다 눈으로 골라 둔 값이다.
  *           진갈색만 짙은 쪽이 없어서 — 더 눌러 봤자 까매진다 — 분홍과 짝지었다
  *   point   몸통 장식에 쓸 색. 몸통 색과 같으면 장식이 파묻히므로
@@ -28,12 +29,12 @@ export const LINE_COLOR = '#38312A'
  *           너무 무거워서, 흰 바탕 자리에 deep 을 깔고 무늬는 제 색으로 둔다
  */
 export const BODY_COLORS = [
-  { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', accent: '#FCE6E9', deep: '#CAE0E5', point: '#F9DEE6' },
-  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FCE6E9', deep: '#FFF2BB', point: '#DDD6EA' },
-  { jamo: '나머지', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6', point: '#CAE0E5' },
-  { jamo: 'ㅓ', name: '진갈색', hex: '#6B594C', accent: '#FCE6E9', deep: '#FFF0F4', noFlip: true, point: '#f9dee6' },
-  { jamo: 'ㅗㅜ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7', point: '#6B594C' },
-  { jamo: 'ㅣ', name: '연보라', hex: '#ECE7F2', accent: '#FFFFFF', deep: '#DDD6EA', point: '#FFF2BB' },
+  { jamo: 'ㅣ받침', name: '파랑', hex: '#E6F0F4', line: '#5C7380', accent: '#FCE6E9', deep: '#CAE0E5', point: '#F9DEE6' },
+  { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', line: '#857650', accent: '#FCE6E9', deep: '#FFF2BB', point: '#DDD6EA' },
+  { jamo: '나머지', name: '분홍', hex: '#FFF0F4', line: '#8C6270', accent: '#FFFFFF', deep: '#F9DEE6', point: '#CAE0E5' },
+  { jamo: 'ㅓ', name: '진갈색', hex: '#6B594C', line: '#563B40', accent: '#FCE6E9', deep: '#FFF0F4', noFlip: true, point: '#f9dee6' },
+  { jamo: 'ㅗㅜ', name: '민트', hex: '#E9F4EC', line: '#5B7865', accent: '#FFFFFF', deep: '#D1E8D7', point: '#6B594C' },
+  { jamo: 'ㅣ', name: '연보라', hex: '#ECE7F2', line: '#6B6283', accent: '#FFFFFF', deep: '#DDD6EA', point: '#FFF2BB' },
 ] as const
 
 export type BodyColor = (typeof BODY_COLORS)[number]
@@ -89,7 +90,7 @@ export function toneFor(c: BodyColor, morph: number, tone = 0) {
   const dressed = plain || (deep && !held)
   return {
     fill: dressed ? c.hex : held ? deepFor(c) : PLAIN_WHITE,
-    line: dressed ? lineFor(c) : LINE_COLOR,
+    line: lineFor(c),
     accent: c.accent,
     mark: deep && !held ? deepFor(c) : markFor(c),
   }
