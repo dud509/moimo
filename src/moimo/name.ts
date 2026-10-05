@@ -330,13 +330,13 @@ const SHAPE_HAIR: MapRow[] = [
 const SHAPE_MOUTH: MapRow[] = [
   { jamo: ['ㅣ'], part: 9, pct: 24.2, why: '가장 흔한 ㅣ 에는 모이모의 대표 입' },
   { jamo: ['ㅓ'], part: 7, pct: 13.8, why: 'ㅓ 의 곁획처럼 옆으로 혀를 내민 입' },
-  { jamo: ['ㅜ', 'ㅠ'], part: 6, pct: 17.1, why: 'ㅜ·ㅠ 처럼 가로획 아래로 뾰족한 입' },
+  { jamo: ['ㅜ'], part: 6, pct: 12.1, why: 'ㅜ 처럼 가로획 아래로 뾰족한 입' },
   { jamo: ['ㅏ'], part: 1, pct: 10.8, why: 'ㅏ 의 곁획처럼 한쪽 끝이 올라간 입' },
   { jamo: null, label: 'ㅐ ㅔ ㅒ ㅖ ㅘ ㅙ ㅚ ㅝ ㅞ ㅟ ㅢ', part: 2, pct: 10.8, why: '모음 둘이 겹쳐 소리가 섞이니, 꾹 다문 가장 조용한 입' },
   { jamo: ['ㅑ', 'ㅕ'], part: 3, pct: 9.2, why: 'ㅕ 의 곁획처럼 쏙 내민 혀' },
-  { jamo: ['ㅗ'], part: 4, pct: 8.3, why: 'ㅗ 처럼 가운데가 솟은 입' },
+  { jamo: ['ㅗ'], part: 8, pct: 8.3, why: 'ㅗ 의 세로획처럼 두 줄로 드러난 이' },
   { jamo: ['ㅡ'], part: 5, pct: 5.8, why: 'ㅡ 처럼 길게 그은 입' },
-  { jamo: ['ㅛ', 'ㅔ', 'ㅒ'], part: 8, pct: 1.2, why: 'ㅛ 의 두 다리처럼 두 줄로 드러난 이 — 드물게만 나온다' },
+  { jamo: ['ㅛ', 'ㅠ'], part: 4, pct: 5.0, why: 'ㅛ·ㅠ 처럼 가운데가 솟은 입' },
 ]
 
 const SHAPE_TAIL: MapRow[] = [
