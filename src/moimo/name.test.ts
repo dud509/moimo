@@ -52,12 +52,13 @@ eq('눈 01 은 앞 글자 ㄹ 에만', genesFromName('김라수', 'freq')!.eye, 
 eq('머리장식 11 은 뒤 글자 ㄷ 에만', genesFromName('김수다', 'freq')!.hair, 11)
 
 // 매핑 — 닮은 모양
-eq('모양: 김 → 접힌 귀 몸통04', genesFromName('김민수', 'shape')!.body, 4)
+eq('모양: 김 → 곧게 선 귀 몸통05', genesFromName('김민수', 'shape')!.body, 5)
 eq('모양: 이 → 둥근 귀 몸통10', genesFromName('이민수', 'shape')!.body, 10)
-eq('모양: 박 → 선 귀 몸통05', genesFromName('박민수', 'shape')!.body, 5)
-eq('모양: 강 ㄱ 은 김과 따로 몸통09', genesFromName('강민수', 'shape')!.body, 9)
+eq('모양: 박 → 네모 귀 몸통07', genesFromName('박민수', 'shape')!.body, 7)
+eq('모양: 강 ㄱ 은 김과 따로 몸통04', genesFromName('강민수', 'shape')!.body, 4)
 eq('모양: 안 ㅇ 은 이와 따로 몸통06', genesFromName('안민수', 'shape')!.body, 6)
-eq('모양: 배 ㅂ 은 박과 따로 몸통07', genesFromName('배민수', 'shape')!.body, 7)
+eq('모양: 배 ㅂ 은 박과 따로 몸통02', genesFromName('배민수', 'shape')!.body, 2)
+eq('모양: 도 ㄷ → 늘어진 귀 몸통09', genesFromName('도민수', 'shape')!.body, 9)
 eq('모양: 류 ㄹ → 꼬불 귀 몸통12', genesFromName('류민수', 'shape')!.body, 12)
 eq('모양: 김 받침ㅁ → 네모 무늬02', genesFromName('김민수', 'shape')!.morph, 2)
 eq('모양: 연 ㅇ → 동그란 눈10', genesFromName('김연수', 'shape')!.eye, 10)
