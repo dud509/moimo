@@ -226,28 +226,55 @@ function Cell({
 
 /* ---------------- 편집기 ---------------- */
 
+/**
+ * 고르던 몸통·파츠·층·확대 같은 화면 상태를 이 탭에 기억해 둔다.
+ * 저장하면 anchors.json 이 바뀌어 개발 서버가 페이지를 새로 고치는데,
+ * 그때 처음 화면으로 돌아가지 않고 하던 자리에서 이어 가게 하려는 것이다.
+ */
+function useKept<T>(key: string, init: T | (() => T)) {
+  const [v, setV] = useState<T>(() => {
+    try {
+      const raw = sessionStorage.getItem(`anchor-editor:${key}`)
+      if (raw != null) return JSON.parse(raw) as T
+    } catch { /* 기억이 없거나 막혀 있으면 처음 값 */ }
+    return typeof init === 'function' ? (init as () => T)() : init
+  })
+  useEffect(() => {
+    try { sessionStorage.setItem(`anchor-editor:${key}`, JSON.stringify(v)) } catch { /* 못 적어도 편집은 된다 */ }
+  }, [key, v])
+  return [v, setV] as const
+}
+
 export default function AnchorEditor() {
   const [table, setTable] = useState<AnchorTable>(() => normalizeTable(initial))
-  const [scope, setScope] = useState<Scope>('every')
-  const [body, setBody] = useState(1)
-  const [sel, setSel] = useState<SlotKey | null>('eye')
-  const [colorIdx, setColorIdx] = useState(1)
-  const [variant, setVariant] = useState<Record<string, number>>(
+  const [scope, setScope] = useKept<Scope>('scope', 'every')
+  const [body, setBody] = useKept('body', 1)
+  const [sel, setSel] = useKept<SlotKey | null>('sel', 'eye')
+  const [colorIdx, setColorIdx] = useKept('color', 1)
+  const [variant, setVariant] = useKept<Record<string, number>>('variant',
     () => Object.fromEntries(SLOTS.map((s) => [s.key, 1])),
   )
-  const [morph, setMorph] = useState(0) // 0 = 무늬 없음
-  const [tone, setTone] = useState(0)   // 0 = 흰 바탕, 1 = 한 톤 누름
-  const [solo, setSolo] = useState(false)
-  const [sheet, setSheet] = useState<'off' | 'bodies' | 'parts'>('off')
+  const [morph, setMorph] = useKept('morph', 0) // 0 = 무늬 없음
+  const [tone, setTone] = useKept('tone', 0)   // 0 = 흰 바탕, 1 = 한 톤 누름
+  const [solo, setSolo] = useKept('solo', false)
+  const [sheet, setSheet] = useKept<'off' | 'bodies' | 'parts'>('sheet', 'off')
   const [dirty, setDirty] = useState(false)
-  const [saved, setSaved] = useState<string | null>(null)
+  const [saved, setSaved] = useState<string | null>(() => {
+    try {
+      if (sessionStorage.getItem('anchor-editor:just-saved')) {
+        sessionStorage.removeItem('anchor-editor:just-saved')
+        return 'src/data/anchors.json 에 저장했어요'
+      }
+    } catch { /* 없어도 그만 */ }
+    return null
+  })
   const [confirmWipe, setConfirmWipe] = useState(false)
 
   const stageRef = useRef<HTMLDivElement>(null)
   const colRef = useRef<HTMLElement>(null)
   const dragRef = useRef<{ x: number; y: number } | null>(null)
   /** 화면 확대 — 파츠가 아니라 무대 전체를 크게 본다 */
-  const [view, setView] = useState(1)
+  const [view, setView] = useKept('view', 1)
   const disp = DISP * view
 
   const color = BODY_COLORS[colorIdx]
@@ -413,6 +440,8 @@ export default function AnchorEditor() {
       if (!res.ok) throw new Error(String(res.status))
       setDirty(false)
       setSaved('src/data/anchors.json 에 저장했어요')
+      // 곧 페이지가 새로 고쳐지므로, 다시 뜬 뒤에도 저장했다고 알려 준다
+      try { sessionStorage.setItem('anchor-editor:just-saved', '1') } catch { /* 없어도 그만 */ }
     } catch {
       // dev 서버가 아니면 파일로 내려받게 한다
       const blob = new Blob([JSON.stringify(table, null, 2)], { type: 'application/json' })
