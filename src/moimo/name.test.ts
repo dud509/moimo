@@ -76,6 +76,8 @@ eq('모양: 연 ㅇ → 꽉 찬 눈02', genesFromName('김연수', 'shape')!.eye
 eq('모양: 서 ㅅ → 가로획 걸친 눈09', genesFromName('김서연', 'shape')!.eye, 9)
 eq('모양: 하 ㅎ → 속눈썹 눈06', genesFromName('김하린', 'shape')!.eye, 6)
 eq('모양: 수 ㅜ → 꼬리01', genesFromName('김민수', 'shape')!.tail, 1)
+eq('모양: 은 → 리본 몸통장식01', genesFromName('김지은', 'shape')!.deco, 1)
+eq('모양: 준 ㄴ → 가방 몸통장식03', genesFromName('김민준', 'shape')!.deco, 3)
 eq('모양: 우 ㅜ → 입06', genesFromName('김우진', 'shape')!.mouth, 6)
 eq('모양: 호 ㅎ → 새싹 머리06', genesFromName('김민호', 'shape')!.hair, 6)
 eq('모양: 현 → 초록 꼭지 머리05', genesFromName('김지현', 'shape')!.hair, 5)
