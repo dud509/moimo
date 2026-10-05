@@ -398,7 +398,10 @@ export function seedResidents(count: number, taken: { x: number; y: number }[] =
   const all = [...taken]
   // 정해 둔 이름을 먼저 넣고 나머지는 지어서 채운 뒤, 골고루 흩어지게 섞는다
   const names = VILLAGERS.slice(0, count)
-  while (names.length < count) names.push(randomKoreanName(rnd))
+  for (let tries = 0; names.length < count && tries < count * 20; tries++) {
+    const name = randomKoreanName(rnd)
+    if (!names.includes(name)) names.push(name)
+  }
   for (let i = names.length - 1; i > 0; i--) {
     const j = Math.floor(rnd() * (i + 1))
     ;[names[i], names[j]] = [names[j], names[i]]

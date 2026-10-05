@@ -1,5 +1,5 @@
 /**
- * 마을에 미리 사는 이름들. 나머지 자리는 randomKoreanName 이 채운다.
+ * 마을에 미리 사는 이름들. 나머지 자리는 randomKoreanName 이 흔한 성과 이름으로 채운다.
  * 한 줄에 하나씩 넣고 빼면 된다 — 겹친 이름은 한 번만 산다.
  */
 export const VILLAGERS = `
