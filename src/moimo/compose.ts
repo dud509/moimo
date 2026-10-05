@@ -6,9 +6,9 @@
  */
 
 import {
-  BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, HEAD_TOP_LIMIT, isUnderHead, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, regionsFor,
+  BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, regionsFor,
   SLOTS, Z_BODY, Z_MORPH, edgeFor,
-  bodyUrl, composeAnchor, decoFor, fillFor, usesPoint, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor,
+  bodyUrl, composeAnchor, decoFor, fillFor, usesPoint, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor, zFor,
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
@@ -84,90 +84,6 @@ function silhouette(bodySvg: string): string {
   }
   return out.join('')
 }
-
-/**
- * 도형이 시작하는 높이(가장 작은 y). 곡선은 조절점까지 넣어 재므로 실제보다
- * 조금 위로 나올 수 있다 — 머리와 몸통을 가를 만큼만 맞으면 된다.
- */
-function shapeTop(tag: string): number {
-  const attr = (k: string) => Number(new RegExp(`\\s${k}="([-\\d.]+)"`).exec(tag)?.[1] ?? NaN)
-  if (/^<circle/i.test(tag)) return attr('cy') - attr('r')
-  if (/^<ellipse/i.test(tag)) return attr('cy') - attr('ry')
-  if (/^<rect/i.test(tag)) return attr('y') || 0
-  const pts = /\spoints="([^"]*)"/.exec(tag)?.[1]
-  if (pts) return Math.min(...(pts.match(/-?\d*\.?\d+(?:e-?\d+)?/gi) ?? []).map(Number).filter((_, i) => i % 2 === 1))
-  const d = /\sd="([^"]*)"/.exec(tag)?.[1]
-  if (!d) return Infinity
-  // 명령마다 인자 수. 인자 안의 y 자리만 모아 가장 작은 것을 고른다
-  const ARGS: Record<string, number> = { m: 2, l: 2, h: 1, v: 1, c: 6, s: 4, q: 4, t: 2, a: 7, z: 0 }
-  let x = 0, y = 0, sx = 0, sy = 0, top = Infinity
-  const re = /([a-zA-Z])|(-?\d*\.?\d+(?:e-?\d+)?)/g
-  let cmd = '', args: number[] = []
-  const flush = () => {
-    const c = cmd.toLowerCase(), rel = cmd !== cmd.toUpperCase(), n = ARGS[c]
-    if (c === 'z') { x = sx; y = sy; return }
-    if (!n) return
-    while (args.length >= n) {
-      const a = args.splice(0, n)
-      const ys: number[] = []
-      let nx = x, ny = y
-      if (c === 'h') nx = rel ? x + a[0] : a[0]
-      else if (c === 'v') { ny = rel ? y + a[0] : a[0] }
-      else if (c === 'a') { nx = rel ? x + a[5] : a[5]; ny = rel ? y + a[6] : a[6] }
-      else {
-        for (let i = 1; i < n; i += 2) ys.push(rel ? y + a[i] : a[i])
-        nx = rel ? x + a[n - 2] : a[n - 2]; ny = rel ? y + a[n - 1] : a[n - 1]
-      }
-      ys.push(ny)
-      top = Math.min(top, ...ys)
-      x = nx; y = ny
-      if (c === 'm') { sx = x; sy = y; cmd = rel ? 'l' : 'L' }
-    }
-  }
-  let m: RegExpExecArray | null
-  while ((m = re.exec(d))) {
-    if (m[1]) { flush(); cmd = m[1]; args = []; if (cmd.toLowerCase() === 'z') flush() }
-    else args.push(Number(m[2]))
-  }
-  flush()
-  return top
-}
-
-/** 몸통 파일에서 머리(귀 포함)에 속한 도형. lines 면 선만, 아니면 면만 */
-function headTags(bodyRaw: string, lines: boolean): string[] {
-  const out: string[] = []
-  const re = /<(path|polyline|polygon|line|circle|ellipse|rect)\b[^>]*\/>/gi
-  let m: RegExpExecArray | null
-  while ((m = re.exec(bodyRaw))) {
-    const tag = m[0]
-    if (/fill="none"/i.test(tag) !== lines) continue
-    if (shapeTop(tag) >= HEAD_TOP_LIMIT) continue
-    out.push(tag)
-  }
-  return out
-}
-
-/**
- * 머리(귀 포함) 자리를 뺀 가리개. 이것을 씌운 파츠는 머리 밑으로 들어간
- * 것처럼 보인다.
- *
- * 가리개 가장자리는 머리 테두리 선 안쪽에 둔다. 선보다 넓게 가리면 그
- * 틈으로 아래 색이 비쳐 흰 줄이 생긴다. 대신 가린 파츠 위에 머리 선을
- * 다시 그어(headLines) 경계를 덮는다.
- */
-export function headMask(bodyRaw: string, id: string): string {
-  const shapes = headTags(bodyRaw, false)
-    .map((t) => t.replace(/\s(fill|stroke|stroke-[a-z]+|opacity|class|style)="[^"]*"/gi, ''))
-  return (
-    `<mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="${CANVAS}" height="${CANVAS}">` +
-    `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="#fff"/>` +
-    `<g fill="#000" stroke="#000" stroke-width="2" stroke-linejoin="round">${shapes.join('')}</g>` +
-    `</mask>`
-  )
-}
-
-/** 머리 밑으로 들어간 파츠 위에 다시 그을 머리 선 (색은 prepareSvg 가 입힌다) */
-export const headLines = (bodyRaw: string): string => headTags(bodyRaw, true).join('')
 
 function layer(inner: string, a: ReturnType<typeof composeAnchor>, uid: string): string {
   const t = `translate(${C + a.x} ${C + a.y}) rotate(${a.r}) scale(${a.s} ${syOf(a)}) translate(${-C} ${-C})`
@@ -352,16 +268,10 @@ export function composeMoimo(
 
   const pieces: { z: number; svg: string }[] = []
 
-  const push = (z: number, url: string, fill: string, anchor: ReturnType<typeof composeAnchor>, underHead = false) => {
+  const push = (z: number, url: string, fill: string, anchor: ReturnType<typeof composeAnchor>) => {
     const raw = cache.get(url)
     if (!raw) return
-    let svg = layer(innards(prepareSvg(raw, { fill, line, accent }, uid + z)), anchor, uid)
-    if (underHead && bodyRaw) {
-      const id = `hm-${uid}-${z}`
-      svg = `<defs>${headMask(bodyRaw, id)}</defs><g mask="url(#${id})">${svg}</g>` +
-        prepareSvg(headLines(bodyRaw), { fill, line, accent }, `${uid}hl${z}`)
-    }
-    pieces.push({ z, svg })
+    pieces.push({ z, svg: layer(innards(prepareSvg(raw, { fill, line, accent }, uid + z)), anchor, uid) })
   }
 
 
@@ -383,7 +293,7 @@ export function composeMoimo(
     const key = s.key as SlotKey
     const n = genes[s.key as keyof MoimoGenes] as number
     const base = key === 'tail' ? bodyTone : usesPoint(key, n) ? decoHex : bodyHex
-    push(s.z, partUrl(key, n), fillFor(key, n, base), composeAnchor(table, genes.body, key, n), isUnderHead(key, n))
+    push(zFor(key, n, s.z), partUrl(key, n), fillFor(key, n, base), composeAnchor(table, genes.body, key, n))
   }
 
   pieces.sort((a, b) => a.z - b.z)

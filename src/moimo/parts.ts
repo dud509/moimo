@@ -32,7 +32,7 @@ export const BODY_COLORS = [
   { jamo: 'ㅏ', name: '노랑', hex: '#FFFAE3', accent: '#FCE6E9', deep: '#FFF2BB', point: '#DDD6EA' },
   { jamo: '나머지', name: '분홍', hex: '#FFF0F4', accent: '#FFFFFF', deep: '#F9DEE6', point: '#CAE0E5' },
   { jamo: 'ㅓ', name: '진갈색', hex: '#7C6759', accent: '#FCE6E9', deep: '#FFF0F4', noFlip: true, point: '#f9dee6' },
-  { jamo: 'ㅗㅜ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7', point: '#665040' },
+  { jamo: 'ㅗㅜ', name: '민트', hex: '#E9F4EC', accent: '#FFFFFF', deep: '#D1E8D7', point: '#7C6759' },
   { jamo: 'ㅣ', name: '연보라', hex: '#ECE7F2', accent: '#FFFFFF', deep: '#DDD6EA', point: '#FFF2BB' },
 ] as const
 
@@ -230,25 +230,19 @@ export const isTinted = (slot: SlotKey, part: number): boolean => {
 export const decoFor = (c: BodyColor): string => c.point
 
 /**
- * 머리 밑으로 들어가는 파츠.
+ * 맨 뒤로 가는 파츠.
  *
- * 몸통장식 06(어깨 날개)은 꼬리와 몸통보다는 위, 머리보다는 아래에 있어야
- * 한다. 몸통 파일은 머리와 몸통이 한 겹이라 그 사이에 끼울 수가 없어서,
- * 위에 그리되 머리 자리만 가려 머리 밑으로 들어간 것처럼 보이게 한다.
+ * 몸통장식 06(어깨 날개)은 몸 뒤에서 삐져나오게 꼬리보다도 뒤에 깐다.
+ * 머리와 몸통 사이에 끼우려고 머리 자리를 가려 봤지만 맞물린 곳마다
+ * 틈이 생겨 그만두었다.
  */
-const UNDER_HEAD: Partial<Record<SlotKey, number[]>> = {
+const BACK: Partial<Record<SlotKey, number[]>> = {
   deco: [6],
 }
 
-export const isUnderHead = (slot: SlotKey, part: number): boolean =>
-  UNDER_HEAD[slot]?.includes(part) ?? false
-
-/**
- * 몸통 파일에서 이 높이보다 위에서 시작하는 도형은 머리(귀 포함)다.
- * 열두 몸통 모두 머리와 귀는 y=250 위에서, 몸통통과 팔다리는 y=307 에서
- * 시작한다.
- */
-export const HEAD_TOP_LIMIT = 290
+/** 이 파츠를 몇 번째 층에 그릴지 */
+export const zFor = (slot: SlotKey, part: number, z: number): number =>
+  BACK[slot]?.includes(part) ? 0 : z
 
 /** 이 파츠를 어떤 색으로 채울지 */
 export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>
