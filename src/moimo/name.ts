@@ -332,7 +332,7 @@ const SHAPE_MOUTH: MapRow[] = [
   { jamo: ['ㅓ'], part: 7, pct: 13.8, why: 'ㅓ 의 곁획처럼 옆으로 혀를 내민 입' },
   { jamo: ['ㅜ'], part: 6, pct: 12.1, why: 'ㅜ 처럼 가로획 아래로 뾰족한 입' },
   { jamo: ['ㅏ'], part: 1, pct: 10.8, why: 'ㅏ 의 곁획처럼 한쪽 끝이 올라간 입' },
-  { jamo: null, label: 'ㅐ ㅔ ㅒ ㅖ ㅘ ㅙ ㅚ ㅝ ㅞ ㅟ ㅢ', part: 2, pct: 10.8, why: '«와!» 하고 동그랗게 벌린 입' },
+  { jamo: null, label: 'ㅐ ㅔ ㅒ ㅖ ㅘ ㅙ ㅚ ㅝ ㅞ ㅟ ㅢ', part: 2, pct: 10.8, why: '모음 둘이 겹쳐 소리가 섞이니, 꾹 다문 가장 조용한 입' },
   { jamo: ['ㅑ', 'ㅕ'], part: 9, pct: 9.2, why: 'ㅕ 의 곁획 둘처럼 두 번 굽은 입' },
   { jamo: ['ㅗ'], part: 4, pct: 8.3, why: 'ㅗ 처럼 가운데가 솟은 입' },
   { jamo: ['ㅡ'], part: 5, pct: 5.8, why: 'ㅡ 처럼 길게 그은 입' },
