@@ -395,8 +395,9 @@ export const syOf = (a: Anchor) => a.sy ?? a.s
  *   bodies     그 몸통에서만 기준에서 얼마나 벗어나는지 — "03 만 조금 위로"
  *   parts      그 번호의 파츠만 — "리본은 더 위에"
  *   overrides  그래도 어색한 한 조합만
- *   cheekByEye 볼장식만 — 눈 번호마다 더하는 보정. 눈마다 크기가 달라
- *              볼이 앉을 자리도 달라서. 위 넷을 다 합친 뒤(예외 포함)에 더한다
+ *   cheekEye   볼장식 한 종류 × 눈 하나에만 더하는 보정 — "볼 03 은 눈 04
+ *              일 때 조금 아래로". 눈마다 크기가 달라 볼이 앉을 자리도 달라서.
+ *              위 넷을 다 합친 뒤(예외 포함)에 더한다
  *
  * slots 를 한 번 잡으면 12종이 다 따라오고, 어긋나는 몸통만 bodies 로 살짝
  * 민다. bodies 와 parts 는 기준에 더해지는 보정이라, 값이 비어 있으면 기준 그대로다.
@@ -406,11 +407,11 @@ export type AnchorTable = {
   bodies: Record<string, Partial<Record<SlotKey, Anchor>>>
   parts: Partial<Record<SlotKey, Record<string, Anchor>>>
   overrides: Record<string, Anchor>
-  cheekByEye: Record<string, Anchor>
+  cheekEye: Record<string, Anchor>
 }
 
 export const DEFAULT_ANCHOR: Anchor = { x: 0, y: 0, s: 1, r: 0 }
-export const EMPTY_TABLE: AnchorTable = { slots: {}, bodies: {}, parts: {}, overrides: {}, cheekByEye: {} }
+export const EMPTY_TABLE: AnchorTable = { slots: {}, bodies: {}, parts: {}, overrides: {}, cheekEye: {} }
 
 export const overrideKey = (body: number, slot: SlotKey, part: number) =>
   `b${String(body).padStart(2, '0')}:${slot}:${String(part).padStart(2, '0')}`
@@ -424,11 +425,11 @@ export function normalizeTable(raw: unknown): AnchorTable {
       bodies: (t.bodies as AnchorTable['bodies']) ?? {},
       parts: (t.parts as AnchorTable['parts']) ?? {},
       overrides: (t.overrides as AnchorTable['overrides']) ?? {},
-      cheekByEye: (t.cheekByEye as AnchorTable['cheekByEye']) ?? {},
+      cheekEye: (t.cheekEye as AnchorTable['cheekEye']) ?? {},
     }
   }
   // 가장 초기 모양 — 몸통별 값만 있던 때
-  return { slots: {}, bodies: t as AnchorTable['bodies'], parts: {}, overrides: {}, cheekByEye: {} }
+  return { slots: {}, bodies: t as AnchorTable['bodies'], parts: {}, overrides: {}, cheekEye: {} }
 }
 
 export const slotAnchor = (t: AnchorTable, slot: SlotKey): Anchor =>
@@ -440,9 +441,12 @@ export const bodyAnchor = (t: AnchorTable, body: number, slot: SlotKey): Anchor 
 export const partAnchor = (t: AnchorTable, slot: SlotKey, part: number): Anchor =>
   t.parts[slot]?.[String(part)] ?? DEFAULT_ANCHOR
 
-/** 눈 번호에 따른 볼장식 보정 */
-export const cheekEyeAnchor = (t: AnchorTable, eye: number): Anchor =>
-  t.cheekByEye?.[String(eye)] ?? DEFAULT_ANCHOR
+export const cheekEyeKey = (cheek: number, eye: number) =>
+  `c${String(cheek).padStart(2, '0')}:e${String(eye).padStart(2, '0')}`
+
+/** 이 볼장식이 이 눈과 만났을 때의 보정 */
+export const cheekEyeAnchor = (t: AnchorTable, cheek: number, eye: number): Anchor =>
+  t.cheekEye?.[cheekEyeKey(cheek, eye)] ?? DEFAULT_ANCHOR
 
 /** 앵커 여럿을 겹친다 — 자리·회전·벌림은 더하고 크기는 곱한다 */
 const stack = (...xs: Anchor[]): Anchor => ({
@@ -456,13 +460,13 @@ const stack = (...xs: Anchor[]): Anchor => ({
 
 /**
  * 기준 위에 몸통 보정과 파츠 보정을 더한다. 예외가 있으면 그게 이긴다.
- * 볼장식은 눈을 알려 주면 그 눈의 보정을 마지막에 한 번 더 얹는다.
+ * 볼장식은 눈을 알려 주면, 그 볼과 그 눈에 적어 둔 보정을 마지막에 얹는다.
  */
 export function composeAnchor(t: AnchorTable, body: number, slot: SlotKey, part: number, eye?: number): Anchor {
   const over = t.overrides[overrideKey(body, slot, part)]
   const base = over ?? stack(slotAnchor(t, slot), bodyAnchor(t, body, slot), partAnchor(t, slot, part))
-  if (slot !== 'cheek' || !eye || !t.cheekByEye?.[String(eye)]) return base
-  return stack(base, cheekEyeAnchor(t, eye))
+  if (slot !== 'cheek' || !eye || !t.cheekEye?.[cheekEyeKey(part, eye)]) return base
+  return stack(base, cheekEyeAnchor(t, part, eye))
 }
 
 /**

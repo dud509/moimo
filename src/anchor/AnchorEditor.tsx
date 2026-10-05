@@ -3,7 +3,7 @@ import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
   decoFor, fillFor, usesPoint, zFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
-  warnIfNothingToTint, cheekEyeAnchor, DEFAULT_ANCHOR,
+  warnIfNothingToTint, cheekEyeAnchor, cheekEyeKey, DEFAULT_ANCHOR,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
 
@@ -15,7 +15,7 @@ const SCOPES: { key: Scope; label: string; hint: string }[] = [
   { key: 'body',  label: '이 몸통만',       hint: '이 몸통 하나 × 이 슬롯의 파츠 전부' },
   { key: 'part',  label: '이 파츠',         hint: '몸통 12종 × 이 파츠 하나' },
   { key: 'one',   label: '이 조합만',       hint: '이 몸통 하나 × 이 파츠 하나' },
-  { key: 'eye',   label: '이 눈에서',       hint: '볼장식만 — 지금 고른 눈일 때 몸통 12종 × 볼장식 전부' },
+  { key: 'eye',   label: '이 눈에서',       hint: '볼장식만 — 이 볼장식이 지금 고른 눈과 만날 때만, 몸통 12종' },
 ]
 import { bodyPieces } from '../moimo/compose'
 import { useSvg } from './useSvg'
@@ -101,7 +101,7 @@ function LayerReadout({
     { label: '이 파츠', a: partAnchor(table, slot, part), set: Boolean(table.parts[slot]?.[String(part)]) },
   ]
   if (slot === 'cheek') {
-    rows.push({ label: `눈 ${String(eye).padStart(2, '0')}에서`, a: cheekEyeAnchor(table, eye), set: Boolean(table.cheekByEye[String(eye)]) })
+    rows.push({ label: `눈 ${String(eye).padStart(2, '0')}에서`, a: cheekEyeAnchor(table, part, eye), set: Boolean(table.cheekEye[cheekEyeKey(part, eye)]) })
   }
   const total = composeAnchor(table, body, slot, part, eye)
   const num = (v: number) => (Math.round(v * 100) / 100).toString()
@@ -302,17 +302,17 @@ export default function AnchorEditor() {
     if (scope === 'every') return slotAnchor(table, slot)
     if (scope === 'body') return bodyAnchor(table, body, slot)
     if (scope === 'part') return partAnchor(table, slot, variant[slot])
-    if (scope === 'eye') return slot === 'cheek' ? cheekEyeAnchor(table, variant.eye) : DEFAULT_ANCHOR
+    if (scope === 'eye') return slot === 'cheek' ? cheekEyeAnchor(table, variant.cheek, variant.eye) : DEFAULT_ANCHOR
     return table.overrides[overrideKey(body, slot, variant[slot])]
       ?? composeAnchor(table, body, slot, variant[slot])
   }, [table, body, scope, variant])
 
   const patch = useCallback((slot: SlotKey, d: Partial<Anchor>) => {
     setTable((t) => {
-      const next = { ...t, bodies: { ...t.bodies }, parts: { ...t.parts }, overrides: { ...t.overrides }, cheekByEye: { ...t.cheekByEye } }
+      const next = { ...t, bodies: { ...t.bodies }, parts: { ...t.parts }, overrides: { ...t.overrides }, cheekEye: { ...t.cheekEye } }
       if (scope === 'eye') {
         if (slot !== 'cheek') return t
-        next.cheekByEye[String(variant.eye)] = { ...cheekEyeAnchor(t, variant.eye), ...d }
+        next.cheekEye[cheekEyeKey(variant.cheek, variant.eye)] = { ...cheekEyeAnchor(t, variant.cheek, variant.eye), ...d }
       } else if (scope === 'body') {
         const key = String(body)
         next.bodies[key] = { ...next.bodies[key], [slot]: { ...bodyAnchor(t, body, slot), ...d } }
@@ -334,9 +334,9 @@ export default function AnchorEditor() {
   /** 지금 층의 값만 지운다 */
   const reset = useCallback((slot: SlotKey) => {
     setTable((t) => {
-      const next = { ...t, bodies: { ...t.bodies }, parts: { ...t.parts }, overrides: { ...t.overrides }, cheekByEye: { ...t.cheekByEye } }
+      const next = { ...t, bodies: { ...t.bodies }, parts: { ...t.parts }, overrides: { ...t.overrides }, cheekEye: { ...t.cheekEye } }
       if (scope === 'eye') {
-        if (slot === 'cheek') delete next.cheekByEye[String(variant.eye)]
+        if (slot === 'cheek') delete next.cheekEye[cheekEyeKey(variant.cheek, variant.eye)]
       } else if (scope === 'body') {
         const key = String(body)
         const { [slot]: _drop, ...rest } = next.bodies[key] ?? {}
@@ -579,7 +579,7 @@ export default function AnchorEditor() {
                     size={170}
                     crop={EYE_CROP}
                     label={`눈 ${String(n).padStart(2, '0')} · 볼 ${String(variant.cheek).padStart(2, '0')}`}
-                    tuned={Boolean(table.cheekByEye[String(n)])}
+                    tuned={Boolean(table.cheekEye[cheekEyeKey(variant.cheek, n)])}
                     on={n === variant.eye}
                     onPick={() => { setVariant((v) => ({ ...v, eye: n })); setSheet('off'); setSel('cheek'); setScope('eye') }}
                   >
@@ -688,7 +688,7 @@ export default function AnchorEditor() {
                 {scope === 'body' || scope === 'one' ? `몸통 ${String(body).padStart(2, '0')}` : '몸통 12종'}
                 {' × '}
                 {sel
-                  ? scope === 'part' || scope === 'one'
+                  ? scope === 'part' || scope === 'one' || scope === 'eye'
                     ? `${SLOTS.find((s) => s.key === sel)!.label} ${String(variant[sel]).padStart(2, '0')}`
                     : `${SLOTS.find((s) => s.key === sel)!.label} 전부`
                   : '—'}
