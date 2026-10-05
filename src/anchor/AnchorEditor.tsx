@@ -3,18 +3,19 @@ import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
   decoFor, fillFor, usesPoint, zFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
-  warnIfNothingToTint,
+  warnIfNothingToTint, cheekEyeAnchor, DEFAULT_ANCHOR,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
 
 /** 드래그가 어느 층에 쓰일지 */
-type Scope = 'body' | 'every' | 'part' | 'one'
+type Scope = 'body' | 'every' | 'part' | 'one' | 'eye'
 
 const SCOPES: { key: Scope; label: string; hint: string }[] = [
   { key: 'every', label: '기준 (모든 몸통)', hint: '몸통 12종 × 이 슬롯의 파츠 전부' },
   { key: 'body',  label: '이 몸통만',       hint: '이 몸통 하나 × 이 슬롯의 파츠 전부' },
   { key: 'part',  label: '이 파츠',         hint: '몸통 12종 × 이 파츠 하나' },
   { key: 'one',   label: '이 조합만',       hint: '이 몸통 하나 × 이 파츠 하나' },
+  { key: 'eye',   label: '이 눈에서',       hint: '볼장식만 — 지금 고른 눈일 때 몸통 12종 × 볼장식 전부' },
 ]
 import { bodyPieces } from '../moimo/compose'
 import { useSvg } from './useSvg'
@@ -91,15 +92,18 @@ function LayerInner({
 
 /** 지금 이 파츠가 어느 층에서 얼마씩 받아 그 자리에 있는지 */
 function LayerReadout({
-  table, body, slot, part,
-}: { table: AnchorTable; body: number; slot: SlotKey; part: number }) {
+  table, body, slot, part, eye,
+}: { table: AnchorTable; body: number; slot: SlotKey; part: number; eye: number }) {
   const over = table.overrides[overrideKey(body, slot, part)]
   const rows: { label: string; a: Anchor; set: boolean }[] = [
     { label: '기준', a: slotAnchor(table, slot), set: Boolean(table.slots[slot]) },
     { label: '이 몸통', a: bodyAnchor(table, body, slot), set: Boolean(table.bodies[String(body)]?.[slot]) },
     { label: '이 파츠', a: partAnchor(table, slot, part), set: Boolean(table.parts[slot]?.[String(part)]) },
   ]
-  const total = composeAnchor(table, body, slot, part)
+  if (slot === 'cheek') {
+    rows.push({ label: `눈 ${String(eye).padStart(2, '0')}에서`, a: cheekEyeAnchor(table, eye), set: Boolean(table.cheekByEye[String(eye)]) })
+  }
+  const total = composeAnchor(table, body, slot, part, eye)
   const num = (v: number) => (Math.round(v * 100) / 100).toString()
   const scaleText = (a: Anchor) => {
     const sy = syOf(a)
@@ -191,7 +195,7 @@ function Figure({
             ),
             line, accent,
           }}
-          anchor={composeAnchor(table, body, s.key, variant[s.key])}
+          anchor={composeAnchor(table, body, s.key, variant[s.key], variant.eye)}
           z={zFor(s.key, variant[s.key], s.z)}
           dim={soloSlot != null && soloSlot !== s.key}
           label={s.label}
@@ -277,6 +281,11 @@ export default function AnchorEditor() {
   })
   const [confirmWipe, setConfirmWipe] = useState(false)
 
+  // "이 눈에서" 는 볼장식에만 있는 층이다. 다른 칸을 고르면 기준으로 돌아간다
+  useEffect(() => {
+    if (scope === 'eye' && sel !== 'cheek') setScope('every')
+  }, [scope, sel, setScope])
+
   const stageRef = useRef<HTMLDivElement>(null)
   const colRef = useRef<HTMLElement>(null)
   const dragRef = useRef<{ x: number; y: number } | null>(null)
@@ -293,14 +302,18 @@ export default function AnchorEditor() {
     if (scope === 'every') return slotAnchor(table, slot)
     if (scope === 'body') return bodyAnchor(table, body, slot)
     if (scope === 'part') return partAnchor(table, slot, variant[slot])
+    if (scope === 'eye') return slot === 'cheek' ? cheekEyeAnchor(table, variant.eye) : DEFAULT_ANCHOR
     return table.overrides[overrideKey(body, slot, variant[slot])]
       ?? composeAnchor(table, body, slot, variant[slot])
   }, [table, body, scope, variant])
 
   const patch = useCallback((slot: SlotKey, d: Partial<Anchor>) => {
     setTable((t) => {
-      const next = { ...t, bodies: { ...t.bodies }, parts: { ...t.parts }, overrides: { ...t.overrides } }
-      if (scope === 'body') {
+      const next = { ...t, bodies: { ...t.bodies }, parts: { ...t.parts }, overrides: { ...t.overrides }, cheekByEye: { ...t.cheekByEye } }
+      if (scope === 'eye') {
+        if (slot !== 'cheek') return t
+        next.cheekByEye[String(variant.eye)] = { ...cheekEyeAnchor(t, variant.eye), ...d }
+      } else if (scope === 'body') {
         const key = String(body)
         next.bodies[key] = { ...next.bodies[key], [slot]: { ...bodyAnchor(t, body, slot), ...d } }
       } else if (scope === 'every') {
@@ -321,8 +334,10 @@ export default function AnchorEditor() {
   /** 지금 층의 값만 지운다 */
   const reset = useCallback((slot: SlotKey) => {
     setTable((t) => {
-      const next = { ...t, bodies: { ...t.bodies }, parts: { ...t.parts }, overrides: { ...t.overrides } }
-      if (scope === 'body') {
+      const next = { ...t, bodies: { ...t.bodies }, parts: { ...t.parts }, overrides: { ...t.overrides }, cheekByEye: { ...t.cheekByEye } }
+      if (scope === 'eye') {
+        if (slot === 'cheek') delete next.cheekByEye[String(variant.eye)]
+      } else if (scope === 'body') {
         const key = String(body)
         const { [slot]: _drop, ...rest } = next.bodies[key] ?? {}
         next.bodies[key] = rest
@@ -532,6 +547,7 @@ export default function AnchorEditor() {
                 key={s.key}
                 className={`scope${scope === s.key ? ' on' : ''}`}
                 onClick={() => setScope(s.key)}
+                disabled={s.key === 'eye' && sel !== 'cheek'}
                 title={s.hint}
               >{s.label}</button>
             ))}
@@ -563,8 +579,9 @@ export default function AnchorEditor() {
                     size={170}
                     crop={EYE_CROP}
                     label={`눈 ${String(n).padStart(2, '0')} · 볼 ${String(variant.cheek).padStart(2, '0')}`}
+                    tuned={Boolean(table.cheekByEye[String(n)])}
                     on={n === variant.eye}
-                    onPick={() => { setVariant((v) => ({ ...v, eye: n })); setSheet('off'); setSel('cheek') }}
+                    onPick={() => { setVariant((v) => ({ ...v, eye: n })); setSheet('off'); setSel('cheek'); setScope('eye') }}
                   >
                     <Figure body={body} variant={{ ...variant, eye: n }} morph={morph} tone={tone} color={color} table={table} />
                   </Cell>
@@ -632,7 +649,7 @@ export default function AnchorEditor() {
               <div
                 className="sel-box"
                 style={{
-                  transform: `translate(${composeAnchor(table, body, sel, variant[sel]).x}px, ${composeAnchor(table, body, sel, variant[sel]).y}px) rotate(${composeAnchor(table, body, sel, variant[sel]).r}deg) scale(${composeAnchor(table, body, sel, variant[sel]).s}, ${syOf(composeAnchor(table, body, sel, variant[sel]))})`,
+                  transform: `translate(${composeAnchor(table, body, sel, variant[sel], variant.eye).x}px, ${composeAnchor(table, body, sel, variant[sel], variant.eye).y}px) rotate(${composeAnchor(table, body, sel, variant[sel], variant.eye).r}deg) scale(${composeAnchor(table, body, sel, variant[sel], variant.eye).s}, ${syOf(composeAnchor(table, body, sel, variant[sel], variant.eye))})`,
                 }}
               />
             )}
@@ -667,6 +684,7 @@ export default function AnchorEditor() {
               <br />
               지금 움직이는 것:{' '}
               <b>
+                {scope === 'eye' ? `눈 ${String(variant.eye).padStart(2, '0')}일 때 · ` : ''}
                 {scope === 'body' || scope === 'one' ? `몸통 ${String(body).padStart(2, '0')}` : '몸통 12종'}
                 {' × '}
                 {sel
@@ -721,7 +739,7 @@ export default function AnchorEditor() {
                 ))}
                 <button className="mini" onClick={(e) => { e.stopPropagation(); reset(s.key) }}>초기화</button>
               </div>
-              {on && <LayerReadout table={table} body={body} slot={s.key} part={variant[s.key]} />}
+              {on && <LayerReadout table={table} body={body} slot={s.key} part={variant[s.key]} eye={variant.eye} />}
             </div>
           )
         })}

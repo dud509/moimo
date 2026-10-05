@@ -293,7 +293,7 @@ export function composeMoimo(
     const key = s.key as SlotKey
     const n = genes[s.key as keyof MoimoGenes] as number
     const base = key === 'tail' ? bodyTone : usesPoint(key, n) ? decoHex : bodyHex
-    push(zFor(key, n, s.z), partUrl(key, n), fillFor(key, n, base), composeAnchor(table, genes.body, key, n))
+    push(zFor(key, n, s.z), partUrl(key, n), fillFor(key, n, base), composeAnchor(table, genes.body, key, n, genes.eye))
   }
 
   pieces.sort((a, b) => a.z - b.z)
