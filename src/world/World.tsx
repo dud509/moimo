@@ -3,8 +3,7 @@ import {
 } from 'react'
 import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
-import { ItemArt } from './Items'
-import { CANDY_LINE_PX, CANDY_W, DECOR, FRAME, GUIDES, ITEMS, MOIMO_W, OBJECT_LINE_PX, WORLD, CENTER, PROPS, PROP_KINDS, type Item, type ItemId, type Placed, type Resident } from './model'
+import { CANDY_LINE_PX, CANDY_W, DECOR, FRAME, GUIDES, ITEMS, MOIMO_W, OBJECT_LINE_PX, WORLD, CENTER, PROPS, PROP_KINDS, type ItemId, type Placed, type Resident } from './model'
 import { useTightArt, type Tight } from './tight'
 
 /** 여백을 잘라내고 쓸 그림들 — 오브제와 소품 */
@@ -55,16 +54,9 @@ const MOIMO_PX = MOIMO_W
 /* 그림으로 갈아 끼울 수 있는 것들                                      */
 /* ------------------------------------------------------------------ */
 
-/** 오브제 그림. 파일을 못 읽었으면 예전에 코드로 그린 그림으로 내려간다 */
-function ItemImage({ item, art }: { item: Item; art?: Tight }) {
-  // 그림을 못 읽었으면 지금까지 쓰던 그린 그림으로 내려간다
-  if (!art) {
-    return (
-      <svg viewBox="0 0 200 200" width="100%" height="100%" overflow="visible">
-        <ItemArt id={item.id} />
-      </svg>
-    )
-  }
+/** 오브제 그림. 파일을 다 읽기 전에는 아무것도 그리지 않는다 */
+function ItemImage({ art }: { art?: Tight }) {
+  if (!art) return null
   return <img className="item-art" src={art.url} alt="" draggable={false} />
 }
 
@@ -387,7 +379,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             onClick={() => { if (!dragged.current) onItem(it.id) }}
           >
             <Shadow />
-            <ItemImage item={it} art={art[it.src]} />
+            <ItemImage art={art[it.src]} />
             <span className="item-label">
               <b>{it.name}</b>
               <i>{it.tag}</i>
