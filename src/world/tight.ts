@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { OBJECT_LINE_COLOR, OBJECT_SOURCE_LINES } from './model'
 
 /**
  * 그림 한 장의 실제 크기.
@@ -63,7 +64,8 @@ export function useTightArt(
         }
         svg.removeAttribute('width')
         svg.removeAttribute('height')
-        const url = URL.createObjectURL(new Blob([svg.outerHTML], { type: 'image/svg+xml' }))
+        const out = svg.outerHTML.replace(OBJECT_SOURCE_LINES, OBJECT_LINE_COLOR)
+        const url = URL.createObjectURL(new Blob([out], { type: 'image/svg+xml' }))
         made.push(url)
         return [src, { url, ratio: h / w }]
       } catch {

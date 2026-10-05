@@ -118,6 +118,14 @@ export const MOIMO_W = 120
  * (512 캔버스에 4.5 → 화면에서 약 1.05).
  */
 export const OBJECT_LINE_PX = 2.2
+/**
+ * 오브제·소품 선 색. 그림 파일은 #867561 로 그려 두었는데, 모이모가 제 색에
+ * 물든 선을 쓰면서 오브제 선이 모이모만큼 진하면 모이모가 묻힌다. 한결
+ * 연하게 눌러 오브제는 뒤로 물러나고 모이모가 앞에 보이게 한다.
+ */
+export const OBJECT_LINE_COLOR = '#B0A192'
+/** 그림 파일에서 선으로 쓴 색 — 위 색으로 갈아 끼운다 */
+export const OBJECT_SOURCE_LINES = /#867561|#857664/gi
 export const CANDY_LINE_PX = 1.6
 /**
  * 둘 사이에 두는 거리.
