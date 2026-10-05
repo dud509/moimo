@@ -64,7 +64,7 @@ eq('모양: 배 ㅂ 은 박과 따로 몸통02', genesFromName('배민수', 'sha
 eq('모양: 도 ㄷ → 늘어진 귀 몸통09', genesFromName('도민수', 'shape')!.body, 9)
 eq('모양: 류 ㄹ → 꼬불 귀 몸통12', genesFromName('류민수', 'shape')!.body, 12)
 eq('모양: 김 받침ㅁ → 얼굴 비운 무늬03', genesFromName('김민수', 'shape')!.morph, 3)
-eq('모양: 정 받침ㅇ → 귀 끝 무늬01', genesFromName('정민수', 'shape')!.morph, 1)
+eq('모양: 정 받침ㅇ → 머리 덮는 무늬05', genesFromName('정민수', 'shape')!.morph, 5)
 eq('모양: 연 ㅇ → 동그란 눈10', genesFromName('김연수', 'shape')!.eye, 10)
 eq('모양: 수 ㅜ → 꼬리01', genesFromName('김민수', 'shape')!.tail, 1)
 eq('모양: 우 ㅜ → 입06', genesFromName('김우진', 'shape')!.mouth, 6)
