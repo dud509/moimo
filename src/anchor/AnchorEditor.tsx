@@ -3,7 +3,7 @@ import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
   decoFor, fillFor, usesPoint, zFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
-  warnIfNothingToTint, cheekEyeAnchor, cheekEyeKey, DEFAULT_ANCHOR,
+  warnIfNothingToTint, cheekEyeAnchor, cheekEyeKey, DEFAULT_ANCHOR, editorParts, SPARE,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
 
@@ -207,6 +207,13 @@ function Figure({
   )
 }
 
+/** 이 칸의 다음·이전 번호 — 예비 파츠까지 돈다 */
+function step(slot: SlotKey, n: number, d: number): number {
+  const list = editorParts(slot)
+  const i = list.indexOf(n)
+  return list[((i < 0 ? 0 : i) + d + list.length) % list.length]
+}
+
 /** 눈 기준 볼장식 — 얼굴 언저리만 크게 본다 */
 const EYE_CROP = [96, 150, 320, 190] as const
 
@@ -247,7 +254,15 @@ function useKept<T>(key: string, init: T | (() => T)) {
   const [v, setV] = useState<T>(() => {
     try {
       const raw = sessionStorage.getItem(`anchor-editor:${key}`)
-      if (raw != null) return JSON.parse(raw) as T
+      if (raw != null) {
+        const got = JSON.parse(raw) as T
+        // 칸이 늘었거나 일부만 남아 있어도 비는 칸 없이 처음 값으로 채운다
+        const base = typeof init === 'function' ? (init as () => T)() : init
+        if (got && typeof got === 'object' && !Array.isArray(got) && base && typeof base === 'object') {
+          return { ...base, ...got }
+        }
+        return got
+      }
     } catch { /* 기억이 없거나 막혀 있으면 처음 값 */ }
     return typeof init === 'function' ? (init as () => T)() : init
   })
@@ -600,7 +615,7 @@ export default function AnchorEditor() {
                     <Figure body={n} variant={variant} morph={morph} color={color} tone={tone} table={table} />
                   </Cell>
                 ))
-              : sel && Array.from({ length: SLOTS.find((s) => s.key === sel)!.count }, (_, i) => i + 1).map((n) => (
+              : sel && editorParts(sel).map((n) => (
                   <Cell
                     key={n}
                     size={150}
@@ -662,7 +677,7 @@ export default function AnchorEditor() {
           <div className="strip">
             <span className="strip-label">{SLOTS.find((s) => s.key === sel)!.label}</span>
             <div className="strip-scroll">
-              {Array.from({ length: SLOTS.find((s) => s.key === sel)!.count }, (_, i) => i + 1).map((n) => (
+              {editorParts(sel).map((n) => (
                 <PartThumb
                   key={n}
                   slot={sel}
@@ -720,9 +735,9 @@ export default function AnchorEditor() {
               <div className="slot-top">
                 <b>{s.label}</b>
                 <div className="variant">
-                  <button onClick={(e) => { e.stopPropagation(); setVariant((v) => ({ ...v, [s.key]: (v[s.key] + s.count - 2) % s.count + 1 })) }}>‹</button>
-                  <span>{String(variant[s.key]).padStart(2, '0')}<i>/{s.count}</i></span>
-                  <button onClick={(e) => { e.stopPropagation(); setVariant((v) => ({ ...v, [s.key]: (v[s.key] % s.count) + 1 })) }}>›</button>
+                  <button onClick={(e) => { e.stopPropagation(); setVariant((v) => ({ ...v, [s.key]: step(s.key, v[s.key], -1) })) }}>‹</button>
+                  <span>{String(variant[s.key]).padStart(2, '0')}<i>/{s.count}{SPARE[s.key] ? '+예비' : ''}</i></span>
+                  <button onClick={(e) => { e.stopPropagation(); setVariant((v) => ({ ...v, [s.key]: step(s.key, v[s.key], 1) })) }}>›</button>
                 </div>
               </div>
               <div className="fields">

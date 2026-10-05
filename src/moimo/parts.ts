@@ -176,6 +176,20 @@ export const SLOTS: SlotDef[] = [
 ]
 
 /**
+ * 예비 파츠 — 파일은 있지만 이름 매칭에는 아직 안 쓰는 것.
+ * 앵커 편집기에서만 골라 볼 수 있다. 마음에 들면 매칭표의 번호를 이리로 옮긴다.
+ */
+export const SPARE: Partial<Record<SlotKey, number[]>> = {
+  hair: [13],
+}
+
+/** 앵커 편집기에서 고를 수 있는 번호 — 매칭에 쓰는 것 + 예비 */
+export const editorParts = (slot: SlotKey): number[] => {
+  const count = SLOTS.find((s) => s.key === slot)!.count
+  return [...Array.from({ length: count }, (_, i) => i + 1), ...(SPARE[slot] ?? [])]
+}
+
+/**
  * 흰 채우기를 몸통 색으로 갈아입는 파츠.
  *
  *   'all'   슬롯 전체 — 꼬리는 몸의 일부라 늘 몸통을 따라간다
