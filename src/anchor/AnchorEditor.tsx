@@ -55,7 +55,8 @@ function LayerInner({
   useEffect(() => { if (svg) warn?.(svg) }, [svg, warn])
 
   const style: React.CSSProperties = {
-    zIndex: z,
+    // 층 번호에 소수(6.5 처럼)가 있어 열 배로 키워 정수로 쓴다
+    zIndex: Math.round(z * 10),
     opacity: dim ? 0.28 : 1,
     transform: `translate(${anchor.x}px, ${anchor.y}px) rotate(${anchor.r}deg) scale(${anchor.s}, ${syOf(anchor)})`,
   }
@@ -159,7 +160,7 @@ function BodyStack({
   return (
     <div
       className="layer"
-      style={{ zIndex: Z_BODY, opacity: dim ? 0.28 : 1 }}
+      style={{ zIndex: Z_BODY * 10, opacity: dim ? 0.28 : 1 }}
       dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 ${CANVAS} ${CANVAS}">${html}</svg>` }}
     />
   )

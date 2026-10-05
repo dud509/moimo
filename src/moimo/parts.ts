@@ -241,9 +241,18 @@ const BACK: Partial<Record<SlotKey, number[]>> = {
   deco: [6],
 }
 
+/**
+ * 눈·입보다 위로 올라가는 파츠.
+ *
+ * 볼장식 05(나선)는 눈 위에 겹쳐 그려야 한다. 머리장식보다는 아래다.
+ */
+const OVER_FACE: Partial<Record<SlotKey, number[]>> = {
+  cheek: [5],
+}
+
 /** 이 파츠를 몇 번째 층에 그릴지 */
 export const zFor = (slot: SlotKey, part: number, z: number): number =>
-  BACK[slot]?.includes(part) ? 0 : z
+  BACK[slot]?.includes(part) ? 0 : OVER_FACE[slot]?.includes(part) ? 6.5 : z
 
 /** 이 파츠를 어떤 색으로 채울지 */
 export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>
