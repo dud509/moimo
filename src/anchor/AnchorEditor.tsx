@@ -202,19 +202,26 @@ function Figure({
   )
 }
 
+/** 눈 기준 볼장식 — 얼굴 언저리만 크게 본다 */
+const EYE_CROP = [96, 150, 320, 190] as const
+
 /** 모아보기 한 칸 */
 function Cell({
-  size, label, on, tuned, onPick, children,
+  size, label, on, tuned, onPick, children, crop,
 }: {
   size: number; label: string; on: boolean; tuned?: boolean
   onPick: () => void; children: React.ReactNode
+  /** 캔버스의 이 네모만 크게 본다 [x, y, 폭, 높이] */
+  crop?: readonly [number, number, number, number]
 }) {
+  const [cx, cy, cw, ch] = crop ?? [0, 0, CANVAS, CANVAS]
+  const k = size / cw
   return (
     <button className={`cell${on ? ' on' : ''}${tuned ? ' tuned' : ''}`} onClick={onPick} style={{ width: size }}>
-      <div className="cell-art" style={{ width: size, height: size }}>
+      <div className="cell-art" style={{ width: size, height: ch * k }}>
         <div style={{
           position: 'absolute', width: CANVAS, height: CANVAS,
-          transform: `scale(${size / CANVAS})`, transformOrigin: '0 0',
+          transform: `scale(${k}) translate(${-cx}px, ${-cy}px)`, transformOrigin: '0 0',
         }}>
           {children}
         </div>
@@ -257,7 +264,7 @@ export default function AnchorEditor() {
   const [morph, setMorph] = useKept('morph', 0) // 0 = 무늬 없음
   const [tone, setTone] = useKept('tone', 0)   // 0 = 흰 바탕, 1 = 한 톤 누름
   const [solo, setSolo] = useKept('solo', false)
-  const [sheet, setSheet] = useKept<'off' | 'bodies' | 'parts'>('sheet', 'off')
+  const [sheet, setSheet] = useKept<'off' | 'bodies' | 'parts' | 'eyes'>('sheet', 'off')
   const [dirty, setDirty] = useState(false)
   const [saved, setSaved] = useState<string | null>(() => {
     try {
@@ -513,6 +520,11 @@ export default function AnchorEditor() {
             >
               {sel ? `${SLOTS.find((s) => s.key === sel)!.label} 전종` : '파츠 전종'}
             </button>
+            <button
+              className={`scope${sheet === 'eyes' ? ' on' : ''}`}
+              onClick={() => { setSheet('eyes'); setSel('cheek') }}
+              title="지금 고른 볼장식을 눈 11종에 하나씩 대 본다"
+            >눈 기준 볼장식</button>
           </div>
           <div className="scopes">
             {SCOPES.map((s) => (
@@ -544,7 +556,20 @@ export default function AnchorEditor() {
 
         {sheet !== 'off' ? (
           <div className="sheet-grid">
-            {sheet === 'bodies'
+            {sheet === 'eyes'
+              ? Array.from({ length: SLOTS.find((s) => s.key === 'eye')!.count }, (_, i) => i + 1).map((n) => (
+                  <Cell
+                    key={n}
+                    size={170}
+                    crop={EYE_CROP}
+                    label={`눈 ${String(n).padStart(2, '0')} · 볼 ${String(variant.cheek).padStart(2, '0')}`}
+                    on={n === variant.eye}
+                    onPick={() => { setVariant((v) => ({ ...v, eye: n })); setSheet('off'); setSel('cheek') }}
+                  >
+                    <Figure body={body} variant={{ ...variant, eye: n }} morph={morph} tone={tone} color={color} table={table} />
+                  </Cell>
+                ))
+              : sheet === 'bodies'
               ? Array.from({ length: BODY_COUNT }, (_, i) => i + 1).map((n) => (
                   <Cell
                     key={n}
