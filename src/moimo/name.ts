@@ -323,8 +323,8 @@ const SHAPE_HAIR: MapRow[] = [
   { jamo: ['ㅁ'], part: 11, pct: 5.3, why: 'ㅁ 처럼 네모난 테 둘을 이은 안경' },
   { jamo: ['ㄱ', 'ㅋ'], part: 7, pct: 4.1, why: 'ㄱ 처럼 꺾인 작은 날개 한 쌍' },
   { jamo: ['ㄹ'], part: 6, pct: 4.0, why: 'ㄹ 처럼 꼬불꼬불한 새싹' },
-  { jamo: ['ㄴ', 'ㄷ', 'ㅌ', 'ㅂ', 'ㅍ'], part: 8, pct: 2.4, why: '드문 초성은 동그란 달걀 프라이' },
-  { jamo: ['ㅊ'], part: 3, pct: 2.3, why: 'ㅊ 처럼 위로 펼친 날개 달린 하트' },
+  { jamo: ['ㄴ', 'ㄷ', 'ㅌ', 'ㅂ', 'ㅍ'], part: 3, pct: 2.4, why: '드문 초성은 날개 달린 하트' },
+  { jamo: ['ㅊ'], part: 8, pct: 2.3, why: 'ㅊ 의 꼭지처럼 위에 얹은 달걀 프라이 — 철·찬 처럼 남자 이름에 많다' },
 ]
 
 const SHAPE_MOUTH: MapRow[] = [
