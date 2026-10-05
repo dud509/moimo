@@ -287,11 +287,11 @@ const SHAPE_BODY: MapRow[] = [
 
 const SHAPE_MORPH: MapRow[] = [
   { jamo: [''], part: 0, pct: 34.5, note: '받침 없는 성은 무늬 없음' },
-  { jamo: ['ㅁ'], part: 2, pct: 26.1, why: 'ㅁ 처럼 네모나게 꽉 찬 무늬' },
-  { jamo: ['ㅇ'], part: 3, pct: 15.3, why: 'ㅇ 처럼 배에 동그란 자리를 비운 무늬' },
-  { jamo: ['ㄴ'], part: 4, pct: 13.5, why: 'ㄴ 의 세로획처럼 한쪽으로 내려오는 무늬' },
-  { jamo: ['ㄱ'], part: 5, pct: 10.4, why: 'ㄱ 의 가로획처럼 머리를 덮는 무늬' },
-  { jamo: null, label: 'ㄹ ㅂ ㅅ …', part: 1, pct: 0.2, why: '나머지 받침은 목둘레 무늬' },
+  { jamo: ['ㅁ'], part: 3, pct: 26.1, why: 'ㅁ 처럼 얼굴을 네모나게 비워 둔 무늬' },
+  { jamo: ['ㅇ'], part: 1, pct: 15.3, why: 'ㅇ 처럼 귀와 꼬리 끝만 동그랗게 물든 무늬' },
+  { jamo: ['ㄴ'], part: 5, pct: 13.5, why: 'ㄴ 의 가로획처럼 머리를 덮는 무늬' },
+  { jamo: ['ㄱ'], part: 4, pct: 10.4, why: 'ㄱ 의 꺾인 획처럼 한쪽으로 내려오는 무늬' },
+  { jamo: null, label: 'ㄹ ㅂ ㅅ …', part: 2, pct: 0.2, why: '획 많은 받침은 온몸에 꽉 찬 무늬' },
 ]
 
 /*
