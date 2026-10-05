@@ -73,7 +73,7 @@ eq('모양: 임 받침ㅁ → 얼굴 비운 무늬03', genesFromName('임민수'
 eq('모양: 박 받침ㄱ → 귀 끝 무늬01', genesFromName('박민수', 'shape')!.morph, 1)
 eq('모양: 정 받침ㅇ → 머리 덮는 무늬05', genesFromName('정민수', 'shape')!.morph, 5)
 eq('모양: 연 ㅇ → 꽉 찬 눈02', genesFromName('김연수', 'shape')!.eye, 2)
-eq('모양: 서 ㅅ → 동그란 눈10', genesFromName('김서연', 'shape')!.eye, 10)
+eq('모양: 서 ㅅ → 가로획 걸친 눈09', genesFromName('김서연', 'shape')!.eye, 9)
 eq('모양: 하 ㅎ → 속눈썹 눈06', genesFromName('김하린', 'shape')!.eye, 6)
 eq('모양: 수 ㅜ → 꼬리01', genesFromName('김민수', 'shape')!.tail, 1)
 eq('모양: 우 ㅜ → 입06', genesFromName('김우진', 'shape')!.mouth, 6)
