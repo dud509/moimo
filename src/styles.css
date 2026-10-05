@@ -85,9 +85,9 @@ button { cursor: pointer; }
   filter: drop-shadow(0 5px 5px rgba(112, 94, 76, 0.16)) drop-shadow(0 1px 1.5px rgba(112, 94, 76, 0.12));
 }
 
-/* 층 — 오브제는 늘 아래, 별사탕·모이모·안내 캐릭터는 그 위 */
+/* 층 — 오브제는 늘 아래, 별사탕·모이모는 그 위, 안내 요정은 맨 위 */
 .decor, .item { z-index: 1; }
-.guide, .moimo, .prop { z-index: 2; }
+.moimo, .prop { z-index: 2; }
 
 /* 오브제 — 누를 수 있는 것 */
 .item {
@@ -148,9 +148,16 @@ button { cursor: pointer; }
 /* 오브제 — 꾸밈. 누를 수 없다 */
 .decor { position: absolute; pointer-events: none; }
 
-/* 유리병 곁의 안내 캐릭터 — 모이모처럼 바닥에 서 있다 */
-.guide { position: absolute; pointer-events: none; }
-.guide .shadow { width: 72%; }
+/* 안내 요정 — 평소엔 숨어 있다가 오브제를 올려 보면 곁에 퐁 나타난다 */
+.item-guide {
+  position: absolute; z-index: 3;
+  pointer-events: none; opacity: 0;
+  transform: translateY(14px) scale(0.6); transform-origin: 50% 100%;
+  transition: opacity 0.2s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.item-guide img { display: block; width: 100%; height: 100%; }
+.item-guide .shadow { width: 72%; }
+.item-guide.on { opacity: 1; transform: none; }
 
 /* 모이모 */
 .moimo {

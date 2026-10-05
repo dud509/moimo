@@ -60,6 +60,8 @@ export type Item = Placed & {
   id: ItemId
   name: string
   tag: string
+  /** 올려 보면 곁에 나타나는 안내 요정 — GUIDES 의 몇 번째인지 */
+  guide: number
 }
 
 /**
@@ -69,10 +71,10 @@ export type Item = Placed & {
  * 1px 이 마을의 1.333px 이고, 시안 한가운데가 마을 한가운데(CENTER)다.
  */
 export const ITEMS: Item[] = [
-  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', src: '/items/jar02.svg',  x: 1811, y: 1212, w: 337, ratio: 1.23 },
-  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 900, w: 257, ratio: 1.053 },
-  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774 },
-  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1657, w: 197, ratio: 1.172 },
+  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', src: '/items/jar02.svg',  x: 1811, y: 1212, w: 337, ratio: 1.23, guide: 0 },
+  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 900, w: 257, ratio: 1.053, guide: 1 },
+  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774, guide: 0 },
+  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1657, w: 197, ratio: 1.172, guide: 1 },
 ]
 
 /** 누를 수 없는 오브제 — 마을을 꾸미는 큰 물건들 */
@@ -84,10 +86,12 @@ export const DECOR: Placed[] = [
   { src: '/items/box01.svg',   x: 1990, y: 1691, w: 289, ratio: 0.915 },
 ]
 
-/** 유리병 곁에 서 있는 안내 캐릭터 둘 */
-export const GUIDES: Placed[] = [
-  { src: '/items/guide01.svg', x: 1991, y: 1124, w: 96, ratio: 0.983 },
-  { src: '/items/guide02.svg', x: 1645, y: 1030, w: 89, ratio: 1.069 },
+export type Guide = { src: string; w: number; ratio: number }
+
+/** 안내 요정 둘. 평소엔 없고, 누를 수 있는 오브제를 올려 보면 그 곁에 나타난다 */
+export const GUIDES: Guide[] = [
+  { src: '/items/guide01.svg', w: 96, ratio: 0.983 },
+  { src: '/items/guide02.svg', w: 89, ratio: 1.069 },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -117,7 +121,9 @@ export const MOIMO_W = 120
  * 화면에서 이 굵기가 되게 선을 고쳐 그린다. 모이모는 손대지 않는다
  * (512 캔버스에 4.5 → 화면에서 약 1.05).
  */
-export const OBJECT_LINE_PX = 2.2
+export const OBJECT_LINE_PX = 3
+/** 안내 요정 선 굵기 — 작은 그림이라 오브제보다 가늘게 맞춘다 */
+export const GUIDE_LINE_PX = 2.2
 /**
  * 오브제·소품 선 색. 그림 파일은 #867561 로 그려 두었는데, 모이모가 제 색에
  * 물든 선을 쓰면서 오브제 선이 모이모만큼 진하면 모이모가 묻힌다. 한결
@@ -168,7 +174,7 @@ function onArt(g: ReturnType<typeof guard>, f: Footprint, px: number, py: number
 const FOOT_HALF = 22
 
 /** 모이모와 별사탕이 비켜 서야 하는 그림들 */
-const GUARDS = [...ITEMS, ...DECOR, ...GUIDES].map(guard)
+const GUARDS = [...ITEMS, ...DECOR].map(guard)
 
 /** 이 자리에 서도 되나 — 오브제를 가리지 않고 이웃과도 떨어져 있나 */
 function standsFree(x: number, y: number, gap: number, taken: { x: number; y: number }[]): boolean {
@@ -190,8 +196,8 @@ function standsFree(x: number, y: number, gap: number, taken: { x: number; y: nu
     const f = FOOTPRINTS[g.p.src]
     const nearBox = Math.abs(x - g.cx) < g.hw + MOIMO_W / 2 && Math.abs(by - g.cy) < g.hh + MOIMO_W / 2
     if (!nearBox) continue
-    // 외곽선을 못 쟀거나 안내 캐릭터면 네모 전체를 피한다
-    if (!f || GUIDES.includes(g.p)) return false
+    // 외곽선을 못 쟀으면 네모 전체를 피한다
+    if (!f) return false
     if (onArt(g, f, x, fy) || onArt(g, f, x - FOOT_HALF, fy) || onArt(g, f, x + FOOT_HALF, fy)) return false
   }
   // 소품과는 겹치지 않는다. 소품은 무리 바깥에 있으니 둘레에서만 마주친다

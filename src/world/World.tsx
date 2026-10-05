@@ -3,7 +3,7 @@ import {
 } from 'react'
 import { composeMoimo, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
-import { CANDY_LINE_PX, CANDY_W, DECOR, FRAME, GUIDES, ITEMS, MOIMO_W, OBJECT_LINE_PX, WORLD, CENTER, PROPS, PROP_KINDS, type ItemId, type Placed, type Resident } from './model'
+import { CANDY_LINE_PX, CANDY_W, DECOR, FRAME, GUIDE_LINE_PX, GUIDES, ITEMS, MOIMO_W, OBJECT_LINE_PX, WORLD, CENTER, PROPS, PROP_KINDS, type ItemId, type Placed, type Resident } from './model'
 import { useTightArt, type Tight } from './tight'
 
 /** 여백을 잘라내고 쓸 그림들 — 오브제와 소품 */
@@ -23,7 +23,8 @@ const LENS = { w: 290, ratio: 1.172, cx: 0.58, cy: 0.29, rx: 0.35, ry: 0.245 }
 
 /** 그림마다 [화면에 놓이는 폭, 맞출 선 굵기] — 선 굵기를 화면 기준으로 맞춘다 */
 const ART_LINES: Record<string, readonly [number, number]> = Object.fromEntries([
-  ...[...ITEMS, ...DECOR, ...GUIDES].map((p) => [p.src, [p.w, OBJECT_LINE_PX]]),
+  ...[...ITEMS, ...DECOR].map((p) => [p.src, [p.w, OBJECT_LINE_PX]]),
+  ...GUIDES.map((g) => [g.src, [g.w, GUIDE_LINE_PX]]),
   ...PROP_KINDS.map((k) => [k.src, [CANDY_W, CANDY_LINE_PX]]),
 ])
 
@@ -58,6 +59,26 @@ const MOIMO_PX = MOIMO_W
 function ItemImage({ art }: { art?: Tight }) {
   if (!art) return null
   return <img className="item-art" src={art.url} alt="" draggable={false} />
+}
+
+/**
+ * 오브제를 올려 보면 곁에 나타나는 안내 요정. 오브제 오른쪽 바닥에 선다.
+ * 오브제 안에 넣으면 오브제 층에 갇혀 앞의 모이모에 가려지므로 따로 그린다.
+ */
+function Guide({ item, itemArt, art, on }: { item: (typeof ITEMS)[number]; itemArt?: Tight; art?: Tight; on: boolean }) {
+  if (!art) return null
+  const g = GUIDES[item.guide]
+  const h = g.w * art.ratio
+  const bottom = item.y + (item.w * (itemArt?.ratio ?? item.ratio)) / 2
+  return (
+    <span
+      className={`item-guide${on ? ' on' : ''}`}
+      style={{ left: item.x + item.w / 2 - 6, top: bottom - h, width: g.w, height: h }}
+    >
+      <Shadow />
+      <img src={art.url} alt="" draggable={false} />
+    </span>
+  )
 }
 
 /** 소품 한 개. 어떤 그림을 쓸지는 PROP_KINDS 에 적혀 있다 */
@@ -138,6 +159,8 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   const lensRef = useRef<HTMLDivElement>(null)
   const pointer = useRef<{ x: number; y: number } | null>(null)
   const [underLens, setUnderLens] = useState<Set<string>>(new Set())
+  /** 마우스를 올려 둔 오브제 — 곁에 안내 요정이 나타난다 */
+  const [hovered, setHovered] = useState<ItemId | null>(null)
   const underKey = useRef('')
   const residentsRef = useRef(residents)
   residentsRef.current = residents
@@ -377,6 +400,8 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             className={`item${lens && it.id === 'glass' ? ' lifted' : ''}`}
             style={placeStyle(it, art[it.src])}
             onClick={() => { if (!dragged.current) onItem(it.id) }}
+            onPointerEnter={() => setHovered(it.id)}
+            onPointerLeave={() => setHovered((h) => (h === it.id ? null : h))}
           >
             <Shadow />
             <ItemImage art={art[it.src]} />
@@ -387,11 +412,9 @@ export const World = forwardRef<WorldHandle, Props>(function World(
           </button>
         ))}
 
-        {GUIDES.map((g) => (
-          <div key={g.src} className="guide" style={placeStyle(g, art[g.src])}>
-            <Shadow />
-            {art[g.src] && <img className="item-art" src={art[g.src].url} alt="" draggable={false} />}
-          </div>
+
+        {ITEMS.map((it) => (
+          <Guide key={it.id} item={it} itemArt={art[it.src]} art={art[GUIDES[it.guide].src]} on={hovered === it.id && !(lens && it.id === 'glass')} />
         ))}
 
         {stage.map((s) => {
