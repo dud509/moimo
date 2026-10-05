@@ -333,10 +333,10 @@ const SHAPE_MOUTH: MapRow[] = [
   { jamo: ['ㅜ'], part: 6, pct: 12.1, why: 'ㅜ 처럼 가로획 아래로 뾰족한 입' },
   { jamo: ['ㅏ'], part: 1, pct: 10.8, why: 'ㅏ 의 곁획처럼 한쪽 끝이 올라간 입' },
   { jamo: null, label: 'ㅐ ㅔ ㅒ ㅖ ㅘ ㅙ ㅚ ㅝ ㅞ ㅟ ㅢ', part: 2, pct: 10.8, why: '«와!» 하고 동그랗게 벌린 입' },
-  { jamo: ['ㅑ', 'ㅕ'], part: 8, pct: 9.2, why: 'ㅑ 의 곁획 둘처럼 두 줄로 드러난 이' },
+  { jamo: ['ㅑ', 'ㅕ'], part: 9, pct: 9.2, why: 'ㅕ 의 곁획 둘처럼 두 번 굽은 입' },
   { jamo: ['ㅗ'], part: 4, pct: 8.3, why: 'ㅗ 처럼 가운데가 솟은 입' },
   { jamo: ['ㅡ'], part: 5, pct: 5.8, why: 'ㅡ 처럼 길게 그은 입' },
-  { jamo: ['ㅛ', 'ㅠ'], part: 9, pct: 5.0, why: 'ㅠ 의 두 다리처럼 두 번 굽은 입' },
+  { jamo: ['ㅛ', 'ㅠ'], part: 8, pct: 5.0, why: 'ㅠ 의 두 다리처럼 두 줄로 드러난 이' },
 ]
 
 const SHAPE_TAIL: MapRow[] = [
