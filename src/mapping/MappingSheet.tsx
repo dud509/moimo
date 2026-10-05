@@ -77,8 +77,8 @@ export default function MappingSheet() {
           <section key={m.slot}>
             <h2>{m.label} <small>{m.from}</small></h2>
             <div className="cards">
-              {rows.map((r) => (
-                <figure key={r.part} className="card">
+              {rows.map((r, i) => (
+                <figure key={`${r.part}-${i}`} className="card">
                   <Moimo genes={{ ...BASE, ...(m.slot === 'morph' ? MORPH_LOOK : {}), [m.slot]: r.part }} crop={crop} cache={cache} table={table} />
                   <figcaption>
                     <span className="jamo">{jamoLabel(r)}</span>

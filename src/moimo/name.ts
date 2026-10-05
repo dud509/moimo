@@ -271,27 +271,27 @@ const DECO: MapRow[] = [
  * 닮은 귀를 갖고, 같은 초성의 나머지 성은 그다음으로 닮은 귀로 간다.
  */
 const SHAPE_BODY: MapRow[] = [
-  { jamo: ['김'], part: 5, pct: 22.4, why: '김의 ㄱ·ㅣ 세로획 둘처럼 나란히 곧게 선 귀' },
-  { jamo: ['이'], part: 10, pct: 15.3, why: '이의 ㅇ 처럼 동그란 귀' },
-  { jamo: ['박'], part: 7, pct: 8.8, why: '박의 ㅂ 처럼 네모 반듯한 귀' },
-  { jamo: ['ㅇ', 'ㅎ'], part: 6, pct: 17.2, why: 'ㅇ 처럼 동그란 귀가 양옆에 — ㅎ 도 ㅇ 을 품었다' },
-  { jamo: ['ㅈ'], part: 11, pct: 11.1, why: 'ㅈ 의 두 다리처럼 비스듬히 벌어진 귀' },
-  { jamo: ['ㅅ'], part: 3, pct: 6.9, why: 'ㅅ 처럼 뾰족한 고양이 귀' },
-  { jamo: ['ㄱ', 'ㅋ'], part: 4, pct: 6.4, why: 'ㄱ 처럼 꺾여 내려오는 접힌 귀' },
-  { jamo: ['ㅊ'], part: 1, pct: 5.9, why: 'ㅊ 처럼 획이 많아 삐죽삐죽한 털' },
-  { jamo: ['ㅁ', 'ㅂ', 'ㅍ'], part: 2, pct: 4.0, why: 'ㅁ·ㅂ·ㅍ 처럼 옆으로 넓게 퍼진 뭉실한 귀' },
-  { jamo: ['ㄴ'], part: 8, pct: 1.5, why: 'ㄴ 의 가로획처럼 옆으로 뻗은 귀' },
-  { jamo: ['ㄹ'], part: 12, pct: 0.4, why: 'ㄹ 처럼 꼬불꼬불 말린 귀' },
-  { jamo: ['ㄷ', 'ㅌ'], part: 9, pct: 0.2, why: 'ㄷ 처럼 얼굴 양옆을 감싸며 길게 내려오는 귀' },
+  { jamo: ['김'], part: 5, pct: 21.4, why: '김의 ㄱ·ㅣ 세로획 둘처럼 나란히 곧게 선 귀' },
+  { jamo: ['이'], part: 10, pct: 14.6, why: '이의 ㅇ 처럼 동그란 귀' },
+  { jamo: ['박'], part: 7, pct: 8.4, why: '박의 ㅂ 처럼 네모 반듯한 귀' },
+  { jamo: ['정'], part: 11, pct: 4.3, why: '정의 ㅈ 두 다리처럼 비스듬히 벌어진 귀' },
+  { jamo: ['ㅇ'], part: 6, pct: 10.3, why: 'ㅇ 처럼 동그란 귀가 양옆에' },
+  { jamo: ['ㅈ'], part: 9, pct: 7.2, why: 'ㅈ 의 두 다리처럼 얼굴 양옆으로 길게 내려오는 귀' },
+  { jamo: ['ㅅ'], part: 3, pct: 6.8, why: 'ㅅ 처럼 뾰족한 고양이 귀' },
+  { jamo: ['ㄱ', 'ㅋ'], part: 4, pct: 6.2, why: 'ㄱ 처럼 꺾여 내려오는 접힌 귀' },
+  { jamo: ['ㅊ'], part: 1, pct: 6.2, why: 'ㅊ 처럼 획이 많아 삐죽삐죽한 털' },
+  { jamo: ['ㅎ'], part: 12, pct: 5.7, why: 'ㅎ 의 동그라미처럼 동글게 말린 귀' },
+  { jamo: ['ㅁ', 'ㅂ', 'ㅍ'], part: 2, pct: 3.6, why: 'ㅁ·ㅂ·ㅍ 처럼 옆으로 넓게 퍼진 뭉실한 귀' },
+  { jamo: ['ㄴ', 'ㄷ', 'ㅌ', 'ㄹ'], part: 8, pct: 2.0, why: 'ㄴ·ㄷ 의 가로획처럼 옆으로 뻗은 귀' },
 ]
 
 const SHAPE_MORPH: MapRow[] = [
-  { jamo: [''], part: 0, pct: 34.5, note: '받침 없는 성은 무늬 없음' },
-  { jamo: ['ㅁ'], part: 3, pct: 26.1, why: 'ㅁ 처럼 얼굴을 네모나게 비워 둔 무늬' },
-  { jamo: ['ㅇ'], part: 5, pct: 15.3, why: 'ㅇ 처럼 머리를 동그랗게 덮는 무늬' },
+  { jamo: null, label: '받침 없음 · ㄹ ㅂ ㅅ …', part: 0, pct: 34.1, note: '받침 없는 성과 드문 받침은 무늬 없음' },
+  { jamo: ['김'], part: 4, pct: 21.4, why: '김의 ㄱ·ㅣ 처럼 세로로 반을 갈라 칠한 무늬' },
+  { jamo: ['ㄱ', 'ㅇ'], part: 1, pct: 21.1, why: 'ㄱ·ㅇ 받침의 끝처럼 귀와 꼬리 끝만 물든 무늬' },
   { jamo: ['ㄴ'], part: 2, pct: 13.5, why: 'ㄴ 처럼 아래까지 꽉 채운 무늬' },
-  { jamo: ['ㄱ'], part: 4, pct: 10.4, why: 'ㄱ 의 꺾인 획처럼 한쪽으로 내려오는 무늬' },
-  { jamo: null, label: 'ㄹ ㅂ ㅅ …', part: 1, pct: 0.2, why: '나머지 받침은 귀와 꼬리 끝만 물든 무늬' },
+  { jamo: ['ㅁ'], part: 3, pct: 5.3, why: 'ㅁ 처럼 얼굴을 네모나게 비워 둔 무늬' },
+  { jamo: ['정', '성'], part: 5, pct: 4.7, why: '정·성의 ㅇ 받침처럼 머리를 동그랗게 덮는 무늬' },
 ]
 
 /*
@@ -300,31 +300,31 @@ const SHAPE_MORPH: MapRow[] = [
  * 거의 없는 ㅍ 에 가서 둘이 만날 일은 드물다.
  */
 const SHAPE_EYE: MapRow[] = [
-  { jamo: ['ㅅ'], part: 1, pct: 22.5, why: 'ㅅ 처럼 끝이 뾰족한 눈' },
-  { jamo: ['ㅈ'], part: 6, pct: 20.8, why: 'ㅈ 의 머리획처럼 위로 삐친 눈' },
-  { jamo: ['ㅇ'], part: 10, pct: 19.2, why: 'ㅇ 처럼 동그란 눈' },
-  { jamo: ['ㅎ'], part: 9, pct: 10.0, why: 'ㅎ 처럼 동그라미에 가로획이 걸친 눈' },
-  { jamo: ['ㄷ', 'ㅌ'], part: 3, pct: 7.9, why: 'ㄷ 의 윗획처럼 눈꺼풀이 덮은 눈' },
-  { jamo: ['ㅁ'], part: 2, pct: 7.9, why: 'ㅁ 처럼 꽉 찬 눈' },
-  { jamo: ['ㄱ', 'ㅋ'], part: 7, pct: 5.8, why: 'ㄱ 의 가로획처럼 감은 눈' },
-  { jamo: ['ㅊ'], part: 8, pct: 2.1, why: 'ㅊ 처럼 빛이 뻗는 반짝 눈' },
-  { jamo: ['ㅂ', 'ㅍ'], part: 5, pct: 1.7, why: 'ㅂ 처럼 테두리 안에 또 하나 든 눈' },
-  { jamo: ['ㄴ'], part: 4, pct: 1.2, why: 'ㄴ 처럼 획 하나로 끝나는 점 눈' },
-  { jamo: ['ㄹ'], part: 11, pct: 0.8, why: 'ㄹ 처럼 빙글빙글 도는 눈' },
+  { jamo: ['ㅅ'], part: 1, pct: 21.9, why: 'ㅅ 처럼 끝이 뾰족한 눈' },
+  { jamo: ['ㅈ'], part: 6, pct: 14.2, why: 'ㅈ 의 머리획처럼 위로 삐친 눈' },
+  { jamo: ['지'], part: 11, pct: 9.6, why: '지 는 흔해서 ㅈ 에서 떼어 빙글빙글 도는 눈을 준다' },
+  { jamo: ['ㅇ'], part: 10, pct: 18.6, why: 'ㅇ 처럼 동그란 눈' },
+  { jamo: ['ㅎ'], part: 9, pct: 9.5, why: 'ㅎ 처럼 동그라미에 가로획이 걸친 눈' },
+  { jamo: ['ㅁ'], part: 2, pct: 9.3, why: 'ㅁ 처럼 꽉 찬 눈' },
+  { jamo: ['ㄷ'], part: 3, pct: 7.0, why: 'ㄷ 의 윗획처럼 눈꺼풀이 덮은 눈' },
+  { jamo: ['ㄱ', 'ㅋ'], part: 7, pct: 4.2, why: 'ㄱ 의 가로획처럼 감은 눈' },
+  { jamo: ['ㄴ', 'ㄹ', 'ㅌ'], part: 4, pct: 2.9, why: 'ㄴ 처럼 획 하나로 끝나는 점 눈' },
+  { jamo: ['ㅊ'], part: 8, pct: 1.7, why: 'ㅊ 처럼 빛이 뻗는 반짝 눈' },
+  { jamo: ['ㅂ', 'ㅍ'], part: 5, pct: 1.1, why: 'ㅂ 처럼 테두리 안에 또 하나 든 눈' },
 ]
 
 const SHAPE_HAIR: MapRow[] = [
-  { jamo: ['ㅇ'], part: 8, pct: 35.4, why: 'ㅇ 처럼 동그란 달걀 프라이' },
-  { jamo: ['ㅈ', 'ㅊ'], part: 9, pct: 20.8, why: 'ㅊ 처럼 꼭지에 별이 달린 고깔' },
-  { jamo: ['ㅎ'], part: 2, pct: 19.6, why: 'ㅎ 처럼 동그라미 위로 꼭지가 난 체리' },
-  { jamo: ['ㅅ'], part: 1, pct: 8.8, why: 'ㅅ 처럼 뾰족한 별' },
-  { jamo: ['ㅁ'], part: 10, pct: 5.8, why: 'ㅁ 처럼 네 귀퉁이가 있는 네잎클로버' },
-  { jamo: ['ㄹ'], part: 6, pct: 5.4, why: 'ㄹ 처럼 꼬불꼬불한 새싹' },
-  { jamo: ['ㅂ'], part: 5, pct: 1.7, why: 'ㅂ 처럼 양쪽이 솟은 큰 리본' },
-  { jamo: ['ㄱ', 'ㅋ'], part: 7, pct: 1.2, why: 'ㄱ 처럼 꺾인 작은 날개 한 쌍' },
-  { jamo: ['ㄴ'], part: 4, pct: 1.2, why: 'ㄴ 처럼 낮게 앉은 작은 리본 한 쌍' },
-  { jamo: ['ㄷ', 'ㅌ'], part: 3, pct: 0.1, why: 'ㄷ 처럼 옆으로 펼친 날개 달린 하트' },
-  { jamo: ['ㅍ'], part: 11, pct: 0.1, why: 'ㅍ 처럼 두 테를 잇는 안경', note: '눈 01 과 거의 만나지 않는다' },
+  { jamo: ['ㅇ'], part: 8, pct: 20.4, why: 'ㅇ 처럼 동그란 달걀 프라이' },
+  { jamo: ['영', '연', '여', '열', '엽'], part: 10, pct: 11.2, why: '영·연 은 흔해서 ㅇ 에서 떼어 네잎클로버를 준다' },
+  { jamo: ['ㅎ'], part: 2, pct: 22.8, why: 'ㅎ 처럼 동그라미 위로 꼭지가 난 체리' },
+  { jamo: ['ㅈ'], part: 9, pct: 15.9, why: 'ㅈ 처럼 꼭지가 뾰족한 고깔' },
+  { jamo: ['ㅅ'], part: 1, pct: 11.7, why: 'ㅅ 처럼 뾰족한 별' },
+  { jamo: ['ㅁ'], part: 11, pct: 5.3, why: 'ㅁ 처럼 네모난 테 둘을 이은 안경' },
+  { jamo: ['ㄱ', 'ㅋ'], part: 7, pct: 4.1, why: 'ㄱ 처럼 꺾인 작은 날개 한 쌍' },
+  { jamo: ['ㄹ'], part: 6, pct: 4.0, why: 'ㄹ 처럼 꼬불꼬불한 새싹' },
+  { jamo: ['ㅊ'], part: 3, pct: 2.3, why: 'ㅊ 처럼 위로 펼친 날개 달린 하트' },
+  { jamo: ['ㄴ', 'ㄷ', 'ㅌ'], part: 4, pct: 1.2, why: 'ㄴ 처럼 낮게 앉은 작은 리본 한 쌍' },
+  { jamo: ['ㅂ', 'ㅍ'], part: 5, pct: 1.2, why: 'ㅂ 처럼 양쪽이 솟은 큰 리본' },
 ]
 
 const SHAPE_MOUTH: MapRow[] = [
@@ -340,24 +340,24 @@ const SHAPE_MOUTH: MapRow[] = [
 ]
 
 const SHAPE_TAIL: MapRow[] = [
-  { jamo: ['ㅜ'], part: 1, pct: 25.8, why: 'ㅜ 처럼 아래로 말려 내려가는 꼬리' },
-  { jamo: ['ㅑ', 'ㅕ', 'ㅛ', 'ㅠ'], part: 9, pct: 20.0, why: '곁획이 둘인 모음처럼 두 번 굽이치는 꼬리' },
-  { jamo: ['ㅣ'], part: 6, pct: 18.8, why: 'ㅣ 처럼 곧게 내리긋은 굵은 꼬리' },
-  { jamo: ['ㅓ'], part: 2, pct: 7.9, why: 'ㅓ 의 곁획처럼 뒤로 꺾인 꼬리' },
-  { jamo: ['ㅏ'], part: 4, pct: 7.5, why: 'ㅏ 의 곁획처럼 끝에 방울이 달린 꼬리' },
-  { jamo: ['ㅡ'], part: 3, pct: 6.2, why: 'ㅡ 처럼 길게 누운 꼬리' },
-  { jamo: null, label: 'ㅘ ㅙ ㅚ ㅝ ㅞ ㅟ ㅢ', part: 8, pct: 6.2, why: '모음 둘을 묶은 것처럼 리본으로 묶은 꼬리' },
-  { jamo: ['ㅗ'], part: 7, pct: 5.8, why: 'ㅗ 처럼 위로 솟아 말린 꼬리' },
-  { jamo: ['ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'], part: 5, pct: 1.7, why: 'ㅐ 의 세로획 둘처럼 몽글몽글한 구름 꼬리' },
+  { jamo: ['ㅜ'], part: 1, pct: 21.7, why: 'ㅜ 처럼 아래로 말려 내려가는 꼬리' },
+  { jamo: ['ㅑ', 'ㅕ', 'ㅛ'], part: 9, pct: 24.3, why: '곁획이 둘인 모음처럼 두 번 굽이치는 꼬리' },
+  { jamo: ['ㅣ'], part: 6, pct: 18.2, why: 'ㅣ 처럼 곧게 내리긋은 굵은 꼬리' },
+  { jamo: ['ㅓ'], part: 2, pct: 8.5, why: 'ㅓ 의 곁획처럼 뒤로 꺾인 꼬리' },
+  { jamo: ['ㅡ'], part: 3, pct: 5.8, why: 'ㅡ 처럼 길게 누운 꼬리' },
+  { jamo: ['ㅗ'], part: 7, pct: 5.3, why: 'ㅗ 처럼 위로 솟아 말린 꼬리' },
+  { jamo: null, label: 'ㅘ ㅙ ㅚ ㅝ ㅞ ㅟ ㅢ', part: 8, pct: 7.3, why: '모음 둘을 묶은 것처럼 리본으로 묶은 꼬리' },
+  { jamo: ['ㅏ'], part: 4, pct: 3.5, why: 'ㅏ 의 곁획처럼 끝에 방울이 달린 꼬리' },
+  { jamo: ['ㅠ', 'ㅐ', 'ㅔ', 'ㅒ', 'ㅖ'], part: 5, pct: 5.2, why: 'ㅠ·ㅐ 의 세로획 둘처럼 몽글몽글한 구름 꼬리' },
 ]
 
 const SHAPE_CHEEK: MapRow[] = [
-  { jamo: [''], part: 5, pct: 59.6, why: '받침이 없으니 가장 옅은 볼' },
-  { jamo: ['ㄱ', 'ㄴ', 'ㄷ'], part: 2, pct: 22.9, why: 'ㄱ·ㄴ·ㄷ 의 곧은 획처럼 줄 그은 볼' },
-  { jamo: ['ㅇ'], part: 3, pct: 16.7, why: 'ㅇ 처럼 동그랗게 번진 볼' },
-  { jamo: ['ㄹ'], part: 4, pct: 0.4, why: 'ㄹ 처럼 빗금이 여럿 그어진 볼' },
-  { jamo: null, label: 'ㅅ ㅈ ㅊ ㅋ ㅌ ㅍ ㅎ', part: 6, pct: 0.4, why: '획이 뻗어 나가는 받침은 반짝이는 노란 볼' },
-  { jamo: ['ㅁ', 'ㅂ'], part: 1, pct: 0.1, why: 'ㅁ 처럼 꽉 찬 분홍 볼' },
+  { jamo: [''], part: 5, pct: 45.3, why: '받침이 없으니 가장 옅은 볼' },
+  { jamo: ['지'], part: 6, pct: 9.6, why: '지 는 흔해서 받침 없음에서 떼어 반짝이는 노란 볼을 준다' },
+  { jamo: ['ㄴ', 'ㄷ'], part: 2, pct: 22.1, why: 'ㄴ·ㄷ 의 곧은 획처럼 줄 그은 볼' },
+  { jamo: ['ㅇ'], part: 3, pct: 21.7, why: 'ㅇ 처럼 동그랗게 번진 볼' },
+  { jamo: ['ㄱ', 'ㅁ', 'ㅂ'], part: 1, pct: 0.7, why: 'ㄱ·ㅁ 처럼 모난 받침은 꽉 찬 분홍 볼' },
+  { jamo: null, label: 'ㄹ ㅅ ㅈ ㅊ …', part: 4, pct: 0.6, why: '드문 받침은 빗금이 여럿 그어진 볼' },
 ]
 
 const SHAPE_DECO: MapRow[] = [
@@ -419,22 +419,31 @@ export const MAPPINGS: Record<MappingId, MappingSet> = {
 /** 지금 월드에서 쓰는 매칭. 'freq' 로 바꾸면 흔한 정도로 되돌아간다 */
 export const ACTIVE_MAPPING: MappingId = 'shape'
 
-type Lookup = Record<SlotMapping['slot'], (jamo: string) => number> & { surname: (s: string) => number }
+/** 한 글자 통째(김·정·영…)인지, 자모 하나인지 */
+const isSyllable = (j: string) => j.length === 1 && j >= '가'
+
+/**
+ * 한 자리의 표를 읽는 법. 글자 통째로 적힌 줄(김·이·박, 영·연 같은)을 먼저
+ * 보고, 없으면 자모로 찾는다. 자모 하나가 너무 흔해 파츠 하나가 몰릴 때,
+ * 그 자모 가운데 흔한 글자만 떼어 다른 파츠에 줄 수 있게 하려는 것이다.
+ */
+function reader(rows: MapRow[]) {
+  const sylRows = rows.filter((r) => r.jamo?.some(isSyllable))
+  const bySyllable = toMap([...sylRows, { jamo: null, part: -1, pct: 0 }])
+  const byJamo = toMap(rows.filter((r) => !sylRows.includes(r)))
+  return (syllable: string, jamo: string) => {
+    const v = bySyllable(syllable)
+    return v >= 0 ? v : byJamo(jamo)
+  }
+}
+
+type Lookup = Record<SlotMapping['slot'], (syllable: string, jamo: string) => number>
 
 const LOOKUPS = Object.fromEntries(
-  Object.values(MAPPINGS).map((m) => {
-    const by = Object.fromEntries(m.slots.map((s) => [s.slot, s.rows]))
-    // 몸통은 성씨 한 글자로 된 줄(김·이·박)을 먼저 본다
-    const surnameRows = by.body.filter((r) => r.jamo?.some((j) => j.length === 1 && j >= '가'))
-    const choRows = by.body.filter((r) => !surnameRows.includes(r))
-    const lookup: Lookup = {
-      surname: toMap([...surnameRows, { jamo: null, part: 0, pct: 0 }]),
-      body: toMap(choRows),
-      morph: toMap(by.morph), eye: toMap(by.eye), mouth: toMap(by.mouth), cheek: toMap(by.cheek),
-      hair: toMap(by.hair), tail: toMap(by.tail), deco: toMap(by.deco),
-    }
-    return [m.id, lookup]
-  }),
+  Object.values(MAPPINGS).map((m) => [
+    m.id,
+    Object.fromEntries(m.slots.map((s) => [s.slot, reader(s.rows)])) as Lookup,
+  ]),
 ) as Record<MappingId, Lookup>
 
 /* ------------------------------------------------------------------ */
@@ -444,16 +453,16 @@ const LOOKUPS = Object.fromEntries(
 export function genesFromParts(p: NameParts, mapping: MappingId = ACTIVE_MAPPING): MoimoGenes {
   const m = LOOKUPS[mapping]
   return {
-    body: m.surname(p.surname) || m.body(p.s.cho),
+    body: m.body(p.surname, p.s.cho),
     color: colorOf(p.s.jung, p.s.jong),
-    morph: m.morph(p.s.jong),
+    morph: m.morph(p.surname, p.s.jong),
     tone: toneOf(p.n1.jung),
-    eye: m.eye(p.n1.cho),
-    mouth: m.mouth(p.n1.jung),
-    cheek: m.cheek(p.n1.jong),
-    hair: m.hair(p.n2.cho),
-    tail: m.tail(p.n2.jung),
-    deco: m.deco(p.n2.jong),
+    eye: m.eye(p.n1.char, p.n1.cho),
+    mouth: m.mouth(p.n1.char, p.n1.jung),
+    cheek: m.cheek(p.n1.char, p.n1.jong),
+    hair: m.hair(p.n2.char, p.n2.cho),
+    tail: m.tail(p.n2.char, p.n2.jung),
+    deco: m.deco(p.n2.char, p.n2.jong),
   }
 }
 

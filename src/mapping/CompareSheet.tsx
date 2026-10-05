@@ -66,8 +66,8 @@ function Sheet({ id, cache, table }: { id: MappingId; cache: PartsCache; table: 
           <section key={m.slot}>
             <h2>{m.label}<small>{m.from}</small></h2>
             <div className="cards">
-              {[...m.rows].sort((a, b) => rank(a) - rank(b)).map((r) => (
-                <figure key={r.part} className="card">
+              {[...m.rows].sort((a, b) => rank(a) - rank(b)).map((r, i) => (
+                <figure key={`${r.part}-${i}`} className="card">
                   <Moimo
                     genes={{ ...BASE, ...(m.slot === 'morph' ? MORPH_LOOK : {}), [m.slot]: r.part }}
                     crop={CROP[m.slot]}
