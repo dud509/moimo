@@ -300,6 +300,58 @@ export function Glass({
 
 /* ------------------------------------------------------------------ */
 
+/**
+ * 굿즈용 SVG 저장 버튼을 보일지. 굿즈를 만들 때만 쓰고, 전시에 내놓기 전에는
+ * false 로 꺼 둔다.
+ */
+const GOODS_EXPORT = true
+
+/**
+ * 모이모 한 마리를 SVG 파일로 내려받는다 — 굿즈용.
+ * 그림이 차지하는 만큼만 잘라 여백을 줄이고, 배경은 투명하게 둔다.
+ * 벡터라 아무리 키워도 깨지지 않는다.
+ */
+async function saveSvg(resident: Resident, cache: PartsCache, table: AnchorTable) {
+  const svg = composeMoimo(resident.genes, cache, table)
+  // 그림이 실제로 칠해진 네모를 잰다. 몸통 모양으로 잘라 낸 무늬 같은 것은
+  // 도형 크기로 재면 넓게 잡히므로, 한 번 그려 보고 칠해진 픽셀로 잰다
+  const S = 1024
+  const img = new Image()
+  img.src = moimoDataUri(svg.replace(/<svg /, `<svg width="${S}" height="${S}" `))
+  await img.decode()
+  const canvas = document.createElement('canvas')
+  canvas.width = S
+  canvas.height = S
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!
+  ctx.drawImage(img, 0, 0, S, S)
+  const data = ctx.getImageData(0, 0, S, S).data
+  let x0 = S, y0 = S, x1 = 0, y1 = 0
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      if (data[(y * S + x) * 4 + 3] > 8) {
+        if (x < x0) x0 = x
+        if (x > x1) x1 = x
+        if (y < y0) y0 = y
+        if (y > y1) y1 = y
+      }
+    }
+  }
+  const k = CANVAS / S
+  const pad = 6
+  const box = [x0 * k - pad, y0 * k - pad, (x1 - x0 + 1) * k + pad * 2, (y1 - y0 + 1) * k + pad * 2]
+    .map((v) => Math.round(v * 100) / 100)
+  const out = svg.replace(
+    /<svg([^>]*)viewBox="[^"]*"/,
+    `<svg$1viewBox="${box.join(' ')}" width="${box[2]}" height="${box[3]}"`,
+  )
+  const file = `<?xml version="1.0" encoding="UTF-8"?>\n<!-- 모이모 · ${resident.name} -->\n${out}`
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(new Blob([file], { type: 'image/svg+xml' }))
+  a.download = `모이모_${resident.name}.svg`
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+}
+
 export function Card({
   resident, cache, table, onClose,
 }: { resident: Resident } & Common) {
@@ -318,6 +370,9 @@ export function Card({
         </ul>
       )}
       <span className="dim-note">캔버스 {CANVAS}px 기준</span>
+      {GOODS_EXPORT && (
+        <button className="goods-btn" onClick={() => { void saveSvg(resident, cache, table) }}>SVG 저장 (굿즈용)</button>
+      )}
     </div>
   )
 }
