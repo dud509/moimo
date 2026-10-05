@@ -98,6 +98,17 @@ for (const n of NAMES) {
   if (bad.length) { fail++; console.log(`  ✗ ${n} 범위 벗어남`, bad) }
 }
 
+// 눈 11(빙글 눈)과 볼 05(나선 볼)는 만나면 안 된다. 앞 글자를 가·각…힣까지
+// 다 넣어 보고 둘이 한 번도 같이 나오지 않는지 본다
+{
+  let met = 0
+  for (let c = 0xac00; c <= 0xd7a3; c++) {
+    const g = genesFromName('김' + String.fromCharCode(c) + '수', 'shape')!
+    if (g.eye === 11 && g.cheek === 5) met++
+  }
+  eq('눈 11 과 볼 05 는 만나지 않는다', met, 0)
+}
+
 // 설명
 console.log('\n김민수 →', encodeGenes(genesFromName('김민수')!))
 for (const r of explain(splitName('김민수')!)) {
