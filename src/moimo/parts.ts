@@ -180,7 +180,7 @@ export const SLOTS: SlotDef[] = [
  * 앵커 편집기에서만 골라 볼 수 있다. 마음에 들면 매칭표의 번호를 이리로 옮긴다.
  */
 export const SPARE: Partial<Record<SlotKey, number[]>> = {
-  hair: [13],
+  // 머리장식 13 은 05 자리로 들어갔다
 }
 
 /** 앵커 편집기에서 고를 수 있는 번호 — 매칭에 쓰는 것 + 예비 */
@@ -201,7 +201,7 @@ export const TINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
   tail: 'all',
   eye: [11],
   deco: [1, 3, 4, 5],   // 02·06 은 제 색을 그대로 쓴다
-  hair: [4, 5],
+  hair: [4],
 }
 
 /**
@@ -211,7 +211,7 @@ export const TINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
  */
 const POINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
   deco: 'all',
-  hair: [4, 5],
+  hair: [4],
 }
 
 export const usesPoint = (slot: SlotKey, part: number): boolean => {

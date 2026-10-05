@@ -324,7 +324,7 @@ const SHAPE_HAIR: MapRow[] = [
   { jamo: ['ㄹ'], part: 6, pct: 4.0, why: 'ㄹ 처럼 꼬불꼬불한 새싹' },
   { jamo: ['ㅊ'], part: 3, pct: 2.3, why: 'ㅊ 처럼 위로 펼친 날개 달린 하트' },
   { jamo: ['ㄴ', 'ㄷ', 'ㅌ'], part: 4, pct: 1.2, why: 'ㄴ 처럼 낮게 앉은 작은 리본 한 쌍' },
-  { jamo: ['ㅂ', 'ㅍ'], part: 5, pct: 1.2, why: 'ㅂ 처럼 양쪽이 솟은 큰 리본' },
+  { jamo: ['ㅂ', 'ㅍ'], part: 5, pct: 1.2, why: 'ㅂ 처럼 위로 갈라져 솟은 초록 잎 꼭지' },
 ]
 
 const SHAPE_MOUTH: MapRow[] = [
