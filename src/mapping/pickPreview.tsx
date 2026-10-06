@@ -13,24 +13,19 @@ function Art({ g, cache, table, view = '60 50 392 400' }: { g: MoimoGenes; cache
   return <img src={src} alt="" />
 }
 
-const BODY = ['', '고양이', '코끼리', '햄스터', '강아지', '사막여우', '원숭이', '토끼', '코알라', '롭이어', '쥐', '고양이2', '롭이어2']
 
 function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
-  const q = new URLSearchParams(location.search)
-  const color = Number(q.get('color') ?? 4), tone = Number(q.get('tone') ?? 0), deco = Number(q.get('deco') ?? 4)
+  const COLORS = ['파랑', '노랑', '분홍', '진갈색', '민트', '연보라']
   return (
     <>
-      <h1>몸통 12 × 무늬 6 — 머리·몸 나눈 뒤 (색 {color} · 누름 {tone} · 장식 {deco})</h1>
-      <div className="grid" style={{ gridTemplateColumns: '70px repeat(6, 1fr)' }}>
-        <span />
-        {[0, 1, 2, 3, 4, 5].map((m) => <b key={m}>무늬 {m}</b>)}
-        {BODY.slice(1).map((name, i) => (
-          <>
-            <b key={name}>{String(i + 1).padStart(2, '0')} {name}</b>
-            {[0, 1, 2, 3, 4, 5].map((m) => (
-              <figure key={`${i}-${m}`}><Art g={{ body: i + 1, color, morph: m, tone, eye: 2, mouth: 9, cheek: 1, hair: 9, tail: 6, deco }} cache={cache} table={table} /></figure>
-            ))}
-          </>
+      <h1>꼬리 08 — 포인트 색</h1>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(6, 1fr)' }}>
+        {COLORS.map((c) => <b key={c}>{c}</b>)}
+        {[1, 2, 3, 4, 5, 6].map((c) => (
+          <figure key={c}><Art g={{ body: 10, color: c, morph: 0, tone: 0, eye: 2, mouth: 9, cheek: 1, hair: 9, tail: 8, deco: 2 }} cache={cache} table={table} view="220 230 220 170" /></figure>
+        ))}
+        {[1, 2, 3, 4, 5, 6].map((c) => (
+          <figure key={'m' + c}><Art g={{ body: 3, color: c, morph: 2, tone: 1, eye: 2, mouth: 9, cheek: 1, hair: 9, tail: 8, deco: 2 }} cache={cache} table={table} view="220 230 220 170" /></figure>
         ))}
       </div>
     </>

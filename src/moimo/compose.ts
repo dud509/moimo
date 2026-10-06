@@ -320,7 +320,7 @@ export function composeMoimo(
   for (const s of SLOTS) {
     const key = s.key as SlotKey
     const n = genes[s.key as keyof MoimoGenes] as number
-    const base = key === 'tail' ? bodyTone : usesPoint(key, n) ? decoHex : bodyHex
+    const base = usesPoint(key, n) ? decoHex : key === 'tail' ? bodyTone : bodyHex
     const before = pieces.length
     const url = partUrls(key, n, genes.body).find((u) => cache.has(u)) ?? partUrl(key, n)
     push(zFor(key, n, s.z), url, fillFor(key, n, base), composeAnchor(table, genes.body, key, n, genes.eye))

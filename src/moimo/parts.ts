@@ -210,6 +210,7 @@ export const TINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
  */
 const POINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
   deco: 'all',
+  tail: [8],   // 리본으로 묶은 꼬리 — 몸 색 대신 짝 색
   hair: [3, 4, 9],
 }
 

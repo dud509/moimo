@@ -232,8 +232,8 @@ function Figure({
           paint={{
             fill: fillFor(
               s.key, variant[s.key],
-              s.key === 'tail' && MORPH_TAIL.has(morph) ? mark
-                : usesPoint(s.key, variant[s.key]) ? decoFor(color)
+              usesPoint(s.key, variant[s.key]) ? decoFor(color)
+                : s.key === 'tail' && MORPH_TAIL.has(morph) ? mark
                 : fill,
             ),
             line, accent,
