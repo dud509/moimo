@@ -391,6 +391,17 @@ export const Z_MORPH = 3
 const pad = (n: number) => String(n).padStart(2, '0')
 
 export const bodyUrl = (n: number) => `/parts/body/${pad(n)}.svg`
+
+/**
+ * 머리와 몸을 따로 그린 몸통. 몸(torso)은 12종이 함께 쓰는 한 장이고,
+ * 머리(head-NN)는 몸통마다 한 장. 둘 다 있으면 몸 → 몸통장식 → 머리 순으로
+ * 쌓아, 스카프·반다나 같은 목 장식의 윗부분이 머리 뒤로 들어간다.
+ * 머리 파일이 없는 몸통은 예전처럼 NN.svg 한 장으로 그린다.
+ */
+export const headUrl = (n: number) => `/parts/body/head-${pad(n)}.svg`
+export const TORSO_URL = '/parts/body/torso.svg'
+/** 머리는 몸통장식(4) 위, 볼장식(5) 아래 */
+export const Z_HEAD = 4.1
 export const partUrl = (slot: SlotKey, n: number) => `/parts/${slot}/${pad(n)}.svg`
 
 /**

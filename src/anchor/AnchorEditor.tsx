@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
-  Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
+  Z_BODY, Z_HEAD, TORSO_URL, bodyAnchor, bodyUrl, headUrl, composeAnchor, normalizeTable, overrideKey,
   decoFor, fillFor, isCleared, usesPoint, zFor, MORPH_TAIL, partAnchor, partUrl, partUrls, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
   warnIfNothingToTint, cheekEyeAnchor, cheekEyeKey, DEFAULT_ANCHOR, editorParts, SPARE,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
@@ -17,7 +17,7 @@ const SCOPES: { key: Scope; label: string; hint: string }[] = [
   { key: 'one',   label: '이 조합만',       hint: '이 몸통 하나 × 이 파츠 하나' },
   { key: 'eye',   label: '이 눈에서',       hint: '볼장식만 — 이 볼장식이 지금 고른 눈과 만날 때만, 몸통 12종' },
 ]
-import { bodyPieces, innards, layer } from '../moimo/compose'
+import { innards, layer, stackBody } from '../moimo/compose'
 import { useSvg } from './useSvg'
 import initial from '../data/anchors.json'
 
@@ -149,15 +149,21 @@ function BodyStack({
 }) {
   const uid = useId().replace(/:/g, '')
   const bodySvg = useSvg(bodyUrl(body))
+  const headSvg = useSvg(headUrl(body))
+  const torsoSvg = useSvg(TORSO_URL)
   const morphSvg = useSvg(morph > 0 ? morphUrls(body, morph) : null)
-  const html = useMemo(() => {
-    const pieces = bodyPieces({
+  // 머리를 따로 그린 몸통이면 머리는 몸통장식 위 층(high)으로 따로 띄운다
+  const { html, low, high } = useMemo(() => {
+    const pieces = stackBody({
       bodyRaw: bodySvg.svg ?? undefined,
+      headRaw: headSvg.svg ?? undefined,
+      torsoRaw: torsoSvg.svg ?? undefined,
       morphRaw: morphSvg.svg ?? undefined,
       morph, color, tone, body, uid,
-    })
-    return pieces.sort((a, b) => a.z - b.z).map((p) => p.svg).join('')
-  }, [bodySvg.svg, morphSvg.svg, morph, color, tone, uid])
+    }).sort((a, b) => a.z - b.z)
+    const join = (xs: typeof pieces) => xs.map((p) => p.svg).join('')
+    return { html: join(pieces), low: join(pieces.filter((p) => p.z < Z_HEAD)), high: join(pieces.filter((p) => p.z >= Z_HEAD)) }
+  }, [bodySvg.svg, headSvg.svg, torsoSvg.svg, morphSvg.svg, morph, color, tone, body, uid])
 
   const cleared = !!eye && isCleared('eye', eye.n)
   const eyeSvg = useSvg(cleared ? partUrl('eye', eye!.n) : null)
@@ -181,8 +187,15 @@ function BodyStack({
       <div
         className="layer"
         style={{ zIndex: Z_BODY * 10, opacity: dim ? 0.28 : 1 }}
-        dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 ${CANVAS} ${CANVAS}">${html}</svg>` }}
+        dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 ${CANVAS} ${CANVAS}">${low}</svg>` }}
       />
+      {high && (
+        <div
+          className="layer"
+          style={{ zIndex: Math.round(Z_HEAD * 10), opacity: dim ? 0.28 : 1 }}
+          dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 ${CANVAS} ${CANVAS}">${high}</svg>` }}
+        />
+      )}
       {hole && (
         <div
           className="layer"
