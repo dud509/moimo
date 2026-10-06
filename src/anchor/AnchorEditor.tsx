@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  decoFor, fillFor, usesPoint, zFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
+  decoFor, fillFor, isCleared, usesPoint, zFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
   warnIfNothingToTint, cheekEyeAnchor, cheekEyeKey, DEFAULT_ANCHOR, editorParts, SPARE,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
@@ -17,7 +17,7 @@ const SCOPES: { key: Scope; label: string; hint: string }[] = [
   { key: 'one',   label: '이 조합만',       hint: '이 몸통 하나 × 이 파츠 하나' },
   { key: 'eye',   label: '이 눈에서',       hint: '볼장식만 — 이 볼장식이 지금 고른 눈과 만날 때만, 몸통 12종' },
 ]
-import { bodyPieces } from '../moimo/compose'
+import { bodyPieces, innards, layer } from '../moimo/compose'
 import { useSvg } from './useSvg'
 import initial from '../data/anchors.json'
 
@@ -137,13 +137,15 @@ function LayerReadout({
 
 /** 몸통과 무늬를 월드와 똑같은 방식으로 쌓아 보여 준다 */
 function BodyStack({
-  body, morph, color, tone, dim,
+  body, morph, color, tone, dim, eye,
 }: {
   body: number
   morph: number
   tone: number
   color: (typeof BODY_COLORS)[number]
   dim: boolean
+  /** 흰자를 비운 눈(11)이면, 그 흰자 자리에 몸통을 한 번 더 그려 밑의 볼을 가린다 */
+  eye?: { n: number; anchor: Anchor }
 }) {
   const uid = useId().replace(/:/g, '')
   const bodySvg = useSvg(bodyUrl(body))
@@ -157,12 +159,38 @@ function BodyStack({
     return pieces.sort((a, b) => a.z - b.z).map((p) => p.svg).join('')
   }, [bodySvg.svg, morphSvg.svg, morph, color, tone, uid])
 
+  const cleared = !!eye && isCleared('eye', eye.n)
+  const eyeSvg = useSvg(cleared ? partUrl('eye', eye!.n) : null)
+  const hole = useMemo(() => {
+    if (!cleared || !eyeSvg.svg) return ''
+    // 월드에서는 볼을 도려내지만, 편집기는 층이 따로라 몸통을 그 자리에 다시 얹는다
+    const white = innards(prepareSvg(eyeSvg.svg, { fill: '#FFFFFF', line: 'none', accent: '#FFFFFF' }, `${uid}eh`))
+    const C = CANVAS / 2
+    return (
+      `<svg viewBox="0 0 ${CANVAS} ${CANVAS}"><defs>` +
+      `<clipPath id="half-l-${uid}"><rect x="0" y="0" width="${C}" height="${CANVAS}"/></clipPath>` +
+      `<clipPath id="half-r-${uid}"><rect x="${C}" y="0" width="${C}" height="${CANVAS}"/></clipPath>` +
+      `<mask id="eh-${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="${CANVAS}" height="${CANVAS}">` +
+      layer(white, eye!.anchor, uid) + `</mask></defs>` +
+      `<g mask="url(#eh-${uid})">${html}</g></svg>`
+    )
+  }, [cleared, eyeSvg.svg, eye, html, uid])
+
   return (
-    <div
-      className="layer"
-      style={{ zIndex: Z_BODY * 10, opacity: dim ? 0.28 : 1 }}
-      dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 ${CANVAS} ${CANVAS}">${html}</svg>` }}
-    />
+    <>
+      <div
+        className="layer"
+        style={{ zIndex: Z_BODY * 10, opacity: dim ? 0.28 : 1 }}
+        dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 ${CANVAS} ${CANVAS}">${html}</svg>` }}
+      />
+      {hole && (
+        <div
+          className="layer"
+          style={{ zIndex: Math.round(zFor('eye', eye!.n, 6) * 10) - 1, opacity: dim ? 0.28 : 1 }}
+          dangerouslySetInnerHTML={{ __html: hole }}
+        />
+      )}
+    </>
   )
 }
 
@@ -182,7 +210,10 @@ function Figure({
   const { fill, line, accent, mark } = toneFor(color, morph, tone)
   return (
     <>
-      <BodyStack body={body} morph={morph} color={color} tone={tone} dim={soloSlot != null} />
+      <BodyStack
+        body={body} morph={morph} color={color} tone={tone} dim={soloSlot != null}
+        eye={{ n: variant.eye, anchor: composeAnchor(table, body, 'eye', variant.eye, variant.eye) }}
+      />
       {SLOTS.map((s) => (
         <Layer
           key={s.key}

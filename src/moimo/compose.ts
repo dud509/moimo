@@ -17,7 +17,7 @@ import type { BodyColor } from './parts'
 export type PartsCache = Map<string, string>
 
 /** 바깥 <svg> 껍데기와 XML 선언을 벗긴다 */
-function innards(svg: string): string {
+export function innards(svg: string): string {
   return svg
     .replace(/<\?xml[^>]*\?>/gi, '')
     .replace(/<!DOCTYPE[^>]*>/gi, '')
@@ -85,7 +85,7 @@ function silhouette(bodySvg: string): string {
   return out.join('')
 }
 
-function layer(inner: string, a: ReturnType<typeof composeAnchor>, uid: string): string {
+export function layer(inner: string, a: ReturnType<typeof composeAnchor>, uid: string): string {
   const t = `translate(${C + a.x} ${C + a.y}) rotate(${a.r}) scale(${a.s} ${syOf(a)}) translate(${-C} ${-C})`
   const spread = a.spread ?? 0
   if (!spread) return `<g transform="${t}">${inner}</g>`
