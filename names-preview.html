@@ -40,6 +40,13 @@
       .move button:hover { filter: brightness(0.9); }
       .picked-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)) !important; max-height: 260px !important; }
       .summary button { justify-self: start; }
+      .coverage { margin: 0 16px 8px; background: #fff; border-radius: 10px; padding: 8px 12px; font-size: 13px; display: grid; gap: 3px; }
+      .coverage div { display: grid; grid-template-columns: 70px 1fr; column-gap: 8px; }
+      .coverage div small { grid-column: 2; color: #a89a8c; font-size: 11px; }
+      .coverage .miss em { color: #c0476b; font-style: normal; font-weight: 700; }
+      .coverage .miss-part { display: inline-flex; gap: 3px; align-items: center; margin-right: 10px; }
+      .coverage .miss-part button { font-size: 11px; padding: 1px 6px; border-radius: 8px; font-weight: 500; color: #4a3d33; }
+      .coverage .ok em { color: #6d9b6a; font-style: normal; }
       main { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; padding: 4px 16px 40px; }
       figure { margin: 0; text-align: center; cursor: pointer; border-radius: 12px; padding: 4px; border: 2px solid transparent; }
       figure.on { border-color: var(--c); background: #fff; }

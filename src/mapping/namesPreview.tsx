@@ -5,14 +5,17 @@ import anchorsJson from '../data/anchors.json'
 import { composeMoimo, loadParts, moimoDataUri, type PartsCache } from '../moimo/compose'
 import { BODY_COLORS, normalizeTable, type AnchorTable } from '../moimo/parts'
 import { genesFromName, randomKoreanName, type MoimoGenes } from '../moimo/name'
+import { goodsSvg } from '../moimo/exportSvg'
 
-const GOODS = [
+// id 는 저장해 둔 고른 목록과 이어지므로 이름이 바뀌어도 그대로 둔다 (name = 코롯토)
+const GOODS: readonly { id: 'acrylic' | 'cushion' | 'name' | 'badge'; label: string; color: string; goal?: number }[] = [
   { id: 'acrylic', label: '아크릴 키링', color: '#7aa7d8' },
   { id: 'cushion', label: '쿠션 키링', color: '#e59aae' },
-  { id: 'name', label: '이름 키링', color: '#9bc48a' },
+  { id: 'name', label: '코롯토', color: '#9bc48a', goal: 12 },
   { id: 'badge', label: '뱃지', color: '#e2b75a' },
-] as const
+]
 type GoodsId = (typeof GOODS)[number]['id']
+const countText = (g: (typeof GOODS)[number], n: number) => (g.goal ? `${n}/${g.goal}` : String(n))
 type Picks = Record<GoodsId, string[]>
 const EMPTY: Picks = { acrylic: [], cushion: [], name: [], badge: [] }
 const KEY = 'moimo-goods-picks'
@@ -67,6 +70,63 @@ function Art({ g, cache, table }: { g: MoimoGenes; cache: PartsCache; table: Anc
   return <img loading="lazy" src={src} alt="" />
 }
 
+const COVER: { key: keyof MoimoGenes; label: string; parts: number[] }[] = [
+  { key: 'color', label: '색', parts: [1, 2, 3, 4, 5, 6] },
+  { key: 'body', label: '몸통', parts: Array.from({ length: 12 }, (_, i) => i + 1) },
+  { key: 'morph', label: '무늬', parts: [0, 1, 2, 3, 4, 5] },
+  { key: 'eye', label: '눈', parts: Array.from({ length: 11 }, (_, i) => i + 1) },
+  { key: 'mouth', label: '입', parts: Array.from({ length: 9 }, (_, i) => i + 1) },
+  { key: 'cheek', label: '볼', parts: Array.from({ length: 6 }, (_, i) => i + 1) },
+  { key: 'hair', label: '머리장식', parts: Array.from({ length: 11 }, (_, i) => i + 1) },
+  { key: 'tail', label: '꼬리', parts: Array.from({ length: 9 }, (_, i) => i + 1) },
+  { key: 'deco', label: '몸통장식', parts: Array.from({ length: 6 }, (_, i) => i + 1) },
+]
+
+/** 고른 이름 전체(굿즈 구분 없이)에서 아직 안 나온 색·파츠 */
+function Coverage({ names: list, pool, onAdd }: {
+  names: string[]
+  pool: { n: string; g: MoimoGenes }[]
+  onAdd: (n: string) => void
+}) {
+  if (!list.length) return null
+  const gs = list.map((n) => genesFromName(n)).filter((g): g is MoimoGenes => !!g)
+  // 빠진 칸을 몇 개나 한꺼번에 채우는지 — 많이 채우는 이름부터 권한다
+  const missing = COVER.flatMap(({ key, parts }) => parts.filter((p) => !gs.some((g) => g[key] === p)).map((p) => [key, p] as const))
+  const fills = (g: MoimoGenes) => missing.filter(([k, p]) => g[k] === p).length
+  const suggest = (key: keyof MoimoGenes, p: number) =>
+    pool.filter((x) => x.g[key] === p && !list.includes(x.n))
+      .sort((a, b) => fills(b.g) - fills(a.g))
+      .slice(0, 4)
+  return (
+    <section className="coverage">
+      <b>고른 {gs.length}명에서 빠진 것</b>
+      {COVER.map(({ key, label, parts }) => {
+        const count = (p: number) => gs.filter((g) => g[key] === p).length
+        const miss = parts.filter((p) => !count(p))
+        const name = (p: number) => (key === 'color' ? BODY_COLORS[p - 1].name : key === 'morph' && p === 0 ? '없음' : String(p).padStart(2, '0'))
+        return (
+          <div key={key} className={miss.length ? 'miss' : 'ok'}>
+            <span>{label}</span>
+            {miss.length ? (
+              <em>
+                {miss.map((p) => (
+                  <span key={p} className="miss-part">
+                    {name(p)}
+                    {suggest(key, p).map((x) => (
+                      <button key={x.n} title={`빠진 칸 ${fills(x.g)}개를 채움`} onClick={() => onAdd(x.n)}>+{x.n}</button>
+                    ))}
+                  </span>
+                ))}
+              </em>
+            ) : <em>다 있음</em>}
+            <small>{parts.map((p) => `${name(p)}×${count(p)}`).join(' ')}</small>
+          </div>
+        )
+      })}
+    </section>
+  )
+}
+
 function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
   const [extra, setExtra] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem(KEY + ':extra') ?? '[]') } catch { return [] }
@@ -92,8 +152,8 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
     const out: { n: string; g: MoimoGenes }[][] = []
     for (let i = 0; i + 1 < six.length && out.length < 30; i += 2) {
       const [a, b] = [six[i], six[i + 1]]
-      // 같은 색 둘은 이름이 달라야 하고, 연보라(거의 이씨) 말고는 몸통도 다르게
-      if (a.some((x, k) => x.n === b[k].n || (x.g.color !== 6 && x.g.body === b[k].g.body))) { i--; continue }
+      // 같은 색 둘은 이름도 몸통도 달라야 한다 — 몸통은 이제 이름 뒤 글자가 정해 색과 묶이지 않는다
+      if (a.some((x, k) => x.n === b[k].n || x.g.body === b[k].g.body)) { i--; continue }
       out.push(a.flatMap((x, k) => [x, b[k]]))
     }
     return out
@@ -133,6 +193,25 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
   const pickedAny = new Set(Object.values(picks).flat())
   let list = color ? all.filter((x) => x.g.color === color) : all
   if (onlyPicked) list = list.filter((x) => pickedAny.has(x.n))
+  const [exporting, setExporting] = useState<string | null>(null)
+  /** 고른 이름을 굿즈별 폴더에 SVG 로 — 개발 서버가 goods-export/ 에 바로 쓴다 */
+  const exportAll = async () => {
+    const jobs = GOODS.flatMap((g) => picks[g.id].map((n) => ({ g, n })))
+    let done = 0, failed = 0
+    for (const { g, n } of jobs) {
+      setExporting(`뽑는 중 ${done + 1}/${jobs.length}`)
+      const genes = genesFromName(n)
+      try {
+        if (!genes) throw new Error(n)
+        const svg = await goodsSvg(genes, n, cache, table)
+        const r = await fetch('/__goods', { method: 'POST', body: JSON.stringify({ folder: g.label, file: `모이모_${n}`, svg }) })
+        if (!r.ok) throw new Error(await r.text())
+      } catch { failed++ }
+      done++
+    }
+    setExporting(failed ? `${done - failed}장 저장 · ${failed}장 실패` : `${done}장 저장 완료`)
+    setTimeout(() => setExporting(null), 4000)
+  }
   const copy = () => {
     const text = GOODS.map((g) => `${g.label}: ${picks[g.id].join(', ') || '-'}`).join('\n')
     navigator.clipboard?.writeText(text)
@@ -145,7 +224,7 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
           <b>굿즈별 이름 고르기</b>
           {GOODS.map((g) => (
             <button key={g.id} className={`goods${goods === g.id ? ' on' : ''}`} style={{ '--c': g.color } as React.CSSProperties} onClick={() => setGoods(g.id)}>
-              {g.label} <small>{picks[g.id].length}</small>
+              {g.label} <small>{countText(g, picks[g.id].length)}</small>
             </button>
           ))}
           <span className="hint">지금 고르는 곳: <b>{GOODS.find((g) => g.id === goods)!.label}</b> · 누르면 넣고 빼요</span>
@@ -179,7 +258,7 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
             onDrop={drop(g.id)}
           >
             <div className="sum-head">
-              <b onClick={() => setGoods(g.id)}>{g.label} <small>{picks[g.id].length}</small></b>
+              <b onClick={() => setGoods(g.id)}>{g.label} <small>{countText(g, picks[g.id].length)}</small></b>
               {picks[g.id].length > 0 && (
                 <button className="mini" onClick={() => { if (confirm(`${g.label}에 고른 ${picks[g.id].length}명을 모두 뺄까요?`)) setPicks((p) => ({ ...p, [g.id]: [] })) }}>모두 빼기</button>
               )}
@@ -201,7 +280,15 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
           </div>
         ))}
         <button onClick={copy}>목록 복사</button>
+        <button onClick={() => { void exportAll() }} disabled={exporting !== null}>
+          {exporting ?? 'SVG 뽑기 → goods-export/'}
+        </button>
       </section>
+      <Coverage
+        names={[...pickedAny]}
+        pool={pool}
+        onAdd={(n) => setPicks((p) => (p[goods].includes(n) ? p : { ...p, [goods]: [...p[goods], n] }))}
+      />
 
       {view === 'lineup' && (
         <section className="lineups">
@@ -226,7 +313,7 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
               </div>
             ))}
           </>}
-          <p className="hint">색마다 둘씩 · 같은 색 둘은 몸통이 다르게(연보라 빼고) · 무늬 반/없음 반</p>
+          <p className="hint">색마다 둘씩 · 같은 색 둘은 몸통이 다르게 · 무늬 반/없음 반</p>
           {rows.map((row, i) => (
             <div key={i} className="lineup">
               <b>{i + 1}</b>
