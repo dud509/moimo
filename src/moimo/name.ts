@@ -1,9 +1,10 @@
 /**
  * 이름 → 모이모.
  *
- * 성의 초성·중성·종성이 몸통·색·무늬를,
+ * 성의 초성·중성·종성이 머리장식(집안 표식)·색·무늬를,
  * 이름 첫 글자가 눈·입·볼을,
- * 이름 둘째 글자가 머리장식·꼬리·몸통장식을 정한다.
+ * 이름 둘째 글자가 몸통·꼬리·몸통장식을 정한다.
+ * (흔한 정도 매칭은 예전처럼 성이 몸통을, 둘째 글자가 머리장식을 정한다)
  * 같은 이름은 언제나 같은 모이모가 된다.
  */
 
@@ -267,22 +268,24 @@ const DECO: MapRow[] = [
  */
 
 /*
- * 몸통은 흔한 정도 매칭처럼 김·이·박을 먼저 따로 본다. 셋은 제 초성이 가장
- * 닮은 귀를 갖고, 같은 초성의 나머지 성은 그다음으로 닮은 귀로 간다.
+ * 닮은 모양 매칭에서 몸통은 이름 뒤 글자 초성에서 온다 — 성이 몸통까지 정하면
+ * 한 색 안에서 모양이 한두 가지로 몰리므로, 성은 색·무늬·머리장식(가문 표식)만
+ * 정하고 생김새는 사람마다 다르게 둔다. 흔한 글자(현·준·진·원, 영·연, 호·훈,
+ * 수·서)는 제 초성에서 떼어 따로 준다.
  */
 const SHAPE_BODY: MapRow[] = [
-  { jamo: ['김'], part: 5, pct: 21.4, why: '김의 ㄱ·ㅣ 세로획 둘처럼 나란히 곧게 선 귀' },
-  { jamo: ['이'], part: 10, pct: 14.6, why: '이의 ㅇ 처럼 동그란 귀' },
-  { jamo: ['박'], part: 7, pct: 8.4, why: '박의 ㅂ 처럼 네모 반듯한 귀' },
-  { jamo: ['정'], part: 11, pct: 4.3, why: '정의 ㅈ 두 다리처럼 비스듬히 벌어진 귀' },
-  { jamo: ['ㅇ'], part: 6, pct: 10.3, why: 'ㅇ 처럼 동그란 귀가 양옆에' },
-  { jamo: ['ㅈ'], part: 1, pct: 7.2, why: 'ㅈ 처럼 획이 갈라져 삐죽삐죽한 털' },
-  { jamo: ['ㅅ'], part: 3, pct: 6.8, why: 'ㅅ 처럼 뾰족한 고양이 귀' },
-  { jamo: ['ㄱ', 'ㅋ'], part: 4, pct: 6.2, why: 'ㄱ 처럼 꺾여 내려오는 접힌 귀' },
-  { jamo: ['ㅊ'], part: 9, pct: 6.2, why: 'ㅊ 의 두 다리처럼 얼굴 양옆으로 길게 내려오는 귀' },
-  { jamo: ['ㅎ'], part: 12, pct: 5.7, why: 'ㅎ 의 동그라미처럼 동글게 말린 귀' },
-  { jamo: ['ㅁ', 'ㅂ', 'ㅍ'], part: 2, pct: 3.6, why: 'ㅁ·ㅂ·ㅍ 처럼 옆으로 넓게 퍼진 뭉실한 귀' },
-  { jamo: ['ㄴ', 'ㄷ', 'ㅌ', 'ㄹ'], part: 8, pct: 2.0, why: 'ㄴ·ㄷ 의 가로획처럼 옆으로 뻗은 귀' },
+  { jamo: ['현', '준', '진', '원'], part: 5, pct: 22.9, why: '현·준·진·원 은 흔해서 따로 — 받침 ㄴ 의 세로획처럼 나란히 곧게 선 귀' },
+  { jamo: ['ㅇ'], part: 10, pct: 16.8, why: 'ㅇ 처럼 동그란 귀' },
+  { jamo: ['영', '연'], part: 6, pct: 11.3, why: '영·연 은 흔해서 ㅇ 에서 떼어 — 동그란 귀가 양옆에' },
+  { jamo: ['호', '훈'], part: 11, pct: 8.0, why: '호·훈 은 흔해서 ㅎ 에서 떼어 — 비스듬히 벌어진 귀' },
+  { jamo: ['수', '서'], part: 7, pct: 6.9, why: '수·서 는 흔해서 ㅅ 에서 떼어 — 네모 반듯한 귀' },
+  { jamo: ['ㅁ', 'ㅂ', 'ㅍ'], part: 2, pct: 6.3, why: 'ㅁ·ㅂ·ㅍ 처럼 옆으로 넓게 퍼진 뭉실한 귀' },
+  { jamo: ['ㅈ'], part: 1, pct: 6.0, why: 'ㅈ 처럼 획이 갈라져 삐죽삐죽한 털' },
+  { jamo: ['ㄴ', 'ㄷ', 'ㅌ', 'ㄹ'], part: 8, pct: 5.3, why: 'ㄴ·ㄷ 의 가로획처럼 옆으로 뻗은 귀' },
+  { jamo: ['ㅎ'], part: 12, pct: 5.2, why: 'ㅎ 의 동그라미처럼 동글게 말린 귀' },
+  { jamo: ['ㅅ'], part: 3, pct: 4.8, why: 'ㅅ 처럼 뾰족한 고양이 귀' },
+  { jamo: ['ㄱ', 'ㅋ'], part: 4, pct: 4.1, why: 'ㄱ 처럼 꺾여 내려오는 접힌 귀' },
+  { jamo: ['ㅊ'], part: 9, pct: 2.4, why: 'ㅊ 의 두 다리처럼 얼굴 양옆으로 길게 내려오는 귀' },
 ]
 
 const SHAPE_MORPH: MapRow[] = [
@@ -313,18 +316,22 @@ const SHAPE_EYE: MapRow[] = [
   { jamo: ['ㅊ', 'ㅂ', 'ㅍ'], part: 8, pct: 2.8, why: 'ㅊ 처럼 빛이 뻗는 반짝 눈' },
 ]
 
+/*
+ * 머리장식은 성 초성에서 온다 — 같은 집안은 같은 표식을 단다.
+ * 김·이·박·정은 따로 본다. 김은 파랑에 체리, 이는 연보라에 초록 잎.
+ */
 const SHAPE_HAIR: MapRow[] = [
-  { jamo: ['ㅇ'], part: 10, pct: 20.4, why: 'ㅇ 처럼 동글동글한 잎이 모인 네잎클로버' },
-  { jamo: ['ㅈ'], part: 9, pct: 15.9, why: 'ㅈ 처럼 꼭지가 뾰족한 고깔' },
-  { jamo: ['ㅎ'], part: 6, pct: 13.9, why: 'ㅎ 의 꼭지처럼 위로 돋은 새싹 — 호·훈·혁 처럼 남자 이름에 많다' },
-  { jamo: ['ㅅ'], part: 1, pct: 11.7, why: 'ㅅ 처럼 뾰족한 별' },
-  { jamo: ['영', '연', '여', '열', '엽'], part: 3, pct: 11.2, why: '영·연 은 흔해서 ㅇ 에서 떼어 날개 달린 하트를 준다' },
-  { jamo: ['현'], part: 5, pct: 8.9, why: '현 은 흔해서 ㅎ 에서 떼어 초록 잎 꼭지를 준다' },
-  { jamo: ['ㅁ'], part: 11, pct: 5.3, why: 'ㅁ 처럼 네모난 테 둘을 이은 안경' },
-  { jamo: ['ㄱ', 'ㅋ'], part: 2, pct: 4.1, why: 'ㄱ 처럼 꺾인 꼭지가 달린 체리' },
-  { jamo: ['ㄹ'], part: 4, pct: 4.0, why: 'ㄹ 처럼 고불고불 묶은 작은 리본 한 쌍 — 린·리 처럼 여자 이름에 많다' },
-  { jamo: ['ㄴ', 'ㄷ', 'ㅌ', 'ㅂ', 'ㅍ'], part: 7, pct: 2.4, why: '드문 초성은 작은 날개 한 쌍' },
-  { jamo: ['ㅊ'], part: 8, pct: 2.3, why: 'ㅊ 의 꼭지처럼 위에 얹은 달걀 프라이 — 철·찬 처럼 남자 이름에 많다' },
+  { jamo: ['김'], part: 2, pct: 23.5, why: '김의 ㄱ 처럼 꺾인 꼭지가 달린 체리' },
+  { jamo: ['이'], part: 5, pct: 15.8, why: '이의 ㅣ 처럼 곧게 선 줄기에 초록 잎 꼭지' },
+  { jamo: ['ㅇ'], part: 10, pct: 10.2, why: 'ㅇ 처럼 동글동글한 잎이 모인 네잎클로버' },
+  { jamo: ['ㄱ', 'ㅋ', 'ㅁ', 'ㅂ', 'ㅍ'], part: 11, pct: 9.9, why: 'ㅁ·ㅂ 처럼 네모난 테 둘을 이은 안경' },
+  { jamo: ['박'], part: 3, pct: 9.1, why: '박의 ㅂ 처럼 위로 두 갈래 솟은 날개 달린 하트' },
+  { jamo: ['ㅈ'], part: 9, pct: 6.8, why: 'ㅈ 처럼 꼭지가 뾰족한 고깔' },
+  { jamo: ['ㅅ'], part: 1, pct: 6.5, why: 'ㅅ 처럼 뾰족한 별' },
+  { jamo: ['ㅊ'], part: 7, pct: 6.1, why: 'ㅊ 의 양옆으로 뻗은 획처럼 작은 날개 한 쌍' },
+  { jamo: ['ㅎ'], part: 6, pct: 5.7, why: 'ㅎ 의 꼭지처럼 위로 돋은 새싹' },
+  { jamo: ['정'], part: 4, pct: 4.6, why: '정의 ㅈ 두 갈래처럼 묶은 작은 리본 한 쌍' },
+  { jamo: ['ㄴ', 'ㄷ', 'ㅌ', 'ㄹ'], part: 8, pct: 1.6, why: 'ㄴ·ㄷ 의 납작한 가로획처럼 위에 얹은 달걀 프라이' },
 ]
 
 const SHAPE_MOUTH: MapRow[] = [
@@ -382,15 +389,20 @@ export type SlotMapping = {
 
 export type MappingId = 'freq' | 'shape'
 
-export type MappingSet = { id: MappingId; name: string; desc: string; slots: SlotMapping[] }
+/** 몸통과 머리장식을 어느 글자에서 읽는지 — 성(s) 또는 이름 뒤 글자(n2) */
+type Src = 's' | 'n2'
+type Sources = { body: Src; hair: Src }
+const FROM: Record<Src, string> = { s: '성 초성', n2: '이름 뒤 글자 초성' }
 
-const slots = (r: Record<SlotMapping['slot'], MapRow[]>): SlotMapping[] => [
-  { slot: 'body', label: '몸통', from: '성 초성', rows: r.body },
+export type MappingSet = { id: MappingId; name: string; desc: string; src: Sources; slots: SlotMapping[] }
+
+const slots = (r: Record<SlotMapping['slot'], MapRow[]>, src: Sources): SlotMapping[] => [
+  { slot: 'body', label: '몸통', from: FROM[src.body], rows: r.body },
   { slot: 'morph', label: '몸통 무늬', from: '성 종성', rows: r.morph },
   { slot: 'eye', label: '눈', from: '이름 앞 글자 초성', rows: r.eye },
   { slot: 'mouth', label: '입', from: '이름 앞 글자 중성', rows: r.mouth },
   { slot: 'cheek', label: '볼 장식', from: '이름 앞 글자 종성', rows: r.cheek },
-  { slot: 'hair', label: '머리 장식', from: '이름 뒤 글자 초성', rows: r.hair },
+  { slot: 'hair', label: '머리 장식', from: FROM[src.hair], rows: r.hair },
   { slot: 'tail', label: '꼬리', from: '이름 뒤 글자 중성', rows: r.tail },
   { slot: 'deco', label: '몸통 장식', from: '이름 뒤 글자 종성', rows: r.deco },
 ]
@@ -400,19 +412,21 @@ export const MAPPINGS: Record<MappingId, MappingSet> = {
     id: 'freq',
     name: '흔한 정도',
     desc: '흔한 자모일수록 무난한 파츠, 드문 자모일수록 튀는 파츠',
+    src: { body: 's', hair: 'n2' },
     slots: slots({
       body: [...BODY_SURNAME, ...BODY_CHO], morph: MORPH, eye: EYE, mouth: MOUTH,
       cheek: CHEEK, hair: HAIR, tail: TAIL, deco: DECO,
-    }),
+    }, { body: 's', hair: 'n2' }),
   },
   shape: {
     id: 'shape',
     name: '닮은 모양',
     desc: '자모의 생김새와 파츠의 생김새를 잇는다',
+    src: { body: 'n2', hair: 's' },
     slots: slots({
       body: SHAPE_BODY, morph: SHAPE_MORPH, eye: SHAPE_EYE, mouth: SHAPE_MOUTH,
       cheek: SHAPE_CHEEK, hair: SHAPE_HAIR, tail: SHAPE_TAIL, deco: SHAPE_DECO,
-    }),
+    }, { body: 'n2', hair: 's' }),
   },
 }
 
@@ -452,15 +466,18 @@ const LOOKUPS = Object.fromEntries(
 
 export function genesFromParts(p: NameParts, mapping: MappingId = ACTIVE_MAPPING): MoimoGenes {
   const m = LOOKUPS[mapping]
+  const { src } = MAPPINGS[mapping]
+  // 성은 복성(황보)까지 통째로 본다
+  const at = (k: Src) => (k === 's' ? p.surname : p.n2.char)
   return {
-    body: m.body(p.surname, p.s.cho),
+    body: m.body(at(src.body), p[src.body].cho),
     color: colorOf(p.s.jung, p.s.jong),
     morph: m.morph(p.surname, p.s.jong),
     tone: toneOf(p.n1.jung),
     eye: m.eye(p.n1.char, p.n1.cho),
     mouth: m.mouth(p.n1.char, p.n1.jung),
     cheek: m.cheek(p.n1.char, p.n1.jong),
-    hair: m.hair(p.n2.char, p.n2.cho),
+    hair: m.hair(at(src.hair), p[src.hair].cho),
     tail: m.tail(p.n2.char, p.n2.jung),
     deco: m.deco(p.n2.char, p.n2.jong),
   }
@@ -490,14 +507,14 @@ export type Reason = {
 const READOUT: Array<{
   slot: keyof MoimoGenes; label: string; src: 's' | 'n1' | 'n2'; place: '초성' | '중성' | '종성'
 }> = [
-  { slot: 'body',    label: '몸통',     src: 's',  place: '초성' },
+  { slot: 'body',    label: '몸통',     src: MAPPINGS[ACTIVE_MAPPING].src.body, place: '초성' },
   { slot: 'color',   label: '몸통 색깔', src: 's',  place: '중성' },
   { slot: 'morph',   label: '몸통 무늬', src: 's',  place: '종성' },
   { slot: 'tone',    label: '무늬 바탕', src: 'n1', place: '중성' },
   { slot: 'eye',     label: '눈',       src: 'n1', place: '초성' },
   { slot: 'mouth',   label: '입',       src: 'n1', place: '중성' },
   { slot: 'cheek',   label: '볼 장식',  src: 'n1', place: '종성' },
-  { slot: 'hair',    label: '머리 장식', src: 'n2', place: '초성' },
+  { slot: 'hair',    label: '머리 장식', src: MAPPINGS[ACTIVE_MAPPING].src.hair, place: '초성' },
   { slot: 'tail',    label: '꼬리',     src: 'n2', place: '중성' },
   { slot: 'deco',    label: '몸통 장식', src: 'n2', place: '종성' },
 ]
