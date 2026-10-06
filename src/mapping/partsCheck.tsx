@@ -4,9 +4,11 @@ import { createRoot } from 'react-dom/client'
 import anchorsJson from '../data/anchors.json'
 import { composeMoimo, loadParts, moimoDataUri, type PartsCache } from '../moimo/compose'
 import { normalizeTable, type AnchorTable } from '../moimo/parts'
-import { MAPPINGS, type MoimoGenes } from '../moimo/name'
+import { MAPPINGS, genesFromName, type MoimoGenes } from '../moimo/name'
 
-const BASE: MoimoGenes = { body: 10, color: 3, morph: 0, tone: 0, eye: 2, mouth: 9, cheek: 1, hair: 9, tail: 6, deco: 2 }
+const q = new URLSearchParams(location.search)
+const NAMED = q.get('name') ? genesFromName(q.get('name')!) : null
+const BASE: MoimoGenes = NAMED ?? { body: Number(q.get('body') ?? 10), color: Number(q.get('color') ?? 3), morph: Number(q.get('morph') ?? 0), tone: Number(q.get('tone') ?? 0), eye: Number(q.get('eye') ?? 2), mouth: 9, cheek: Number(q.get('cheek') ?? 1), hair: 9, tail: 6, deco: 2 }
 const VIEW: Record<string, string> = {
   eye: '150 170 212 130', mouth: '180 220 152 100', cheek: '130 180 252 140',
   hair: '120 40 272 200', body: '40 30 432 440', morph: '40 30 432 440', tail: '40 30 432 440', deco: '40 30 432 440',
@@ -23,7 +25,7 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
   const rows = [...m.rows].sort((a, b) => a.part - b.part)
   return (
     <>
-      <h1>{m.label} — 그림과 설명</h1>
+      <h1>{q.get('name') ? `${q.get('name')} — 몸통 12가지` : `${m.label} — 그림과 설명`}</h1>
       <div className="grid">
         {rows.map((r) => (
           <figure key={r.part}>
