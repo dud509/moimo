@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
-  Z_BODY, Z_HEAD, TORSO_URL, bodyAnchor, bodyUrl, headUrl, composeAnchor, normalizeTable, overrideKey,
+  Z_BODY, Z_HEAD, TORSO_URL, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
   decoFor, fillFor, isCleared, usesPoint, zFor, MORPH_TAIL, partAnchor, partUrl, partUrls, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
   warnIfNothingToTint, cheekEyeAnchor, cheekEyeKey, DEFAULT_ANCHOR, editorParts, SPARE,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
@@ -149,21 +149,19 @@ function BodyStack({
 }) {
   const uid = useId().replace(/:/g, '')
   const bodySvg = useSvg(bodyUrl(body))
-  const headSvg = useSvg(headUrl(body))
   const torsoSvg = useSvg(TORSO_URL)
   const morphSvg = useSvg(morph > 0 ? morphUrls(body, morph) : null)
   // 머리를 따로 그린 몸통이면 머리는 몸통장식 위 층(high)으로 따로 띄운다
   const { html, low, high } = useMemo(() => {
     const pieces = stackBody({
       bodyRaw: bodySvg.svg ?? undefined,
-      headRaw: headSvg.svg ?? undefined,
       torsoRaw: torsoSvg.svg ?? undefined,
       morphRaw: morphSvg.svg ?? undefined,
       morph, color, tone, body, uid,
     }).sort((a, b) => a.z - b.z)
     const join = (xs: typeof pieces) => xs.map((p) => p.svg).join('')
     return { html: join(pieces), low: join(pieces.filter((p) => p.z < Z_HEAD)), high: join(pieces.filter((p) => p.z >= Z_HEAD)) }
-  }, [bodySvg.svg, headSvg.svg, torsoSvg.svg, morphSvg.svg, morph, color, tone, body, uid])
+  }, [bodySvg.svg, torsoSvg.svg, morphSvg.svg, morph, color, tone, body, uid])
 
   const cleared = !!eye && isCleared('eye', eye.n)
   const eyeSvg = useSvg(cleared ? partUrl('eye', eye!.n) : null)

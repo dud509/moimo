@@ -8,7 +8,7 @@
 import {
   BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, regionsFor,
   SLOTS, Z_BODY, Z_MORPH, edgeFor,
-  bodyUrl, headUrl, TORSO_URL, Z_HEAD, composeAnchor, decoFor, fillFor, isCleared, usesPoint, isSvgText, morphUrls, partUrl, partUrls, prepareSvg, syOf, toneFor, zFor,
+  bodyUrl, TORSO_URL, Z_HEAD, composeAnchor, decoFor, fillFor, isCleared, usesPoint, isSvgText, morphUrls, partUrl, partUrls, prepareSvg, syOf, toneFor, zFor,
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
@@ -258,12 +258,11 @@ export function bodyPieces(opts: {
 }
 
 /**
- * 몸통 한 벌. 머리·몸 파일이 따로 있으면 몸은 제자리에, 머리는 몸통장식 위로
- * 올린다. 무늬는 양쪽에 같은 파일을 쓰고, 각자의 실루엣으로 잘린다.
+ * 몸통 한 벌. 몸(torso)이 따로 있으면 몸은 제자리에, 머리(bodyRaw)는 몸통장식
+ * 위로 올린다. 무늬는 양쪽에 같은 파일을 쓰고, 각자의 실루엣으로 잘린다.
  */
 export function stackBody(opts: {
   bodyRaw?: string
-  headRaw?: string
   torsoRaw?: string
   morphRaw?: string
   morph: number
@@ -272,11 +271,11 @@ export function stackBody(opts: {
   body: number
   uid: string
 }): { z: number; svg: string }[] {
-  const { bodyRaw, headRaw, torsoRaw, ...rest } = opts
-  if (!headRaw || !torsoRaw) return bodyPieces({ ...rest, bodyRaw })
+  const { bodyRaw, torsoRaw, ...rest } = opts
+  if (!bodyRaw || !torsoRaw) return bodyPieces({ ...rest, bodyRaw })
   return [
     ...bodyPieces({ ...rest, bodyRaw: torsoRaw, uid: `${rest.uid}t` }),
-    ...bodyPieces({ ...rest, bodyRaw: headRaw, uid: `${rest.uid}h` })
+    ...bodyPieces({ ...rest, bodyRaw, uid: `${rest.uid}h` })
       // 몸통 층(2~3.5)을 머리 층(4.1~)으로 그대로 옮긴다
       .map((p) => ({ ...p, z: Z_HEAD + (p.z - Z_BODY) / 10 })),
   ]
@@ -307,7 +306,7 @@ export function composeMoimo(
   const morphRaw = morphUrl ? cache.get(morphUrl) : undefined
 
   pieces.push(...stackBody({
-    bodyRaw, headRaw: cache.get(headUrl(genes.body)), torsoRaw: cache.get(TORSO_URL),
+    bodyRaw, torsoRaw: cache.get(TORSO_URL),
     morphRaw, morph: genes.morph, color, tone: genes.tone, body: genes.body, uid,
   }))
 
@@ -369,7 +368,7 @@ const COUNTS: Record<string, number> = Object.fromEntries(SLOTS.map((s) => [s.ke
 /** 마을에 모이모가 수백 마리 나오므로, 파츠 파일은 시작할 때 한 번만 받는다 */
 export async function loadParts(): Promise<PartsCache> {
   const urls: string[] = []
-  for (let i = 1; i <= 12; i++) urls.push(bodyUrl(i), headUrl(i))
+  for (let i = 1; i <= 12; i++) urls.push(bodyUrl(i))
   urls.push(TORSO_URL)
   for (const s of SLOTS) {
     for (let i = 1; i <= COUNTS[s.key]; i++) {
