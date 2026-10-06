@@ -38,5 +38,12 @@ export async function goodsSvg(genes: MoimoGenes, name: string, cache: PartsCach
     /<svg([^>]*)viewBox="[^"]*"/,
     `<svg$1viewBox="${box.join(' ')}" width="${box[2]}" height="${box[3]}"`,
   )
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<!-- 모이모 · ${name} -->\n${out}`
+  // 손으로 그린 선을 그대로 따서 만든 면은 제 몸을 가로지른다(하트의 말린 꼬리 등).
+  // 브라우저는 nonzero 로 꽉 채우지만, 일러스트레이터는 따로 적어 주지 않으면
+  // 겹친 자리를 구멍으로 뚫는다. 도형마다 nonzero 를 박아 둔다
+  const filled = out.replace(
+    /<(path|polygon|polyline|circle|ellipse|rect)\b(?![^>]*\bfill-rule=)/g,
+    '<$1 fill-rule="nonzero" clip-rule="nonzero"',
+  )
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<!-- 모이모 · ${name} -->\n${filled}`
 }
