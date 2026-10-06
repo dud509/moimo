@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useId } from 'react'
 import {
   BODY_COLORS, BODY_COUNT, CANVAS, EMPTY_TABLE, LINE_COLOR, MORPH_COUNT, SLOTS,
   Z_BODY, bodyAnchor, bodyUrl, composeAnchor, normalizeTable, overrideKey,
-  decoFor, fillFor, isCleared, usesPoint, zFor, MORPH_TAIL, partAnchor, partUrl, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
+  decoFor, fillFor, isCleared, usesPoint, zFor, MORPH_TAIL, partAnchor, partUrl, partUrls, morphUrls, prepareSvg, slotAnchor, syOf, toneFor,
   warnIfNothingToTint, cheekEyeAnchor, cheekEyeKey, DEFAULT_ANCHOR, editorParts, SPARE,
   type Anchor, type AnchorTable, type Paint, type SlotKey,
 } from '../moimo/parts'
@@ -217,7 +217,7 @@ function Figure({
       {SLOTS.map((s) => (
         <Layer
           key={s.key}
-          urls={partUrl(s.key, variant[s.key])}
+          urls={partUrls(s.key, variant[s.key], body)}
           paint={{
             fill: fillFor(
               s.key, variant[s.key],

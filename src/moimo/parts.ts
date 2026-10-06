@@ -394,6 +394,17 @@ export const bodyUrl = (n: number) => `/parts/body/${pad(n)}.svg`
 export const partUrl = (slot: SlotKey, n: number) => `/parts/${slot}/${pad(n)}.svg`
 
 /**
+ * 몸통마다 따로 그린 파츠가 있을 수 있는 슬롯. 얼굴 모양이 달라 목에 거는
+ * 장식이 얼굴선과 벌어지는 몸통(토끼 07 등)은 그 몸통용 파일을 따로 둔다.
+ * 파일 이름은 b{몸통}-{파츠}.svg — 예) deco/b07-04.svg
+ */
+export const PER_BODY: SlotKey[] = ['deco']
+
+/** 몸통별 파일을 먼저 찾고, 없으면 공용 파일로 떨어진다 */
+export const partUrls = (slot: SlotKey, n: number, body: number) =>
+  PER_BODY.includes(slot) ? [`/parts/${slot}/b${pad(body)}-${pad(n)}.svg`, partUrl(slot, n)] : [partUrl(slot, n)]
+
+/**
  * 무늬(morph)는 몸통 모양마다 따로 그린다 — 12 × 5 = 60장.
  * 몸통별 파일을 먼저 찾고, 없으면 공용 파일로 떨어진다.
  */

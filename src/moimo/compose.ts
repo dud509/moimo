@@ -8,7 +8,7 @@
 import {
   BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, regionsFor,
   SLOTS, Z_BODY, Z_MORPH, edgeFor,
-  bodyUrl, composeAnchor, decoFor, fillFor, isCleared, usesPoint, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor, zFor,
+  bodyUrl, composeAnchor, decoFor, fillFor, isCleared, usesPoint, isSvgText, morphUrls, partUrl, partUrls, prepareSvg, syOf, toneFor, zFor,
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
@@ -295,7 +295,8 @@ export function composeMoimo(
     const n = genes[s.key as keyof MoimoGenes] as number
     const base = key === 'tail' ? bodyTone : usesPoint(key, n) ? decoHex : bodyHex
     const before = pieces.length
-    push(zFor(key, n, s.z), partUrl(key, n), fillFor(key, n, base), composeAnchor(table, genes.body, key, n, genes.eye))
+    const url = partUrls(key, n, genes.body).find((u) => cache.has(u)) ?? partUrl(key, n)
+    push(zFor(key, n, s.z), url, fillFor(key, n, base), composeAnchor(table, genes.body, key, n, genes.eye))
     if (key === 'cheek' && pieces.length > before) cheekPiece = pieces[before]
   }
 
@@ -342,7 +343,9 @@ export async function loadParts(): Promise<PartsCache> {
   const urls: string[] = []
   for (let i = 1; i <= 12; i++) urls.push(bodyUrl(i))
   for (const s of SLOTS) {
-    for (let i = 1; i <= COUNTS[s.key]; i++) urls.push(partUrl(s.key as SlotKey, i))
+    for (let i = 1; i <= COUNTS[s.key]; i++) {
+      for (let b = 1; b <= 12; b++) urls.push(...partUrls(s.key as SlotKey, i, b))
+    }
   }
   for (let b = 1; b <= 12; b++) {
     for (let m = 1; m <= 5; m++) urls.push(...morphUrls(b, m))
