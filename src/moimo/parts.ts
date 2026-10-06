@@ -193,13 +193,12 @@ export const editorParts = (slot: SlotKey): number[] => {
  * 흰 채우기를 몸통 색으로 갈아입는 파츠.
  *
  *   'all'   슬롯 전체 — 꼬리는 몸의 일부라 늘 몸통을 따라간다
- *   [번호]  그 번호만 — 눈 11번처럼 흰자가 몸 색이어야 하는 파츠
+ *   [번호]  그 번호만
  *
  * 여기 없는 파츠는 흰색 그대로.
  */
 export const TINTED: Partial<Record<SlotKey, 'all' | number[]>> = {
   tail: 'all',
-  eye: [11],
   deco: [1, 3, 4, 5],   // 02·06 은 제 색을 그대로 쓴다
   hair: [3, 4, 9],
 }
@@ -269,8 +268,17 @@ export const zFor = (slot: SlotKey, part: number, z: number): number =>
   BACK[slot]?.includes(part) ? 0 : OVER_FACE[slot]?.includes(part) ? 6.5 : z
 
 /** 이 파츠를 어떤 색으로 채울지 */
+/**
+ * 흰 채우기를 아예 비우는 파츠 — 밑에 깔린 얼굴 색이 그대로 비친다.
+ * 눈 11번(나선)은 흰자가 주변 얼굴과 같아야 하는데, 무늬가 얼굴을 덮으면
+ * 그 자리 색이 몸통 색과 다르고(반반 무늬는 눈마다 다르다) 칠할 한 색이 없다.
+ */
+const CLEARED: Partial<Record<SlotKey, number[]>> = {
+  eye: [11],
+}
+
 export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>
-  isTinted(slot, part) ? bodyHex : FILL_COLOR
+  CLEARED[slot]?.includes(part) ? 'none' : isTinted(slot, part) ? bodyHex : FILL_COLOR
 
 /** 몸통 z=2, 무늬 z=3 — 슬롯 사이에 낀다 */
 /**
