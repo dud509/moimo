@@ -100,6 +100,9 @@ eq('모양: 준 ㄴ → 가방 몸통장식03', genesFromName('김민준', 'shap
 eq('모양: 수 받침없음 → 스카프 몸통장식04', genesFromName('김민수', 'shape')!.deco, 4)
 eq('모양: 철 ㄹ → 날개 몸통장식06', genesFromName('김영철', 'shape')!.deco, 6)
 eq('모양: 우 ㅜ → 입06', genesFromName('김우진', 'shape')!.mouth, 6)
+eq('모양: 도 ㅗ → 솟은 입04', genesFromName('김도윤', 'shape')!.mouth, 4)
+eq('모양: 유 ㅠ → 솟은 입04', genesFromName('김유나', 'shape')!.mouth, 4)
+eq('모양: 용 ㅛ → 두꺼운 입08', genesFromName('최용준', 'shape')!.mouth, 8)
 
 // 같은 이름은 같은 결과
 eq('결정론적', encodeGenes(genesFromName('김민수')!), encodeGenes(genesFromName('김민수')!))
