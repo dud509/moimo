@@ -102,7 +102,9 @@ eq('모양: 철 ㄹ → 날개 몸통장식06', genesFromName('김영철', 'shap
 eq('모양: 우 ㅜ → 입06', genesFromName('김우진', 'shape')!.mouth, 6)
 eq('모양: 도 ㅗ → 솟은 입04', genesFromName('김도윤', 'shape')!.mouth, 4)
 eq('모양: 유 ㅠ → 솟은 입04', genesFromName('김유나', 'shape')!.mouth, 4)
-eq('모양: 용 ㅛ → 두꺼운 입08', genesFromName('최용준', 'shape')!.mouth, 8)
+eq('모양: 경 → 두꺼운 입08', genesFromName('김경민', 'shape')!.mouth, 8)
+eq('모양: 효 ㅛ → 솟은 입04', genesFromName('임효경', 'shape')!.mouth, 4)
+eq('모양: 가 ㅏ → 입01', genesFromName('김가은', 'shape')!.mouth, 1)
 
 // 같은 이름은 같은 결과
 eq('결정론적', encodeGenes(genesFromName('김민수')!), encodeGenes(genesFromName('김민수')!))
@@ -143,3 +145,13 @@ for (const r of explain(splitName('김민수')!)) {
 }
 
 console.log(fail ? `\n실패 ${fail}건` : '\n전부 통과')
+
+// 두꺼운 입(08)은 점 눈(04)하고만 만난다
+{
+  const met = new Set<number>()
+  for (let c = 0xac00; c <= 0xd7a3; c++) {
+    const g = genesFromName('김' + String.fromCharCode(c) + '수', 'shape')!
+    if (g.mouth === 8) met.add(g.eye)
+  }
+  eq('두꺼운 입은 점 눈하고만', [...met], [4])
+}

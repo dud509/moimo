@@ -341,9 +341,9 @@ const SHAPE_MOUTH: MapRow[] = [
   { jamo: ['ㅏ'], part: 1, pct: 10.8, why: 'ㅏ 의 곁획처럼 한쪽 끝이 올라간 입' },
   { jamo: null, label: 'ㅐ ㅔ ㅒ ㅖ ㅘ ㅙ ㅚ ㅝ ㅞ ㅟ ㅢ', part: 2, pct: 10.8, why: '모음 둘이 겹쳐 소리가 섞이니, 꾹 다문 가장 조용한 입' },
   { jamo: ['ㅑ', 'ㅕ'], part: 3, pct: 9.2, why: 'ㅕ 의 곁획처럼 쏙 내민 혀' },
-  { jamo: ['ㅗ', 'ㅠ'], part: 4, pct: 11.0, why: 'ㅗ 의 세로획처럼 가운데가 솟은 입' },
+  { jamo: ['ㅗ', 'ㅛ', 'ㅠ'], part: 4, pct: 11.7, why: 'ㅗ 의 세로획처럼 가운데가 솟은 입' },
   { jamo: ['ㅡ'], part: 5, pct: 8.0, why: 'ㅡ 처럼 길게 그은 입' },
-  { jamo: ['ㅛ'], part: 8, pct: 0.7, why: 'ㅛ 의 세로획 둘처럼 두 줄로 드러난 이 — 가장 드문 입' },
+  { jamo: ['경'], part: 8, pct: 1.8, why: '경 의 ㅕ 곁획 둘처럼 두 줄로 드러난 이 — 경 은 늘 점 눈(ㄱ)이라 그 짝에만 나온다' },
 ]
 
 const SHAPE_TAIL: MapRow[] = [
