@@ -58,14 +58,14 @@ eq('머리장식 11 은 뒤 글자 ㄷ 에만', genesFromName('김수다', 'freq
 // 몸통은 이름 뒤 글자에서 — 같은 성이어도 몸통이 다르다
 eq('모양: 현 → 곧게 선 귀 몸통05', genesFromName('이지현', 'shape')!.body, 5)
 eq('모양: 우 ㅇ → 둥근 귀 몸통10', genesFromName('이지우', 'shape')!.body, 10)
-eq('모양: 영 → 양옆 둥근 귀 몸통06', genesFromName('이다영', 'shape')!.body, 6)
+eq('모양: 영 → 햄스터 몸통03', genesFromName('이다영', 'shape')!.body, 3)
 eq('모양: 호 → 비스듬한 귀 몸통11', genesFromName('이민호', 'shape')!.body, 11)
 eq('모양: 수 → 보송한 털 귀 몸통07', genesFromName('이민수', 'shape')!.body, 7)
 eq('모양: 미 ㅁ → 뭉실한 귀 몸통02', genesFromName('이은미', 'shape')!.body, 2)
 eq('모양: 재 ㅈ → 삐죽 털 몸통01', genesFromName('이민재', 'shape')!.body, 1)
 eq('모양: 린 ㄹ → 옆으로 뻗은 귀 몸통08', genesFromName('이하린', 'shape')!.body, 8)
 eq('모양: 희 ㅎ → 말린 귀 몸통12', genesFromName('이영희', 'shape')!.body, 12)
-eq('모양: 솔 ㅅ → 고양이 귀 몸통03', genesFromName('이한솔', 'shape')!.body, 3)
+eq('모양: 솔 ㅅ → 원숭이 몸통06', genesFromName('이한솔', 'shape')!.body, 6)
 eq('모양: 규 ㄱ → 접힌 귀 몸통04', genesFromName('이민규', 'shape')!.body, 4)
 eq('모양: 철 ㅊ → 늘어진 귀 몸통09', genesFromName('이영철', 'shape')!.body, 9)
 // 머리장식은 성에서 — 같은 집안은 같은 표식
