@@ -25,6 +25,39 @@ function names(count: number) {
   return [...out]
 }
 
+/**
+ * 색마다 하나씩 여섯 명으로 된 라인업을 여러 벌 뽑는다.
+ *  - 몸통 모양과 머리장식은 한 줄 안에서 겹치지 않는다
+ *  - 셋은 무늬 있게, 셋은 무늬 없게
+ */
+function lineups(pool: { n: string; g: MoimoGenes }[], count: number, seed: number) {
+  let s = seed
+  const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647)
+  const by: Record<number, { n: string; g: MoimoGenes }[]> = {}
+  for (const x of pool) {
+    ;(by[x.g.color] ??= []).push(x)
+  }
+  const out: { n: string; g: MoimoGenes }[][] = []
+  const seen = new Set<string>()
+  for (let t = 0; out.length < count && t < count * 400; t++) {
+    const row: { n: string; g: MoimoGenes }[] = []
+    let ok = true
+    for (let c = 1; c <= 6 && ok; c++) {
+      const list = by[c] ?? []
+      const cand = list.filter((x) => !row.some((y) => y.g.body === x.g.body || y.g.hair === x.g.hair))
+      if (!cand.length) { ok = false; break }
+      row.push(cand[Math.floor(rnd() * cand.length)])
+    }
+    if (!ok) continue
+    if (row.filter((x) => x.g.morph > 0).length !== 3) continue
+    const key = row.map((x) => x.n).join()
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(row)
+  }
+  return out
+}
+
 function loadPicks(): Picks {
   try { return { ...EMPTY, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') } } catch { return EMPTY }
 }
@@ -47,10 +80,47 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
   const [picks, setPicks] = useState<Picks>(loadPicks)
   const [typed, setTyped] = useState('')
   const [onlyPicked, setOnlyPicked] = useState(false)
+  const [view, setView] = useState<'all' | 'lineup'>('lineup')
+  const [seed, setSeed] = useState(7)
+  const pool = useMemo(() => {
+    const more = names(4000).filter((n) => !extra.includes(n))
+    return [...extra, ...more].map((n) => ({ n, g: genesFromName(n) })).filter((x): x is { n: string; g: MoimoGenes } => !!x.g)
+  }, [extra])
+  // 한 줄에 열두 명 — 여섯 명짜리 라인업 둘을 색끼리 나란히 붙인다
+  const rows = useMemo(() => {
+    const six = lineups(pool, 80, seed)
+    const out: { n: string; g: MoimoGenes }[][] = []
+    for (let i = 0; i + 1 < six.length && out.length < 30; i += 2) {
+      const [a, b] = [six[i], six[i + 1]]
+      // 같은 색 둘은 이름이 달라야 하고, 연보라(거의 이씨) 말고는 몸통도 다르게
+      if (a.some((x, k) => x.n === b[k].n || (x.g.color !== 6 && x.g.body === b[k].g.body))) { i--; continue }
+      out.push(a.flatMap((x, k) => [x, b[k]]))
+    }
+    return out
+  }, [pool, seed])
 
   useEffect(() => { try { localStorage.setItem(KEY, JSON.stringify(picks)) } catch { /* 못 적어도 고르기는 된다 */ } }, [picks])
   useEffect(() => { try { localStorage.setItem(KEY + ':extra', JSON.stringify(extra)) } catch { /* 위와 같음 */ } }, [extra])
 
+  /** 끌어 놓기 — 고른 칸에서 끌면 옮기고, 목록에서 끌면 그 칸에 넣는다 */
+  const drag = (n: string, from?: GoodsId) => (e: React.DragEvent) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify({ n, from }))
+    e.dataTransfer.effectAllowed = 'move'
+  }
+  const [over, setOver] = useState<GoodsId | null>(null)
+  const drop = (to: GoodsId) => (e: React.DragEvent) => {
+    e.preventDefault()
+    setOver(null)
+    try {
+      const { n, from } = JSON.parse(e.dataTransfer.getData('text/plain')) as { n: string; from?: GoodsId }
+      if (!n || from === to) return
+      setPicks((p) => ({
+        ...p,
+        ...(from ? { [from]: p[from].filter((x) => x !== n) } : {}),
+        [to]: p[to].includes(n) ? p[to] : [...p[to], n],
+      }))
+    } catch { /* 다른 데서 끌어온 것 */ }
+  }
   const toggle = (n: string) => setPicks((p) => ({
     ...p, [goods]: p[goods].includes(n) ? p[goods].filter((x) => x !== n) : [...p[goods], n],
   }))
@@ -87,6 +157,9 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
               <i className="chip" style={{ background: c.hex }} />{c.name}
             </button>
           ))}
+          <button className={view === 'lineup' ? 'on' : ''} onClick={() => setView('lineup')}>라인업</button>
+          <button className={view === 'all' ? 'on' : ''} onClick={() => setView('all')}>모아 보기</button>
+          {view === 'lineup' && <button onClick={() => setSeed((x) => x + 1)}>다시 뽑기</button>}
           <label className="only"><input type="checkbox" checked={onlyPicked} onChange={(e) => setOnlyPicked(e.target.checked)} /> 고른 것만</label>
           <form onSubmit={(e) => { e.preventDefault(); addName() }}>
             <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="이름 직접 넣기 (예: 김다영)" />
@@ -97,19 +170,86 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
 
       <section className="summary">
         {GOODS.map((g) => (
-          <div key={g.id} style={{ '--c': g.color } as React.CSSProperties}>
-            <b>{g.label}</b>
-            <span>{picks[g.id].join(', ') || '아직 없음'}</span>
+          <div
+            key={g.id}
+            className={`${goods === g.id ? 'now' : ''}${over === g.id ? ' over' : ''}`}
+            style={{ '--c': g.color } as React.CSSProperties}
+            onDragOver={(e) => { e.preventDefault(); setOver(g.id) }}
+            onDragLeave={() => setOver((o) => (o === g.id ? null : o))}
+            onDrop={drop(g.id)}
+          >
+            <div className="sum-head">
+              <b onClick={() => setGoods(g.id)}>{g.label} <small>{picks[g.id].length}</small></b>
+              {picks[g.id].length > 0 && (
+                <button className="mini" onClick={() => { if (confirm(`${g.label}에 고른 ${picks[g.id].length}명을 모두 뺄까요?`)) setPicks((p) => ({ ...p, [g.id]: [] })) }}>모두 빼기</button>
+              )}
+            </div>
+            {picks[g.id].length === 0 ? <span className="empty">아직 없음 · 여기로 끌어다 놓기</span> : (
+              <div className="picked-grid">
+                {picks[g.id].map((n) => {
+                  const pg = genesFromName(n)
+                  return (
+                    <figure key={n} className="picked" draggable onDragStart={drag(n, g.id)}>
+                      {pg && <Art g={pg} cache={cache} table={table} />}
+                      <figcaption>{n}</figcaption>
+                      <button className="x" title="빼기" onClick={() => setPicks((p) => ({ ...p, [g.id]: p[g.id].filter((x) => x !== n) }))}>×</button>
+                    </figure>
+                  )
+                })}
+              </div>
+            )}
           </div>
         ))}
         <button onClick={copy}>목록 복사</button>
       </section>
 
-      <main>
+      {view === 'lineup' && (
+        <section className="lineups">
+          {extra.length > 0 && <>
+            <p className="hint">직접 넣은 이름 {extra.length}</p>
+            {Array.from({ length: Math.ceil(extra.length / 12) }, (_, r) => extra.slice(r * 12, r * 12 + 12)).map((chunk, r) => (
+              <div key={'extra' + r} className="lineup extra">
+                <b>+</b>
+                {chunk.map((n) => {
+                  const g = genesFromName(n)
+                  if (!g) return null
+                  const tags = GOODS.filter((x) => picks[x.id].includes(n))
+                  return (
+                    <figure key={n} draggable onDragStart={drag(n)} className={picks[goods].includes(n) ? 'on' : ''} style={{ '--c': GOODS.find((x) => x.id === goods)!.color } as React.CSSProperties} onClick={() => toggle(n)}>
+                      <Art g={g} cache={cache} table={table} />
+                      <figcaption>{n}</figcaption>
+                      <div className="tags">{tags.map((t) => <i key={t.id} style={{ background: t.color }}>{t.label}</i>)}</div>
+                      <button className="x" title="직접 넣은 이름에서 지우기" onClick={(e) => { e.stopPropagation(); setExtra((xs) => xs.filter((x) => x !== n)) }}>×</button>
+                    </figure>
+                  )
+                })}
+              </div>
+            ))}
+          </>}
+          <p className="hint">색마다 둘씩 · 같은 색 둘은 몸통이 다르게(연보라 빼고) · 무늬 반/없음 반</p>
+          {rows.map((row, i) => (
+            <div key={i} className="lineup">
+              <b>{i + 1}</b>
+              {row.map(({ n, g }) => {
+                const tags = GOODS.filter((x) => picks[x.id].includes(n))
+                return (
+                  <figure key={n} draggable onDragStart={drag(n)} className={picks[goods].includes(n) ? 'on' : ''} style={{ '--c': GOODS.find((x) => x.id === goods)!.color } as React.CSSProperties} onClick={() => toggle(n)}>
+                    <Art g={g} cache={cache} table={table} />
+                    <figcaption>{n}</figcaption>
+                    <div className="tags">{tags.map((t) => <i key={t.id} style={{ background: t.color }}>{t.label}</i>)}</div>
+                  </figure>
+                )
+              })}
+            </div>
+          ))}
+        </section>
+      )}
+
+      {view === 'all' && <main>
         {list.map(({ n, g }) => {
           const tags = GOODS.filter((x) => picks[x.id].includes(n))
           return (
-            <figure key={n} className={picks[goods].includes(n) ? 'on' : ''} style={{ '--c': GOODS.find((x) => x.id === goods)!.color } as React.CSSProperties} onClick={() => toggle(n)}>
+            <figure key={n} draggable onDragStart={drag(n)} className={picks[goods].includes(n) ? 'on' : ''} style={{ '--c': GOODS.find((x) => x.id === goods)!.color } as React.CSSProperties} onClick={() => toggle(n)}>
               <Art g={g} cache={cache} table={table} />
               <figcaption>{n}</figcaption>
               <div className="tags">
@@ -118,7 +258,7 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
             </figure>
           )
         })}
-      </main>
+      </main>}
     </>
   )
 }

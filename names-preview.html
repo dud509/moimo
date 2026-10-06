@@ -21,7 +21,24 @@
       form { display: flex; gap: 4px; margin-left: auto; }
       form input { font: inherit; font-size: 13px; padding: 6px 10px; border-radius: 999px; border: 1px solid #ddd2c6; width: 170px; }
       .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; padding: 10px 16px; align-items: start; }
-      .summary div { border-left: 4px solid var(--c); background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
+      .summary > div { border-left: 4px solid var(--c); background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+      .summary > div.now { box-shadow: 0 0 0 2px var(--c); }
+      .summary > div.over { background: #fff4f7; box-shadow: 0 0 0 3px var(--c); }
+      figure[draggable] { cursor: grab; }
+      .sum-head { display: flex; justify-content: space-between; align-items: center; }
+      .sum-head b { cursor: pointer; }
+      .mini { font-size: 11px; padding: 2px 8px; }
+      .empty { color: #8a7a6c; }
+      .picked-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 4px; max-height: 220px; overflow: auto; }
+      figure.picked { position: relative; margin: 0; padding: 0; border: 0; cursor: default; }
+      figure.picked img { border-radius: 6px; background: #fbf7f2; }
+      figure.picked figcaption { font-size: 10px; font-weight: 600; }
+      .x { position: absolute; top: -2px; right: -2px; width: 18px; height: 18px; padding: 0; line-height: 16px; font-size: 13px; border-radius: 50%; background: #fff; }
+      .x:hover { background: #4a3d33; color: #fff; }
+      .move { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; margin-top: 2px; }
+      .move button { font-size: 9px; padding: 1px 5px; border: 0; color: #fff; border-radius: 999px; }
+      .move button:hover { filter: brightness(0.9); }
+      .picked-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)) !important; max-height: 260px !important; }
       .summary button { justify-self: start; }
       main { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; padding: 4px 16px 40px; }
       figure { margin: 0; text-align: center; cursor: pointer; border-radius: 12px; padding: 4px; border: 2px solid transparent; }
@@ -30,6 +47,16 @@
       figcaption { font-size: 13px; font-weight: 700; margin-top: 3px; }
       .tags { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; min-height: 4px; margin-top: 2px; }
       .tags i { font-style: normal; font-size: 10px; color: #fff; padding: 1px 6px; border-radius: 999px; }
+      .lineups { padding: 4px 16px 40px; }
+      .lineups .hint { margin: 0 0 8px; }
+      .lineup { display: grid; grid-template-columns: 24px repeat(12, 1fr); gap: 3px; align-items: center; margin-bottom: 10px; background: #fff8; border-radius: 14px; padding: 6px; }
+      .lineup > b { text-align: center; color: #8a7a6c; font-size: 12px; }
+      .lineup figure { padding: 2px; }
+      .lineup figcaption { font-size: 11px; }
+      .lineup figure:nth-of-type(2n) { margin-right: 6px; }
+      .lineup.extra { background: #fff; }
+      .lineup.extra figure { position: relative; }
+      .lineup.extra figure:nth-of-type(2n) { margin-right: 0; }
     </style>
   </head>
   <body><div id="root"></div><script type="module" src="/src/mapping/namesPreview.tsx"></script></body>
