@@ -94,6 +94,8 @@ eq('모양: 현준 은 속눈썹 눈이 아니다', genesFromName('이현준', '
 eq('모양: 수 ㅜ → 꼬리01', genesFromName('김민수', 'shape')!.tail, 1)
 eq('모양: 은 → 리본 몸통장식01', genesFromName('김지은', 'shape')!.deco, 1)
 eq('모양: 준 ㄴ → 가방 몸통장식03', genesFromName('김민준', 'shape')!.deco, 3)
+eq('모양: 수 받침없음 → 스카프 몸통장식04', genesFromName('김민수', 'shape')!.deco, 4)
+eq('모양: 철 ㄹ → 날개 몸통장식06', genesFromName('김영철', 'shape')!.deco, 6)
 eq('모양: 우 ㅜ → 입06', genesFromName('김우진', 'shape')!.mouth, 6)
 
 // 같은 이름은 같은 결과
