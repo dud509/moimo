@@ -272,13 +272,16 @@ export const zFor = (slot: SlotKey, part: number, z: number): number =>
  * 흰 채우기를 아예 비우는 파츠 — 밑에 깔린 얼굴 색이 그대로 비친다.
  * 눈 11번(나선)은 흰자가 주변 얼굴과 같아야 하는데, 무늬가 얼굴을 덮으면
  * 그 자리 색이 몸통 색과 다르고(반반 무늬는 눈마다 다르다) 칠할 한 색이 없다.
+ * 비운 자리 밑으로 볼 장식이 비치지 않게, 볼은 그 자리만큼 도려낸다(compose).
  */
 const CLEARED: Partial<Record<SlotKey, number[]>> = {
   eye: [11],
 }
 
+export const isCleared = (slot: SlotKey, part: number): boolean => !!CLEARED[slot]?.includes(part)
+
 export const fillFor = (slot: SlotKey, part: number, bodyHex: string) =>
-  CLEARED[slot]?.includes(part) ? 'none' : isTinted(slot, part) ? bodyHex : FILL_COLOR
+  isCleared(slot, part) ? 'none' : isTinted(slot, part) ? bodyHex : FILL_COLOR
 
 /** 몸통 z=2, 무늬 z=3 — 슬롯 사이에 낀다 */
 /**

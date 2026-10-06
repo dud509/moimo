@@ -8,7 +8,7 @@
 import {
   BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, regionsFor,
   SLOTS, Z_BODY, Z_MORPH, edgeFor,
-  bodyUrl, composeAnchor, decoFor, fillFor, usesPoint, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor, zFor,
+  bodyUrl, composeAnchor, decoFor, fillFor, isCleared, usesPoint, isSvgText, morphUrls, partUrl, prepareSvg, syOf, toneFor, zFor,
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
@@ -289,11 +289,26 @@ export function composeMoimo(
   // 몸통 장식 같은 것은 몸통에 파묻히지 않게 따로 색을 고른다
   const decoHex = decoFor(color)
 
+  let cheekPiece: { z: number; svg: string } | undefined
   for (const s of SLOTS) {
     const key = s.key as SlotKey
     const n = genes[s.key as keyof MoimoGenes] as number
     const base = key === 'tail' ? bodyTone : usesPoint(key, n) ? decoHex : bodyHex
+    const before = pieces.length
     push(zFor(key, n, s.z), partUrl(key, n), fillFor(key, n, base), composeAnchor(table, genes.body, key, n, genes.eye))
+    if (key === 'cheek' && pieces.length > before) cheekPiece = pieces[before]
+  }
+
+  // 흰자를 비운 눈(11) 밑으로 볼이 비치지 않게, 볼에서 그 흰자 자리를 도려낸다
+  const eyeRaw = cache.get(partUrl('eye', genes.eye))
+  if (isCleared('eye', genes.eye) && eyeRaw && cheekPiece) {
+    const hole = innards(prepareSvg(eyeRaw, { fill: '#000000', line: 'none', accent: '#000000' }, `${uid}eh`))
+    const id = `eh-${uid}`
+    cheekPiece.svg =
+      `<defs><mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="${CANVAS}" height="${CANVAS}">` +
+      `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="#fff"/>` +
+      layer(hole, composeAnchor(table, genes.body, 'eye', genes.eye, genes.eye), uid) +
+      `</mask></defs><g mask="url(#${id})">${cheekPiece.svg}</g>`
   }
 
   pieces.sort((a, b) => a.z - b.z)
