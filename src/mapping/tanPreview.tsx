@@ -6,25 +6,25 @@ import { composeMoimo, loadParts, moimoDataUri, type PartsCache } from '../moimo
 import { BODY_COLORS, normalizeTable, type AnchorTable } from '../moimo/parts'
 import { genesFromName, type MoimoGenes } from '../moimo/name'
 
-type Cand = { key: string; label: string; hex: string; line: string }
+type Cand = { key: string; label: string; hex: string; line: string; idx?: number }
 const CANDS: Cand[] = [
-  { key: 'now', label: '지금 진갈색', hex: '#967A69', line: '#4F3A2E' },
-  { key: 'b', label: 'B 캐러멜', hex: '#BC9474', line: '#5E4434' },
-  { key: 'c', label: 'C 밀크티', hex: '#C9A88A', line: '#6B523F' },
-  { key: 'd', label: 'D 태닝', hex: '#D5B394', line: '#755A45' },
-  { key: 'e', label: 'E 연베이지', hex: '#E3C6A6', line: '#82664F' },
+  { key: 'now', label: '노랑 지금', hex: '#FFFAE3', line: '#7C684B', idx: 1 },
+  { key: 'a', label: 'A 조금 더 노랗게', hex: '#FFFAE3', line: '#7E663F', idx: 1 },
+  { key: 'b', label: 'B 머스터드 브라운', hex: '#FFFAE3', line: '#806433', idx: 1 },
+  { key: 'c', label: 'C 앰버', hex: '#FFFAE3', line: '#88672F', idx: 1 },
+  { key: 'd', label: 'D 올리브 골드', hex: '#FFFAE3', line: '#7A682C', idx: 1 },
 ]
-const OLD = BODY_COLORS[3].hex
+const OLD = BODY_COLORS[3].hex  // 민트 포인트가 따라가는 값
 const LINEUP = ['김하은', '박지우', '최서연', '정하은', '조민준', '이서윤']
-const BROWNS = ['서지아', '정유나', '엄서연', '성하윤', '전소윤', '정다현']
+const BROWNS = ['박서아', '강지우', '장하린', '한예린', '안소윤', '박도윤']
 
 /** 갈색 한 칸을 잠깐 바꿔 그린다 — 민트의 포인트(옛 갈색)도 같이 따라간다 */
 function withColor(c: Cand, draw: () => string) {
-  const brown = BODY_COLORS[3] as { hex: string; line: string }
+  const brown = BODY_COLORS[c.idx ?? 3] as { hex: string; line: string }
   const mint = BODY_COLORS[4] as { point: string }
   const saved = { hex: brown.hex, line: brown.line, point: mint.point }
   brown.hex = c.hex; brown.line = c.line
-  if (saved.point.toLowerCase() === OLD.toLowerCase()) mint.point = c.hex
+  if (c.idx === undefined && saved.point.toLowerCase() === OLD.toLowerCase()) mint.point = c.hex
   try { return draw() } finally { brown.hex = saved.hex; brown.line = saved.line; mint.point = saved.point }
 }
 
@@ -36,7 +36,7 @@ function Art({ g, c, cache, table }: { g: MoimoGenes; c: Cand; cache: PartsCache
 function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
   return (
     <>
-      <h1>진갈색 → 태닝 키티 색</h1>
+      <h1>노랑 — 선 색 후보</h1>
       <p className="hint">줄마다 왼쪽 6명은 여섯 색 나란히(민트는 갈색 포인트도 같이 바뀜), 오른쪽 6명은 갈색 집안끼리</p>
       {CANDS.map((c) => (
         <section key={c.key}>
