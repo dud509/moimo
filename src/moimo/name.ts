@@ -283,12 +283,10 @@ const SHAPE_BODY: MapRow[] = [
   { jamo: ['ㅁ', 'ㅂ', 'ㅍ'], part: 2, pct: 6.3, why: 'ㅁ·ㅂ·ㅍ 처럼 옆으로 넓게 퍼진 코끼리 귀' },
   { jamo: ['ㅈ'], part: 1, pct: 15.9, why: 'ㅈ 처럼 획이 갈라져 삐죽삐죽한 털의 고양이' },
   { jamo: ['ㄴ', 'ㄷ', 'ㅌ', 'ㄹ'], part: 8, pct: 3.0, why: 'ㄴ·ㄷ 의 가로획처럼 옆으로 뻗은 코알라 귀' },
-  { jamo: ['ㅎ'], part: 12, pct: 3.7, why: 'ㅎ 의 동그라미처럼 끝이 동글게 말린 롭이어 귀' },
+  { jamo: ['ㅎ', '린'], part: 12, pct: 5.9, why: 'ㅎ 의 동그라미, 린 의 ㄹ 처럼 끝이 동글게 말린 롭이어 귀 — 린 은 여자 이름에 많아 ㄹ 에서 떼어 온다' },
   { jamo: ['ㅅ'], part: 6, pct: 4.8, why: 'ㅅ 의 두 획이 양옆으로 벌어지듯 얼굴 양옆에 붙은 원숭이 귀' },
   { jamo: ['ㄱ', 'ㅋ'], part: 4, pct: 4.1, why: 'ㄱ 처럼 꺾여 내려오는 강아지 귀' },
-  { jamo: ['ㅊ'], part: 9, pct: 2.4, why: 'ㅊ 의 두 다리처럼 얼굴 양옆으로 길게 내려오는 롭이어 귀' },
-  { jamo: ['린'], part: 12, pct: 2.4, why: '린 은 여자 이름에 많아 ㄹ 에서 떼어 — 린 의 ㄹ 처럼 끝이 동글게 말린 롭이어 귀' },
-  { jamo: ['아'], part: 9, pct: 1.7, why: '아 는 여자 이름에 많아 ㅇ 에서 떼어 — 아 의 ㅏ 처럼 곧게 길게 내려오는 롭이어 귀' },
+  { jamo: ['ㅊ', '아'], part: 9, pct: 4.1, why: 'ㅊ 의 두 다리, 아 의 ㅏ 처럼 얼굴 양옆으로 길게 내려오는 롭이어 귀 — 아 는 여자 이름에 많아 ㅇ 에서 떼어 온다' },
 ]
 
 const SHAPE_MORPH: MapRow[] = [
@@ -443,11 +441,12 @@ const isSyllable = (j: string) => j.length === 1 && j >= '가'
  * 한 자리의 표를 읽는 법. 글자 통째로 적힌 줄(김·이·박, 영·연 같은)을 먼저
  * 보고, 없으면 자모로 찾는다. 자모 하나가 너무 흔해 파츠 하나가 몰릴 때,
  * 그 자모 가운데 흔한 글자만 떼어 다른 파츠에 줄 수 있게 하려는 것이다.
+ * 한 줄에 글자와 자모가 섞여 있어도(ㅎ·린) 하나씩 나눠 읽는다.
  */
 function reader(rows: MapRow[]) {
-  const sylRows = rows.filter((r) => r.jamo?.some(isSyllable))
-  const bySyllable = toMap([...sylRows, { jamo: null, part: -1, pct: 0 }])
-  const byJamo = toMap(rows.filter((r) => !sylRows.includes(r)))
+  const only = (keep: boolean) => rows.map((r) => ({ ...r, jamo: r.jamo && r.jamo.filter((j) => isSyllable(j) === keep) }))
+  const bySyllable = toMap([...only(true).filter((r) => r.jamo), { jamo: null, part: -1, pct: 0 }])
+  const byJamo = toMap(only(false))
   return (syllable: string, jamo: string) => {
     const v = bySyllable(syllable)
     return v >= 0 ? v : byJamo(jamo)
