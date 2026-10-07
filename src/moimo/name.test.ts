@@ -63,6 +63,7 @@ eq('모양: 호 → 비스듬한 귀 몸통11', genesFromName('이민호', 'shap
 eq('모양: 수 → 보송한 털 귀 몸통07', genesFromName('이민수', 'shape')!.body, 7)
 eq('모양: 미 ㅁ → 뭉실한 귀 몸통02', genesFromName('이은미', 'shape')!.body, 2)
 eq('모양: 재 ㅈ → 삐죽 털 몸통01', genesFromName('이민재', 'shape')!.body, 1)
+eq('모양: 진 ㅈ → 삐죽 털 몸통01', genesFromName('이우진', 'shape')!.body, 1)
 eq('모양: 란 ㄹ → 옆으로 뻗은 귀 몸통08', genesFromName('이하란', 'shape')!.body, 8)
 eq('모양: 린 → 롭이어2 몸통12', genesFromName('이하린', 'shape')!.body, 12)
 eq('모양: 아 → 롭이어 몸통09', genesFromName('이수아', 'shape')!.body, 9)
