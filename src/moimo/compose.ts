@@ -380,17 +380,28 @@ export async function loadParts(): Promise<PartsCache> {
   }
 
   const cache: PartsCache = new Map()
-  await Promise.all(
-    urls.map(async (url) => {
-      try {
-        const res = await fetch(url)
-        if (!res.ok) return
-        const text = await res.text()
-        if (isSvgText(text)) cache.set(url, text)
-      } catch {
-        /* 없는 파츠는 그냥 건너뛴다 */
-      }
-    }),
-  )
+  // 몸통별 파일 후보까지 넣으면 같은 주소가 여러 번 나온다 — 한 번씩만 받는다.
+  // 수백 개를 한꺼번에 받으면 일부가 조용히 실패해 무늬 같은 파츠가 빠지므로
+  // 여러 번에 나눠 받고, 실패한 것은 한 번 더 받는다
+  const unique = [...new Set(urls)]
+  const get = async (url: string): Promise<boolean> => {
+    try {
+      const res = await fetch(url)
+      if (!res.ok) return true // 없는 파일 — 다시 받을 필요 없다
+      const text = await res.text()
+      if (isSvgText(text)) cache.set(url, text)
+      return true
+    } catch {
+      return false
+    }
+  }
+  const BATCH = 24
+  const failed: string[] = []
+  for (let i = 0; i < unique.length; i += BATCH) {
+    const chunk = unique.slice(i, i + BATCH)
+    const ok = await Promise.all(chunk.map(get))
+    chunk.forEach((u, k) => { if (!ok[k]) failed.push(u) })
+  }
+  for (const u of failed) await get(u)
   return cache
 }
