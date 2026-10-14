@@ -294,8 +294,9 @@ const SHAPE_BODY: MapRow[] = [
 ]
 
 const SHAPE_MORPH: MapRow[] = [
-  { jamo: null, label: '받침 없음 · ㄹ ㅂ ㅅ …', part: 0, pct: 34.1, note: '받침 없는 성과 드문 받침은 무늬 없음' },
+  { jamo: [''], part: 0, pct: 34.1, note: '받침 없는 성은 무늬 없음' },
   { jamo: ['김'], part: 4, pct: 21.4, why: '김의 ㄱ·ㅣ 처럼 세로로 반을 갈라 칠한 무늬' },
+  { jamo: null, label: 'ㄹ ㅂ ㅅ …', part: 4, pct: 0, why: '드문 받침도 김처럼 세로로 반을 갈라 — 반갈 무늬가 김씨(파랑)에만 묶이지 않게' },
   { jamo: ['ㄱ', 'ㅇ'], part: 1, pct: 21.1, why: 'ㄱ·ㅇ 받침의 끝처럼 귀와 꼬리 끝만 물든 무늬' },
   { jamo: ['ㄴ'], part: 2, pct: 13.5, why: 'ㄴ 처럼 아래까지 꽉 채운 무늬' },
   { jamo: ['ㅁ'], part: 3, pct: 5.3, why: 'ㅁ 처럼 얼굴을 네모나게 비워 둔 무늬' },

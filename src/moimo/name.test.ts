@@ -132,6 +132,8 @@ eq('결정론적', encodeGenes(genesFromName('김민수')!), encodeGenes(genesFr
 
 // 가족 닮음
 const kims = ['김민수', '김서연', '김도윤'].map((n) => genesFromName(n, 'freq')!)
+eq('모양: 드문 받침(설 ㄹ)도 반갈 무늬 04', genesFromName('설다영')!.morph, 4)
+eq('모양: 받침 없는 성(이)은 무늬 없음', genesFromName('이다영')!.morph, 0)
 eq('김씨는 몸통·색·무늬가 같다', kims.map((g) => [g.body, g.color, g.morph]),
    [[2,1,3],[2,1,3],[2,1,3]])
 
