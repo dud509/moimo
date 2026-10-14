@@ -54,7 +54,7 @@ function Sheet({ id, cache, table }: { id: MappingId; cache: PartsCache; table: 
               <figure key={c.name} className="card">
                 <Moimo genes={{ ...BASE, color: i + 1 }} crop={CROP.body} cache={cache} table={table} />
                 <figcaption>
-                  <b>{c.jamo.replace('ㅣ받침', 'ㅣ+받침').replace('ㅗㅜ', 'ㅗ ㅜ')}</b>
+                  <b>{c.jamo.replace('ㅗㅜ', 'ㅗ ㅜ')}</b>
                   <span>{c.name}</span>
                 </figcaption>
               </figure>

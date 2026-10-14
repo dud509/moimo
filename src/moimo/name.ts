@@ -129,17 +129,21 @@ const BODY_CHO: MapRow[] = [
  * 몸통 색 — 성의 중성.
  *
  * 다만 ㅣ 하나에 김(21.5%)과 이(14.7%)가 같이 들어 있어 성씨의 44% 가
- * 한 색으로 몰렸다. ㅣ 만 받침 유무로 한 번 더 가른다. 김은 받침이 있고
- * 이는 없으므로 둘이 갈라지고, 가장 큰 통이 44% 에서 28% 로 내려간다.
- * 대신 ㅗ 와 ㅜ 를 한 통에 넣어 색 수는 여섯 그대로 둔다.
+ * 한 색으로 몰렸다. ㅣ 만 초성으로 한 번 더 가른다 — ㄱ·ㅈ(김·진·지)은
+ * 파랑, 그 밖(이·임·신·심·민)은 연보라. 김과 이가 갈라져 가장 큰 통이
+ * 44% 에서 24% 로 내려간다. 대신 ㅗ 와 ㅜ 를 한 통에 넣어 색 수는 여섯
+ * 그대로 둔다.
+ *
+ * 받침으로 가르지 않는 건 무늬도 받침에서 나오기 때문이다. 받침으로 가르면
+ * 파랑은 늘 무늬가 있고 연보라는 늘 없어, 한 색 안에서 무늬가 섞이지 않는다.
  *
  * 갈색은 받침 없는 성이 많은 통에 두면 무늬 없이 온몸이 갈색인 아이가
  * 쏟아진다 (ㅗㅜ 일 때 조·오·고·노… 로 갈색의 58%). 받침 있는 성이
  * 대부분인 ㅓ(정·전·성) 에 둔다. 민트·연보라는 원래 모이모 색이 아니라
  * 덜 흔한 통으로 보낸다.
  */
-function colorOf(jung: string, jong: string): number {
-  if (jung === 'ㅣ') return jong ? 1 : 6   // 받침 있으면 파랑(김 계열), 없으면 연보라(이 계열)
+function colorOf(cho: string, jung: string): number {
+  if (jung === 'ㅣ') return cho === 'ㄱ' || cho === 'ㅈ' ? 1 : 6   // ㄱ·ㅈ 은 파랑(김·진·지), 그 밖은 연보라(이·임·신·심·민)
   if (jung === 'ㅏ') return 2
   if (jung === 'ㅓ') return 4
   if (jung === 'ㅗ' || jung === 'ㅜ') return 5
@@ -473,7 +477,7 @@ export function genesFromParts(p: NameParts, mapping: MappingId = ACTIVE_MAPPING
   const at = (k: Src) => (k === 's' ? p.surname : p.n2.char)
   return {
     body: m.body(at(src.body), p[src.body].cho),
-    color: colorOf(p.s.jung, p.s.jong),
+    color: colorOf(p.s.cho, p.s.jung),
     morph: m.morph(p.surname, p.s.jong),
     tone: toneOf(p.n1.jung),
     eye: m.eye(p.n1.char, p.n1.cho),
@@ -529,8 +533,8 @@ export function explain(p: NameParts): Reason[] {
   return READOUT.map((r) => {
     const syl = p[r.src]
     let jamo: string = syl[JAMO_KEY[r.place]]
-    // 색은 ㅣ 일 때만 받침까지 보고 정해지므로 그대로 읽어 준다
-    if (r.slot === 'color' && jamo === 'ㅣ') jamo = p.s.jong ? 'ㅣ · 받침 있음' : 'ㅣ · 받침 없음'
+    // 색은 ㅣ 일 때만 초성까지 보고 정해지므로 그대로 읽어 준다
+    if (r.slot === 'color' && jamo === 'ㅣ') jamo = `${p.s.cho} · ㅣ`
     // 바탕은 그 모음이 밝은 소리냐 어두운 소리냐로 갈린다
     if (r.slot === 'tone') jamo = `${jamo} · ${g.tone ? '어두운 모음' : '밝은 모음'}`
     return {

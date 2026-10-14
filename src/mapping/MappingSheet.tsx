@@ -61,7 +61,7 @@ export default function MappingSheet() {
             <figure key={c.name} className="card">
               <Moimo genes={{ ...BASE, color: i + 1 }} crop={CROP.body} cache={cache} table={table} />
               <figcaption>
-                <span className="jamo">{c.jamo.replace('받침', ' + 받침').replace('ㅗㅜ', 'ㅗ ㅜ')}</span>
+                <span className="jamo">{c.jamo.replace('ㅗㅜ', 'ㅗ ㅜ')}</span>
                 <span className="part"><i style={{ background: c.hex }} />{c.name}</span>
               </figcaption>
             </figure>
