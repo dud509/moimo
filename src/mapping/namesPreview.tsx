@@ -5,19 +5,23 @@ import anchorsJson from '../data/anchors.json'
 import { composeMoimo, loadParts, moimoDataUri, type PartsCache } from '../moimo/compose'
 import { BODY_COLORS, normalizeTable, type AnchorTable } from '../moimo/parts'
 import { genesFromName, randomKoreanName, type MoimoGenes } from '../moimo/name'
-import { goodsSvg } from '../moimo/exportSvg'
+import { goodsSheet, goodsSvg } from '../moimo/exportSvg'
 
 // id 는 저장해 둔 고른 목록과 이어지므로 이름이 바뀌어도 그대로 둔다 (name = 코롯토)
-const GOODS: readonly { id: 'acrylic' | 'cushion' | 'name' | 'badge'; label: string; color: string; goal?: number }[] = [
+const GOODS: readonly { id: 'acrylic' | 'cushion' | 'name' | 'badge' | 'sticker'; label: string; color: string; goal?: number }[] = [
   { id: 'acrylic', label: '아크릴 키링', color: '#7aa7d8' },
   { id: 'cushion', label: '쿠션 키링', color: '#e59aae' },
   { id: 'name', label: '코롯토', color: '#9bc48a', goal: 12 },
   { id: 'badge', label: '뱃지', color: '#e2b75a' },
+  // 450×300 한 장에 80칸 — 24종 × 3 + 도우미 8칸
+  { id: 'sticker', label: '나눔 스티커', color: '#b59ad8', goal: 24 },
 ]
+// 나눔 스티커 추천 24 — 몸통 12종 × 2(같은 몸통 둘은 눈이 다르게), 색 6 × 4, 눈 11종 모두, 굿즈와 겹치는 이름 없음
+const STICKER_SUGGEST = ['정윤지', '고민지', '김재민', '배성민', '진채영', '이나영', '김동건', '정미경', '한도현', '신지현', '백지성', '이현숙', '최경수', '서면수', '차유나', '오하늘', '남수아', '전재윤', '진가은', '민하은', '나정훈', '홍은호', '유혜린', '송나래']
 type GoodsId = (typeof GOODS)[number]['id']
 const countText = (g: (typeof GOODS)[number], n: number) => (g.goal ? `${n}/${g.goal}` : String(n))
 type Picks = Record<GoodsId, string[]>
-const EMPTY: Picks = { acrylic: [], cushion: [], name: [], badge: [] }
+const EMPTY: Picks = { acrylic: [], cushion: [], name: [], badge: [], sticker: [] }
 const KEY = 'moimo-goods-picks'
 
 function names(count: number) {
@@ -29,34 +33,74 @@ function names(count: number) {
 }
 
 /**
- * 색마다 하나씩 여섯 명으로 된 라인업을 여러 벌 뽑는다.
- *  - 몸통 모양과 머리장식은 한 줄 안에서 겹치지 않는다
- *  - 셋은 무늬 있게, 셋은 무늬 없게
+ * 열두 명 한 벌 — 그대로 굿즈 한 세트로 골라도 되게 뽑는다.
+ *  - 몸통 모양 12가지가 하나씩 다 나온다
+ *  - 눈 11가지가 다 나온다 (열두 명이라 하나만 두 번)
+ *  - 색은 여섯 색이 둘씩
+ *  - 머리장식은 되는 대로 안 겹치게
+ * 몸통과 눈은 이름 글자로 묶여 있어(눈 11 은 몸통 05·09 뿐) 손으로는 맞추기 어렵다.
  */
-function lineups(pool: { n: string; g: MoimoGenes }[], count: number, seed: number) {
-  let s = seed
+function dozens(pool: { n: string; g: MoimoGenes }[], count: number, seed: number) {
+  type P = { n: string; g: MoimoGenes }
+  let s = seed * 7919 + 1
   const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647)
-  const by: Record<number, { n: string; g: MoimoGenes }[]> = {}
-  for (const x of pool) {
-    ;(by[x.g.color] ??= []).push(x)
-  }
-  const out: { n: string; g: MoimoGenes }[][] = []
-  const seen = new Set<string>()
-  for (let t = 0; out.length < count && t < count * 400; t++) {
-    const row: { n: string; g: MoimoGenes }[] = []
-    let ok = true
-    for (let c = 1; c <= 6 && ok; c++) {
-      const list = by[c] ?? []
-      const cand = list.filter((x) => !row.some((y) => y.g.body === x.g.body || y.g.hair === x.g.hair))
-      if (!cand.length) { ok = false; break }
-      row.push(cand[Math.floor(rnd() * cand.length)])
+  const shuffle = <T,>(xs: T[]) => {
+    const a = [...xs]
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1))
+      ;[a[i], a[j]] = [a[j], a[i]]
     }
-    if (!ok) continue
-    if (row.filter((x) => x.g.morph > 0).length !== 3) continue
-    const key = row.map((x) => x.n).join()
-    if (seen.has(key)) continue
-    seen.add(key)
-    out.push(row)
+    return a
+  }
+  const bucket = new Map<string, P[]>()
+  for (const x of pool) {
+    const k = `${x.g.body}-${x.g.eye}-${x.g.color}`
+    bucket.set(k, [...(bucket.get(k) ?? []), x])
+  }
+  const eyesOf = (b: number) => [...new Set(pool.filter((x) => x.g.body === b).map((x) => x.g.eye))]
+  const BODIES = Array.from({ length: 12 }, (_, i) => i + 1)
+  const EYES = Array.from({ length: 11 }, (_, i) => i + 1)
+  const options = new Map(BODIES.map((b) => [b, eyesOf(b)]))
+
+  const one = (): P[] | null => {
+    // 고를 눈이 적은 몸통부터 — 같은 수끼리는 섞는다
+    const order = shuffle(BODIES).sort((a, b) => options.get(a)!.length - options.get(b)!.length)
+    const row: P[] = []
+    const eyes = new Map<number, number>()
+    const colors = new Map<number, number>()
+    let steps = 0
+    const go = (i: number): boolean => {
+      if (++steps > 4000) return false
+      if (i === order.length) return EYES.every((e) => eyes.has(e))
+      // 남은 자리보다 아직 안 나온 눈이 많으면 더 볼 것 없다
+      if (EYES.filter((e) => !eyes.has(e)).length > order.length - i) return false
+      for (const e of shuffle(options.get(order[i])!)) {
+        if (eyes.has(e) && [...eyes.values()].some((n) => n > 1)) continue
+        for (const c of shuffle([1, 2, 3, 4, 5, 6])) {
+          if ((colors.get(c) ?? 0) >= 2) continue
+          const list = bucket.get(`${order[i]}-${e}-${c}`)
+          if (!list) continue
+          const fresh = list.filter((x) => !row.some((y) => y.g.hair === x.g.hair))
+          const from = fresh.length ? fresh : list
+          row.push(from[Math.floor(rnd() * from.length)])
+          eyes.set(e, (eyes.get(e) ?? 0) + 1)
+          colors.set(c, (colors.get(c) ?? 0) + 1)
+          if (go(i + 1)) return true
+          row.pop()
+          eyes.get(e) === 1 ? eyes.delete(e) : eyes.set(e, eyes.get(e)! - 1)
+          colors.set(c, colors.get(c)! - 1)
+        }
+      }
+      return false
+    }
+    return go(0) ? row : null
+  }
+
+  const out: P[][] = []
+  for (let t = 0; out.length < count && t < count * 20; t++) {
+    const row = one()
+    // 같은 색 둘이 나란히 서게 색 순서로 세운다
+    if (row) out.push(row.sort((a, b) => a.g.color - b.g.color))
   }
   return out
 }
@@ -146,18 +190,7 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
     const more = names(4000).filter((n) => !extra.includes(n))
     return [...extra, ...more].map((n) => ({ n, g: genesFromName(n) })).filter((x): x is { n: string; g: MoimoGenes } => !!x.g)
   }, [extra])
-  // 한 줄에 열두 명 — 여섯 명짜리 라인업 둘을 색끼리 나란히 붙인다
-  const rows = useMemo(() => {
-    const six = lineups(pool, 80, seed)
-    const out: { n: string; g: MoimoGenes }[][] = []
-    for (let i = 0; i + 1 < six.length && out.length < 30; i += 2) {
-      const [a, b] = [six[i], six[i + 1]]
-      // 같은 색 둘은 이름도 몸통도 달라야 한다 — 몸통은 이제 이름 뒤 글자가 정해 색과 묶이지 않는다
-      if (a.some((x, k) => x.n === b[k].n || x.g.body === b[k].g.body)) { i--; continue }
-      out.push(a.flatMap((x, k) => [x, b[k]]))
-    }
-    return out
-  }, [pool, seed])
+  const rows = useMemo(() => dozens(pool, 30, seed), [pool, seed])
 
   useEffect(() => { try { localStorage.setItem(KEY, JSON.stringify(picks)) } catch { /* 못 적어도 고르기는 된다 */ } }, [picks])
   useEffect(() => { try { localStorage.setItem(KEY + ':extra', JSON.stringify(extra)) } catch { /* 위와 같음 */ } }, [extra])
@@ -198,6 +231,7 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
   const exportAll = async () => {
     const jobs = GOODS.flatMap((g) => picks[g.id].map((n) => ({ g, n })))
     let done = 0, failed = 0
+    const sheets = new Map<string, { name: string; svg: string }[]>()
     for (const { g, n } of jobs) {
       setExporting(`뽑는 중 ${done + 1}/${jobs.length}`)
       const genes = genesFromName(n)
@@ -206,8 +240,16 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
         const svg = await goodsSvg(genes, n, cache, table)
         const r = await fetch('/__goods', { method: 'POST', body: JSON.stringify({ folder: g.label, file: `모이모_${n}`, svg }) })
         if (!r.ok) throw new Error(await r.text())
+        sheets.set(g.label, [...(sheets.get(g.label) ?? []), { name: n, svg }])
       } catch { failed++ }
       done++
+    }
+    // 굿즈마다 한 장에 모은 것도 — 일러에서 한 번만 열면 되게
+    for (const [folder, items] of sheets) {
+      try {
+        const r = await fetch('/__goods', { method: 'POST', body: JSON.stringify({ folder, file: `한장에_모아보기_${items.length}명`, svg: goodsSheet(items) }) })
+        if (!r.ok) throw new Error(await r.text())
+      } catch { failed++ }
     }
     setExporting(failed ? `${done - failed}장 저장 · ${failed}장 실패` : `${done}장 저장 완료`)
     setTimeout(() => setExporting(null), 4000)
@@ -251,7 +293,7 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
         {GOODS.map((g) => (
           <div
             key={g.id}
-            className={`${goods === g.id ? 'now' : ''}${over === g.id ? ' over' : ''}`}
+            className={`g-${g.id}${goods === g.id ? ' now' : ''}${over === g.id ? ' over' : ''}`}
             style={{ '--c': g.color } as React.CSSProperties}
             onDragOver={(e) => { e.preventDefault(); setOver(g.id) }}
             onDragLeave={() => setOver((o) => (o === g.id ? null : o))}
@@ -259,9 +301,14 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
           >
             <div className="sum-head">
               <b onClick={() => setGoods(g.id)}>{g.label} <small>{countText(g, picks[g.id].length)}</small></b>
-              {picks[g.id].length > 0 && (
-                <button className="mini" onClick={() => { if (confirm(`${g.label}에 고른 ${picks[g.id].length}명을 모두 뺄까요?`)) setPicks((p) => ({ ...p, [g.id]: [] })) }}>모두 빼기</button>
-              )}
+              <span>
+                {g.id === 'sticker' && (
+                  <button className="mini" onClick={() => setPicks((p) => ({ ...p, sticker: [...STICKER_SUGGEST] }))}>추천 24 넣기</button>
+                )}
+                {picks[g.id].length > 0 && (
+                  <button className="mini" onClick={() => { if (confirm(`${g.label}에 고른 ${picks[g.id].length}명을 모두 뺄까요?`)) setPicks((p) => ({ ...p, [g.id]: [] })) }}>모두 빼기</button>
+                )}
+              </span>
             </div>
             {picks[g.id].length === 0 ? <span className="empty">아직 없음 · 여기로 끌어다 놓기</span> : (
               <div className="picked-grid">
@@ -313,7 +360,7 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
               </div>
             ))}
           </>}
-          <p className="hint">색마다 둘씩 · 같은 색 둘은 몸통이 다르게 · 무늬 반/없음 반</p>
+          <p className="hint">한 줄이 그대로 한 세트 · 색마다 둘씩 · 몸통 12가지 모두 · 눈 11가지 모두(하나만 두 번)</p>
           {rows.map((row, i) => (
             <div key={i} className="lineup">
               <b>{i + 1}</b>

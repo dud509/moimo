@@ -38,7 +38,11 @@
       .move { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; margin-top: 2px; }
       .move button { font-size: 9px; padding: 1px 5px; border: 0; color: #fff; border-radius: 999px; }
       .move button:hover { filter: brightness(0.9); }
-      .picked-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)) !important; max-height: 260px !important; }
+      /* 고른 목록을 스크롤 없이 한눈에 — 아크릴·쿠션은 반씩, 코롯토·뱃지는 한 줄 가득 */
+      .summary { grid-template-columns: 1fr 1fr; }
+      .summary > div.g-name, .summary > div.g-badge, .summary > div.g-sticker { grid-column: 1 / -1; }
+      .picked-grid { grid-template-columns: repeat(auto-fill, 76px) !important; max-height: none !important; overflow: visible !important; gap: 6px; }
+      figure.picked figcaption { font-size: 11px; }
       .summary button { justify-self: start; }
       .coverage { margin: 0 16px 8px; background: #fff; border-radius: 10px; padding: 8px 12px; font-size: 13px; display: grid; gap: 3px; }
       .coverage div { display: grid; grid-template-columns: 70px 1fr; column-gap: 8px; }
