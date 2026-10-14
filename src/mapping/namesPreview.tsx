@@ -17,7 +17,7 @@ const GOODS: readonly { id: 'acrylic' | 'cushion' | 'name' | 'badge' | 'sticker'
   { id: 'sticker', label: '나눔 스티커', color: '#b59ad8', goal: 24 },
 ]
 // 나눔 스티커 추천 24 — 몸통 12종 × 2(같은 몸통 둘은 눈이 다르게), 색 6 × 4, 눈 11종 모두, 굿즈와 겹치는 이름 없음
-const STICKER_SUGGEST = ['정윤지', '고민지', '김재민', '배성민', '진채영', '이나영', '김동건', '정미경', '한도현', '신지현', '백지성', '이현숙', '최경수', '서면수', '차유나', '오하늘', '남수아', '전재윤', '진가은', '민하은', '나정훈', '홍은호', '유혜린', '송나래']
+const STICKER_SUGGEST = ['정윤지', '홍민지', '김재민', '배성민', '진채영', '이나영', '김동건', '정미경', '학도현', '배석현', '호칠성', '이현숙', '민지수', '서면수', '차유나', '옥하늘', '남경아', '전재윤', '진경은', '민하은', '나정훈', '최국희', '유혜린', '송나래']
 type GoodsId = (typeof GOODS)[number]['id']
 const countText = (g: (typeof GOODS)[number], n: number) => (g.goal ? `${n}/${g.goal}` : String(n))
 type Picks = Record<GoodsId, string[]>
