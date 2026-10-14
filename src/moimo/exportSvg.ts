@@ -135,3 +135,37 @@ function bakeClips(svg: string, box: number[]): string {
     host.remove()
   }
 }
+
+/**
+ * 굿즈 SVG 여러 장을 한 장에 늘어놓는다 — 일러스트레이터에서 한 번만 열면 되게.
+ *
+ * 크기는 건드리지 않는다. 한 장씩 뽑은 것과 같은 크기로, 칸마다 가운데에 놓는다.
+ * 모이모마다 이름을 붙인 묶음(<g id>)으로 넣어 일러에서 레이어 이름으로 보인다.
+ * 그림 위에 이름 글씨는 넣지 않는다.
+ * 파츠 id 는 유전자로 꼬리표가 붙어 있어 여럿을 한 문서에 넣어도 엉키지 않는다.
+ */
+export function goodsSheet(items: { name: string; svg: string }[], cols = 6): string {
+  const parsed = items.map(({ name, svg }) => {
+    const root = new DOMParser().parseFromString(svg, 'image/svg+xml').documentElement
+    const [x, y, w, h] = (root.getAttribute('viewBox') ?? '0 0 0 0').split(/\s+/).map(Number)
+    return { name, x, y, w, h, inner: [...root.childNodes].map((n) => new XMLSerializer().serializeToString(n)).join('') }
+  })
+  const gap = 24
+  const cw = Math.max(...parsed.map((p) => p.w))
+  const ch = Math.max(...parsed.map((p) => p.h))
+  const rows = Math.ceil(parsed.length / cols)
+  const W = cols * cw + (cols + 1) * gap
+  const H = rows * ch + (rows + 1) * gap
+  const round = (v: number) => Math.round(v * 100) / 100
+  const cells = parsed.map((p, i) => {
+    const cx = gap + (i % cols) * (cw + gap)
+    const cy = gap + Math.floor(i / cols) * (ch + gap)
+    const tx = round(cx + (cw - p.w) / 2 - p.x)
+    const ty = round(cy + (ch - p.h) - p.y)
+    return `<g id="${p.name}" transform="translate(${tx} ${ty})">${p.inner}</g>`
+  })
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
+${cells.join('\n')}
+</svg>`
+}
