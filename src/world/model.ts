@@ -375,11 +375,14 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
   return out
 }
 
+/** 바닥에 별사탕을 흩뿌릴지. 끄면 시안 자리·바깥 흩뿌림 모두 빠진다 */
+export const SHOW_PROPS = false
+
 /**
  * 마을에 깔린 소품. 한 번 정해지면 변하지 않는다 —
  * 모이모는 이 자리를 보고 비켜서 선다.
  */
-export const PROPS: Prop[] = scatterProps()
+export const PROPS: Prop[] = SHOW_PROPS ? scatterProps() : []
 
 export function makeResident(
   genes: MoimoGenes, name: string, n: number, rnd: () => number, mine: boolean, note?: string,
