@@ -61,6 +61,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         anchors: resolve(__dirname, 'anchors.html'),
         poster: resolve(__dirname, 'poster.html'),
+        sheet: resolve(__dirname, 'sheet.html'),
       },
     },
   },
