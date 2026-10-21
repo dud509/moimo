@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CANVAS } from '../moimo/parts'
 import type { AnchorTable } from '../moimo/parts'
 import { composeMoimo, moimoDataUri, type PartsCache } from '../moimo/compose'
@@ -18,183 +18,335 @@ export function Jar({
 }: Common & { onSend: (name: string, note: string) => void; count: number }) {
   const [name, setName] = useState('')
   const [note, setNote] = useState('')
+  /** 이름 넣기 → 아기요정 마법 → 태어난 모이모와 방명록 */
+  const [step, setStep] = useState<'name' | 'magic' | 'born'>('name')
+  const sent = useRef(false)
 
   const parts = splitName(name)
   const genes = genesFromName(name)
-  const preview: Resident | null = genes && parts
+  const born: Resident | null = genes && parts
     ? { id: 'preview', name: parts.full, genes, x: 0, y: 0, phase: 0, at: 0, mine: true }
     : null
 
+  const make = () => {
+    if (!born) return
+    setStep('magic')
+    window.setTimeout(() => setStep('born'), MAGIC_MS)
+  }
+  // 태어난 뒤에는 방명록을 쓰든 안 쓰든, 창을 닫으면 마을로 간다
+  const finish = () => {
+    if (!born || sent.current) return
+    sent.current = true
+    onSend(born.name, note.trim())
+  }
+  const close = () => (step === 'born' ? finish() : step === 'name' ? onClose() : undefined)
+
   return (
-    <div className="sheet">
+    <div className="jar-modal">
+    <JarLid />
+    <div className={`sheet glass jar-${step}`}>
       <header className="sheet-head">
         <div>
           <p className="eyebrow">별사탕 유리병</p>
-          <h2>이름을 넣으면 모이모가 태어나요</h2>
+          <h2>
+            {step === 'name' && '이름을 넣으면 모이모가 태어나요'}
+            {step === 'magic' && '아기요정들이 마법을 부리는 중…'}
+            {step === 'born' && born && <>{born.name} 모이모가 태어났어요!</>}
+          </h2>
         </div>
-        <button className="icon-btn" onClick={onClose}>✕</button>
+        {step !== 'magic' && <button className="icon-btn" onClick={close} aria-label="닫기">✕</button>}
       </header>
 
       <div className="jar-body">
         <div className="jar-stage">
-          {preview ? (
-            <MoimoImg resident={preview} cache={cache} table={table} size={230} className="pop" />
-          ) : (
-            <p className="jar-empty">이름을 적으면<br />여기에 나타나요</p>
+          {step === 'name' && <img className="jar-base" src="/items/base.svg" alt="" draggable={false} />}
+          {step === 'magic' && (
+            <div className="magic">
+              <img className="jar-base shake" src="/items/base.svg" alt="" draggable={false} />
+              <img className="fairy f1" src="/items/guide01.svg" alt="" draggable={false} />
+              <img className="fairy f2" src="/items/guide02.svg" alt="" draggable={false} />
+              {SPARKS.map((sp, i) => <i key={i} className="spark" style={{ left: `${sp[0]}%`, top: `${sp[1]}%`, animationDelay: `${sp[2]}s` }}>✦</i>)}
+            </div>
+          )}
+          {step === 'born' && born && (
+            <div className="born">
+              <MoimoImg resident={born} cache={cache} table={table} size={300} className="pop" />
+            </div>
           )}
         </div>
 
         <div className="jar-form">
-          <label className="field">
-            <span>이름</span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="한글 이름"
-              maxLength={10}
-              autoFocus
-            />
-          </label>
-
-          {name && !preview && <p className="warn">한글 이름으로 두 글자 이상 적어주세요</p>}
-
-          {preview && parts && (
-            <ul className="why">
-              {explain(parts).map((r) => (
-                <li key={r.slot}>
-                  <b>{r.from}</b>의 {r.place} <b>{r.jamo}</b>
-                  <span>→ {r.label}</span>
-                </li>
-              ))}
-            </ul>
+          {step === 'name' && (
+            <>
+              <div className="jar-row">
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') make() }}
+                  placeholder="한글 이름"
+                  aria-label="이름"
+                  maxLength={10}
+                  autoFocus
+                />
+                <button className="btn primary" disabled={!born} onClick={make}>만들기</button>
+              </div>
+              {name && !born && <p className="warn">한글 이름으로 두 글자 이상 적어주세요</p>}
+              <p className="footnote">
+                지금 {count.toLocaleString('ko-KR')}명이 모여 있어요 ·
+                가능한 조합 {TOTAL_COMBINATIONS.toLocaleString('ko-KR')}가지
+              </p>
+            </>
           )}
-
-          <label className="field">
-            <span>한마디</span>
-            <input
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="앨범에 남길 한 줄 (선택)"
-              maxLength={40}
-            />
-          </label>
-
-          <button
-            className="btn primary wide"
-            disabled={!preview}
-            onClick={() => preview && onSend(preview.name, note.trim())}
-          >
-            마을로 보내기
-          </button>
-
-          <p className="footnote">
-            지금 {count.toLocaleString('ko-KR')}명이 모여 있어요 ·
-            가능한 조합 {TOTAL_COMBINATIONS.toLocaleString('ko-KR')}가지
-          </p>
+          {step === 'born' && (
+            <>
+              <div className="jar-row">
+                <input
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') finish() }}
+                  placeholder="방명록 한 줄 (선택)"
+                  aria-label="방명록"
+                  maxLength={40}
+                  autoFocus
+                />
+                {/* 비워 두면 방명록 없이 마을로 간다 */}
+                <button className="btn primary" onClick={() => finish()}>{note.trim() ? '남기기' : '마을로 가기'}</button>
+              </div>
+            </>
+          )}
         </div>
       </div>
+      <CandyPile />
+    </div>
     </div>
   )
+}
+
+/** 아기요정 마법 시간 */
+const MAGIC_MS = 2800
+/** 반짝이 자리 — 왼쪽 %, 위 %, 늦게 시작 */
+const SPARKS: [number, number, number][] = [[18, 22, 0], [76, 18, 0.4], [30, 58, 0.8], [70, 52, 0.2], [50, 12, 0.6], [12, 44, 1.0], [86, 36, 1.2]]
+
+/** 유리병 뚜껑과 리본 — 창 위에 얹는다 */
+function JarLid() {
+  return (
+    <div className="jar-lid" aria-hidden>
+      <svg className="jar-bow" viewBox="0 0 120 64">
+        <path d="M60 30 C42 6 14 6 12 26 C10 44 38 46 60 34Z" fill="#FFEEF7" stroke="#E8A6B1" strokeWidth="3.5" strokeLinejoin="round" />
+        <path d="M60 30 C78 6 106 6 108 26 C110 44 82 46 60 34Z" fill="#FFEEF7" stroke="#E8A6B1" strokeWidth="3.5" strokeLinejoin="round" />
+        <path d="M54 36 L40 60 M66 36 L80 60" stroke="#E8A6B1" strokeWidth="5" strokeLinecap="round" />
+        <rect x="51" y="24" width="18" height="16" rx="7" fill="#F9D7D7" stroke="#E8A6B1" strokeWidth="3.5" />
+      </svg>
+    </div>
+  )
+}
+
+/** 병 바닥에 깔린 별사탕 */
+const CANDY = [
+  ['#FDF9D8', '#FFD81A'], ['#F9D7D7', '#E8A6B1'], ['#CCE4EA', '#97C7D3'], ['#FFFFFF', '#AFAFAF'],
+] as const
+function CandyPile() {
+  // 두 줄로 겹쳐 쌓는다 — 뒷줄은 살짝 위로
+  const bits = Array.from({ length: 24 }, (_, i) => {
+    const back = i < 11
+    return { x: (back ? 4 : -8) + (i % 12) * (back ? 29 : 27) + (i % 3) * 3, y: back ? 44 : 66, r: 15 + ((i * 7) % 4), rot: i * 27, c: CANDY[(i * 3) % CANDY.length] }
+  })
+  return (
+    <svg className="candy-pile" viewBox="0 0 300 84" preserveAspectRatio="xMidYMin slice" aria-hidden>
+      {bits.map((b, i) => (
+        <g key={i} transform={`translate(${b.x} ${b.y}) rotate(${b.rot})`}>
+          <path d={star(b.r)} fill={b.c[0]} stroke={b.c[1]} strokeWidth="2.5" strokeLinejoin="round" />
+          <path d={`M${-b.r * 0.35} ${-b.r * 0.1}q${b.r * 0.35} ${-b.r * 0.35} ${b.r * 0.7} 0`} fill="none" stroke={b.c[1]} strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+        </g>
+      ))}
+    </svg>
+  )
+}
+/** 뭉툭한 별사탕 모양 — 뿔 여섯 개 */
+function star(r: number) {
+  let d = ''
+  for (let k = 0; k < 6; k++) {
+    const a0 = (Math.PI / 3) * k, a1 = a0 + Math.PI / 6, a2 = a0 + Math.PI / 3
+    const p = (a: number, rr: number) => `${(Math.cos(a) * rr).toFixed(1)} ${(Math.sin(a) * rr).toFixed(1)}`
+    d += `${k ? 'L' : 'M'}${p(a0, r * 0.72)}Q${p(a1, r * 1.25)} ${p(a2, r * 0.72)}`
+  }
+  return d + 'Z'
 }
 
 /* ------------------------------------------------------------------ */
 /* 카메라 — 같이 사진찍기                                               */
 /* ------------------------------------------------------------------ */
 
+/** 같이 찍을 수 있는 모이모 수 */
+const CAM_MAX = 3
+/** 모이모가 사진 속에 설 자리 — 가로 가운데(%) · 사람 얼굴은 가운데에 오니 양옆으로 비킨다 */
+const CAM_SPOTS = [[76], [18, 82], [14, 34, 84]]
+/** 사진 속 모이모 크기 — 사진 너비에 대한 비율 */
+const CAM_SIZE = 0.34
+
 export function Camera({
   cache, table, onClose, residents,
 }: Common & { residents: Resident[] }) {
-  const [picked, setPicked] = useState<Resident[]>(() => residents.slice(-4).reverse())
-  const frameRef = useRef<HTMLDivElement>(null)
-  const [saved, setSaved] = useState(false)
+  const [picked, setPicked] = useState<Resident[]>(() => residents.filter((r) => r.mine).slice(-1))
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [cam, setCam] = useState<'wait' | 'on' | 'off'>('wait')
+  const [count, setCount] = useState(0)
+  const [shot, setShot] = useState<string | null>(null)
+
+  // 창이 열려 있는 동안만 웹캠을 켠다
+  useEffect(() => {
+    let stream: MediaStream | null = null
+    let gone = false
+    const md = navigator.mediaDevices
+    if (!md?.getUserMedia) { setCam('off'); return }
+    md.getUserMedia({ video: { width: 1280, height: 960, facingMode: 'user' }, audio: false }).then(
+      (s) => {
+        if (gone) { s.getTracks().forEach((t) => t.stop()); return }
+        stream = s
+        const v = videoRef.current
+        if (v) { v.srcObject = s; void v.play() }
+        setCam('on')
+      },
+      () => setCam('off'),
+    )
+    return () => { gone = true; stream?.getTracks().forEach((t) => t.stop()) }
+  }, [])
 
   const toggle = (r: Resident) =>
     setPicked((p) => p.some((x) => x.id === r.id)
       ? p.filter((x) => x.id !== r.id)
-      : p.length >= 5 ? p : [...p, r])
+      : p.length >= CAM_MAX ? p : [...p, r])
 
-  const save = async () => {
-    const W = 1200
-    const H = 800
+  const spots = CAM_SPOTS[Math.max(0, picked.length - 1)]
+  const art = useMemo(
+    () => picked.map((r) => moimoDataUri(composeMoimo(r.genes, cache, table))),
+    [picked, cache, table],
+  )
+
+  /** 3·2·1 세고 찍는다 */
+  const start = () => {
+    setCount(3)
+    let n = 3
+    const tick = window.setInterval(() => {
+      n -= 1
+      if (n > 0) { setCount(n); return }
+      window.clearInterval(tick)
+      setCount(0)
+      void snap()
+    }, 800)
+  }
+
+  /** 웹캠 화면(거울처럼 뒤집어)과 모이모를 한 장에 굽는다 — 아래는 폴라로이드 여백 */
+  const snap = async () => {
+    const v = videoRef.current
+    const W = 1200, H = 900, PAD = 40, FOOT = 170
     const cv = document.createElement('canvas')
-    cv.width = W
-    cv.height = H
+    cv.width = W + PAD * 2
+    cv.height = H + PAD + FOOT
     const ctx = cv.getContext('2d')!
-    ctx.fillStyle = '#FFFDF4'
-    ctx.fillRect(0, 0, W, H)
-
-    const size = 300
-    const gap = Math.min(240, (W - 160) / Math.max(1, picked.length))
-    const startX = W / 2 - (gap * (picked.length - 1)) / 2
-
-    await Promise.all(picked.map((r, i) => new Promise<void>((done) => {
+    ctx.fillStyle = '#FFFFFF'
+    ctx.fillRect(0, 0, cv.width, cv.height)
+    ctx.fillStyle = '#E5F0FB'
+    ctx.fillRect(PAD, PAD, W, H)
+    if (v && cam === 'on' && v.videoWidth) {
+      // 화면을 꽉 채우게 가운데를 잘라 쓴다
+      const k = Math.max(W / v.videoWidth, H / v.videoHeight)
+      const dw = v.videoWidth * k, dh = v.videoHeight * k
+      ctx.save()
+      ctx.beginPath(); ctx.rect(PAD, PAD, W, H); ctx.clip()
+      ctx.translate(PAD + W, PAD); ctx.scale(-1, 1)
+      ctx.drawImage(v, (W - dw) / 2, (H - dh) / 2, dw, dh)
+      ctx.restore()
+    }
+    const size = W * CAM_SIZE
+    await Promise.all(art.map((src, i) => new Promise<void>((done) => {
       const img = new Image()
       img.onload = () => {
-        ctx.drawImage(img, startX + gap * i - size / 2, H / 2 - size / 2 - 20, size, size)
+        ctx.drawImage(img, PAD + (W * spots[i]) / 100 - size / 2, PAD + H - size * 0.92, size, size)
         done()
       }
       img.onerror = () => done()
-      img.src = moimoDataUri(composeMoimo(r.genes, cache, table))
+      img.src = src
     })))
-
     ctx.fillStyle = '#38312A'
-    ctx.font = '600 30px Pretendard, sans-serif'
+    ctx.font = '700 34px Pretendard, sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText(picked.map((r) => r.name).join('  ·  '), W / 2, H - 90)
-    ctx.font = '500 20px Pretendard, sans-serif'
+    ctx.fillText(picked.map((r) => r.name).join('  ·  '), cv.width / 2, H + PAD + 78)
+    ctx.font = '600 22px Pretendard, sans-serif'
     ctx.fillStyle = '#9C907F'
-    ctx.fillText('MOIMO WORLD', W / 2, H - 50)
+    ctx.fillText('MOIMO WORLD', cv.width / 2, H + PAD + 120)
+    setShot(cv.toDataURL('image/png'))
+  }
 
+  const save = () => {
+    if (!shot) return
     const a = document.createElement('a')
-    a.href = cv.toDataURL('image/png')
+    a.href = shot
     a.download = `moimo-${picked.map((r) => r.name).join('-') || 'photo'}.png`
     a.click()
-    setSaved(true)
-    window.setTimeout(() => setSaved(false), 2200)
   }
 
   return (
-    <div className="sheet">
+    <div className="obj-modal cam-modal">
+    <div className="sheet cam">
       <header className="sheet-head">
+        {/* 카메라 윗면 — 뷰파인더와 셔터 */}
+        <i className="cam-finder" aria-hidden />
         <div>
           <p className="eyebrow">카메라</p>
-          <h2>같이 사진찍기</h2>
+          <h2>모이모와 같이 사진찍기</h2>
         </div>
-        <button className="icon-btn" onClick={onClose}>✕</button>
+        <i className="cam-shutter" aria-hidden />
+        <button className="icon-btn" onClick={onClose} aria-label="닫기">✕</button>
       </header>
 
       <div className="pad">
-        <div className="photo" ref={frameRef}>
-          {picked.length
-            ? picked.map((r) => (
-                <div key={r.id} className="photo-one">
-                  <MoimoImg resident={r} cache={cache} table={table} size={120} />
-                  <b>{r.name}</b>
-                </div>
-              ))
-            : <p className="empty">아래에서 같이 찍을 모이모를 골라주세요</p>}
+        {shot ? (
+          <img className="cam-shot" src={shot} alt="찍은 사진" />
+        ) : (
+          <div className="cam-frame">
+            <video ref={videoRef} muted playsInline />
+            {cam !== 'on' && (
+              <p className="cam-msg">{cam === 'wait' ? '카메라를 켜는 중…' : '카메라를 쓸 수 없어요 — 모이모만 찍혀요'}</p>
+            )}
+            {art.map((src, i) => (
+              <img key={picked[i].id} className="cam-moimo" src={src} alt=""
+                style={{ left: `${spots[i]}%`, width: `${CAM_SIZE * 100}%` }} />
+            ))}
+            {count > 0 && <b className="cam-count" key={count}>{count}</b>}
+          </div>
+        )}
+
+        <div className="cam-actions">
+          {shot ? (
+            <>
+              <button className="btn" onClick={() => setShot(null)}>다시 찍기</button>
+              <button className="btn primary" onClick={save}>사진 저장</button>
+            </>
+          ) : (
+            <button className="btn primary cam-snap" disabled={!picked.length || count > 0} onClick={start}>찰칵</button>
+          )}
         </div>
 
-        <div className="row">
-          <span className="hint-sm">최대 5명까지 · 눌러서 넣고 빼요</span>
-          <button className="btn primary" disabled={!picked.length} onClick={save}>
-            {saved ? '저장했어요' : '사진 저장'}
-          </button>
-        </div>
-
-        <div className="picks">
-          {[...residents].reverse().slice(0, 60).map((r) => (
-            <button
-              key={r.id}
-              className={`pick${picked.some((x) => x.id === r.id) ? ' on' : ''}`}
-              onClick={() => toggle(r)}
-            >
-              <MoimoImg resident={r} cache={cache} table={table} size={54} />
-              <span>{r.name}</span>
-            </button>
-          ))}
-        </div>
+        {!shot && (
+          <>
+            <p className="hint-sm cam-hint">같이 찍을 모이모를 골라요 · 최대 {CAM_MAX}명</p>
+            <div className="picks">
+              {[...residents].reverse().slice(0, 60).map((r) => (
+                <button
+                  key={r.id}
+                  className={`pick${picked.some((x) => x.id === r.id) ? ' on' : ''}`}
+                  onClick={() => toggle(r)}
+                >
+                  <MoimoImg resident={r} cache={cache} table={table} size={54} />
+                  <span>{r.name}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
+    </div>
     </div>
   )
 }
@@ -213,7 +365,11 @@ export function Album({
   const when = (t: number) => new Date(t).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div className="sheet">
+    <div className="obj-modal album-modal">
+    {/* 다이어리 옆 색인 띠 */}
+    <i className="album-tab t1" aria-hidden /><i className="album-tab t2" aria-hidden />
+    <div className="sheet album">
+      <i className="album-rings" aria-hidden />
       <header className="sheet-head">
         <div>
           <p className="eyebrow">앨범</p>
@@ -222,15 +378,14 @@ export function Album({
         <button className="icon-btn" onClick={onClose}>✕</button>
       </header>
 
-      <div className="log">
-        {made.map((r) => (
-          <button key={r.id} className="log-row" onClick={() => onFocus(r)}>
-            <MoimoImg resident={r} cache={cache} table={table} size={62} />
-            <div className="log-text">
-              <b>{r.name}</b>
-              {r.note && <p className="note-line">“{r.note}”</p>}
-              <time>{when(r.at)}</time>
-            </div>
+      {/* 사진 앨범처럼 — 한 줄에 셋, 모이모마다 폴라로이드 한 장 */}
+      <div className="album-grid">
+        {made.map((r, i) => (
+          <button key={r.id} className="album-photo" style={{ rotate: `${((i * 37) % 5) - 2}deg` }} onClick={() => onFocus(r)}>
+            <span className="album-pic"><MoimoImg resident={r} cache={cache} table={table} size={120} /></span>
+            <b>{r.name}</b>
+            {r.note && <p>“{r.note}”</p>}
+            <time>{when(r.at)}</time>
           </button>
         ))}
         {!made.length && (
@@ -238,63 +393,6 @@ export function Album({
         )}
       </div>
     </div>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/* 돋보기 — 이름 찾아보기                                               */
-/* ------------------------------------------------------------------ */
-
-export function Glass({
-  onClose, residents, query, setQuery, showNames, setShowNames, onFocus, cache, table,
-}: Common & {
-  residents: Resident[]
-  query: string
-  setQuery: (v: string) => void
-  showNames: boolean
-  setShowNames: (v: boolean) => void
-  onFocus: (r: Resident) => void
-}) {
-  const hits = useMemo(() => {
-    const q = query.trim()
-    if (!q) return []
-    return residents.filter((r) => r.name.includes(q))
-  }, [residents, query])
-
-  return (
-    <div className="sheet narrow">
-      <header className="sheet-head">
-        <div>
-          <p className="eyebrow">돋보기</p>
-          <h2>이름 찾아보기</h2>
-        </div>
-        <button className="icon-btn" onClick={onClose}>✕</button>
-      </header>
-
-      <div className="pad">
-        <label className="field">
-          <span>검색</span>
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="이름 일부" autoFocus />
-        </label>
-
-        <label className="check">
-          <input type="checkbox" checked={showNames} onChange={(e) => setShowNames(e.target.checked)} />
-          마을에 이름표 모두 띄우기
-        </label>
-
-        {query.trim() && (
-          <div className="hits">
-            <p className="hint-sm">{hits.length}명 찾음</p>
-            {hits.slice(0, 40).map((r) => (
-              <button key={r.id} className="hit" onClick={() => onFocus(r)}>
-                <MoimoImg resident={r} cache={cache} table={table} size={44} />
-                <b>{r.name}</b>
-                <span>보러 가기</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   )
 }

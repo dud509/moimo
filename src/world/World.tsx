@@ -141,13 +141,15 @@ type Props = {
   showNames: boolean
   /** 검색어에 걸린 주민 */
   hits: Set<string> | null
+  /** 눌러서 이름표를 단 모이모 */
+  tagged?: string | null
   /** 돋보기를 들고 있나 — 렌즈 안의 모이모만 이름표가 뜬다 */
   lens?: boolean
   onCamera?: (c: Camera) => void
 }
 
 export const World = forwardRef<WorldHandle, Props>(function World(
-  { residents, cache, table, onItem, onResident, arrivedId, showNames, hits, lens = false, onCamera },
+  { residents, cache, table, onItem, onResident, arrivedId, showNames, hits, tagged = null, lens = false, onCamera },
   ref,
 ) {
   const art = useTightArt(ART_SRCS, ART_LINES)
@@ -424,7 +426,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
           return (
             <button
               key={r.id}
-              className={`moimo${r.id === arrivedId ? ' arrive' : ''}${r.mine ? ' mine' : ''}${dim ? ' dim' : ''}`}
+              className={`moimo${r.id === arrivedId ? ' arrive' : ''}${r.mine ? ' mine' : ''}${dim ? ' dim' : ''}${r.id === tagged ? ' tagged' : ''}`}
               style={{
                 left: r.x,
                 top: r.y,
@@ -434,8 +436,8 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             >
               <Shadow />
               <MoimoImg resident={r} cache={cache} table={table} />
-              {(showNames || (hits && hits.has(r.id)) || (lens && underLens.has(r.id))) && (
-                <span className="moimo-name">
+              {(showNames || r.id === tagged || (hits && hits.has(r.id)) || (lens && underLens.has(r.id))) && (
+                <span className={`moimo-name${r.id === tagged ? ' tag' : ''}`}>
                   {r.name}
                 </span>
               )}

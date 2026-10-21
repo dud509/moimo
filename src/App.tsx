@@ -3,7 +3,7 @@ import { loadParts, type PartsCache } from './moimo/compose'
 import { normalizeTable, type AnchorTable } from './moimo/parts'
 import anchorsJson from './data/anchors.json'
 import { World, type Camera, type WorldHandle } from './world/World'
-import { Album, Camera as CameraPanel, Card, Glass, Jar } from './world/Panels'
+import { Album, Camera as CameraPanel, Jar } from './world/Panels'
 import { measureFootprints } from './world/footprint'
 import {
   DECOR, ITEMS, WORLD, loadWorld, setFootprints, residentFromName, resetWorld, saveWorld, seedCountFor, trimWorld,
@@ -12,7 +12,7 @@ import {
 import './styles.css'
 
 /**
- * 로고. `public/world/logo.png` 를 놓으면 그 그림을 쓰고,
+ * 로고. `public/world/logo.svg` 를 놓으면 그 그림을 쓰고,
  * 없으면 글자로 나온다. 배경 그림에 로고를 그려 넣었다면
  * 아래 `HIDE_BRAND` 를 true 로 두어 아예 지울 수 있다.
  */
@@ -26,6 +26,12 @@ const HIDE_BRAND = false
 const AUTO_MUSIC = false
 /** 노래 소리 크기 (0~1) */
 const MUSIC_VOLUME = 0.35
+/** 마우스를 따라다니는 아기요정 그림 */
+const MOUSE_FAIRY = '/items/guide.svg'
+/** 마우스를 화면 끝까지 옮겼을 때 마을이 따라 움직이는 거리(px) */
+const PARALLAX_PX = 16
+/** 이름표가 붙어 있는 시간 */
+const TAG_MS = 4000
 
 function Brand() {
   const [png, setPng] = useState(true)
@@ -33,7 +39,7 @@ function Brand() {
   if (png) {
     return (
       <div className="brand">
-        <img className="brand-art" src="/world/logo.png" alt="모이모" onError={() => setPng(false)} draggable={false} />
+        <img className="brand-art" src="/world/logo.svg" alt="모이모" onError={() => setPng(false)} draggable={false} />
       </div>
     )
   }
@@ -51,21 +57,47 @@ export default function App() {
   const [residents, setResidents] = useState<Resident[]>([])
   const [settled, setSettled] = useState(false)
   const [panel, setPanel] = useState<ItemId | null>(null)
-  const [selected, setSelected] = useState<Resident | null>(null)
+  /** 눌러서 이름표를 단 모이모 — 잠깐 뒤에 저절로 떼어진다 */
+  const [tagged, setTagged] = useState<string | null>(null)
+  const tagTimer = useRef(0)
+  const tag = useCallback((id: string | null) => {
+    window.clearTimeout(tagTimer.current)
+    setTagged(id)
+    if (id) tagTimer.current = window.setTimeout(() => setTagged(null), TAG_MS)
+  }, [])
   const [arrived, setArrived] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
-  const [showNames, setShowNames] = useState(false)
   /** 돋보기를 들고 있나 — 렌즈에 대 본 모이모의 이름이 보인다 */
   const [lens, setLens] = useState(false)
-  const [query, setQuery] = useState('')
   const [, setCamera] = useState<Camera>({ tx: 0, ty: 0, scale: 0.6 })
 
   const worldRef = useRef<WorldHandle>(null)
+  const parRef = useRef<HTMLDivElement>(null)
+  const fairyRef = useRef<HTMLImageElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const table = useMemo<AnchorTable>(() => normalizeTable(anchorsJson), [])
 
   useEffect(() => { loadParts().then(setCache) }, [])
+
+  // 마우스 쪽으로 아기요정이 살짝 늦게 따라오고, 마을은 반대쪽으로 조금 밀린다
+  useEffect(() => {
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2
+    let fx = mx, fy = my, px = 0, py = 0, raf = 0
+    const onMove = (e: PointerEvent) => { mx = e.clientX; my = e.clientY }
+    const step = () => {
+      fx += (mx + 14 - fx) * 0.2
+      fy += (my + 10 - fy) * 0.2
+      px += (-(mx / window.innerWidth - 0.5) * 2 * PARALLAX_PX - px) * 0.06
+      py += (-(my / window.innerHeight - 0.5) * 2 * PARALLAX_PX - py) * 0.06
+      if (fairyRef.current) fairyRef.current.style.transform = `translate(${fx}px, ${fy}px)`
+      if (parRef.current) parRef.current.style.transform = `translate3d(${px}px, ${py}px, 0)`
+      raf = requestAnimationFrame(step)
+    }
+    window.addEventListener('pointermove', onMove)
+    raf = requestAnimationFrame(step)
+    return () => { window.removeEventListener('pointermove', onMove); cancelAnimationFrame(raf) }
+  }, [])
   useEffect(() => {
     measureFootprints([...ITEMS, ...DECOR].map((p) => p.src)).then((f) => {
       setFootprints(f)
@@ -199,9 +231,9 @@ export default function App() {
     // 플레이어는 시트를 열지 않고 그 자리에서 켜고 끈다
     if (id === 'music') { toggleMusic(); return }
     // 돋보기는 페이지로 가지 않고 손에 든다
-    if (id === 'glass') { setSelected(null); setLens((v) => !v); return }
+    if (id === 'glass') { tag(null); setLens((v) => !v); return }
     const it = ITEMS.find((x) => x.id === id)!
-    setSelected(null)
+    tag(null)
     // 오브제 쪽으로 성큼 다가간 뒤 페이지로 넘어간다
     backCam.current = worldRef.current?.camera() ?? null
     worldRef.current?.flyTo(it.x, it.y, 1.9)
@@ -210,19 +242,13 @@ export default function App() {
       window.history.pushState({ page: id }, '', `#${id}`)
       pushed.current = true
     }, 620)
-  }, [toggleMusic])
+  }, [toggleMusic, tag])
 
   const focus = useCallback((r: Resident) => {
     leave(false)
     worldRef.current?.flyTo(r.x, r.y, 1.3)
-    window.setTimeout(() => setSelected(r), 420)
-  }, [leave])
-
-  const hits = useMemo(() => {
-    const q = query.trim()
-    if (!q) return null
-    return new Set(residents.filter((r) => r.name.includes(q)).map((r) => r.id))
-  }, [residents, query])
+    window.setTimeout(() => tag(r.id), 420)
+  }, [leave, tag])
 
   if (!cache || !settled) {
     return (
@@ -236,19 +262,24 @@ export default function App() {
 
   return (
     <div className="app">
+      {/* 마우스를 따라 마을이 살짝 같이 움직인다 */}
+      <div className="parallax" ref={parRef}>
       <World
         ref={worldRef}
         residents={residents}
         cache={cache}
         table={table}
         arrivedId={arrived}
-        showNames={showNames}
-        hits={hits}
+        showNames={false}
+        hits={null}
         lens={lens}
         onItem={openItem}
-        onResident={(r) => { setSelected(r) }}
+        onResident={(r) => tag(tagged === r.id ? null : r.id)}
+        tagged={tagged}
         onCamera={setCamera}
       />
+      </div>
+      {!lens && <img className="mouse-fairy" ref={fairyRef} src={MOUSE_FAIRY} alt="" draggable={false} />}
 
       <header className="topbar">
         <Brand />
@@ -279,21 +310,6 @@ export default function App() {
         </div>
       </header>
 
-      <nav className="dock">
-        {ITEMS.map((it) => (
-          <button key={it.id} onClick={() => openItem(it.id)}>{it.name}</button>
-        ))}
-        <button
-          className="ghost"
-          onClick={() => {
-            resetWorld()
-            setResidents(loadWorld(seedCountFor(window.innerWidth, window.innerHeight)))
-            say('마을을 처음 상태로 되돌렸어요')
-          }}
-        >
-          초기화
-        </button>
-      </nav>
 
       {lens && (
         <div className="lens-hint">
@@ -302,41 +318,31 @@ export default function App() {
         </div>
       )}
 
-      <button className="fab" onClick={() => openItem('jar')}>＋ 모이모 만들기</button>
-
-      {selected && (
-        <Card resident={selected} cache={cache} table={table} onClose={() => setSelected(null)} />
+      {/* 오브제를 누르면 마을 위에 창을 띄운다 — 뒤의 마을은 흐리게 */}
+      {panel && (
+        <div
+          className="scrim obj-scrim"
+          // 유리병은 바깥을 눌러도 닫지 않는다 — 태어난 모이모를 마을로 보내기 전에 잃지 않게
+          onClick={(e) => { if (panel !== 'jar' && e.target === e.currentTarget) leave(true) }}
+        >
+          {panel === 'jar' && <Jar {...common} onSend={send} count={residents.length} />}
+          {panel === 'camera' && <CameraPanel {...common} residents={residents} />}
+          {panel === 'album' && <Album {...common} residents={residents} onFocus={focus} />}
+        </div>
       )}
 
-      {panel && (() => {
-        const it = ITEMS.find((x) => x.id === panel)!
-        return (
-          <div className="page" key={panel}>
-            <button className="page-back" onClick={() => leave(true)}>← 마을로</button>
-            <aside className="page-hero">
-              <img src={it.src} alt="" draggable={false} />
-              <b>{it.name}</b>
-              <i>{it.tag}</i>
-            </aside>
-            <section className="page-body">
-              {panel === 'jar' && <Jar {...common} onSend={send} count={residents.length} />}
-              {panel === 'camera' && <CameraPanel {...common} residents={residents} />}
-              {panel === 'album' && <Album {...common} residents={residents} onFocus={focus} />}
-              {panel === 'glass' && (
-                <Glass
-                  {...common}
-                  residents={residents}
-                  query={query}
-                  setQuery={setQuery}
-                  showNames={showNames}
-                  setShowNames={setShowNames}
-                  onFocus={focus}
-                />
-              )}
-            </section>
-          </div>
-        )
-      })()}
+      {/* 초기화 — 전시 전 시험으로 만든 모이모를 지울 때만. 눈에 덜 띄게 구석에 둔다 */}
+      <button
+        className="reset-btn"
+        onClick={() => {
+          if (!window.confirm('마을을 처음 상태로 되돌릴까요? 직접 만든 모이모가 모두 지워져요.')) return
+          resetWorld()
+          setResidents(loadWorld(seedCountFor(window.innerWidth, window.innerHeight)))
+          say('마을을 처음 상태로 되돌렸어요')
+        }}
+      >
+        초기화
+      </button>
 
       {toast && <div className="toast">{toast}</div>}
       <span className="world-size" hidden>{WORLD.w}×{WORLD.h}</span>
