@@ -28,6 +28,10 @@ body {
 }
 button, input { font-family: inherit; color: inherit; }
 button { cursor: pointer; }
+/* 마우스 커서 — 별 지팡이. 별 가운데가 누르는 점이다. 글 쓰는 칸만 원래 커서 */
+:root { --wand: url('/world/wand-cursor.svg') 19 18; }
+body, body * { cursor: var(--wand), auto !important; }
+input, textarea { cursor: text !important; }
 
 .app { position: relative; height: 100%; overflow: hidden; }
 .booting { height: 100%; display: grid; place-items: center; color: var(--ink-soft); font-weight: 700; }
@@ -129,7 +133,7 @@ button { cursor: pointer; }
 }
 
 /* 돋보기를 들고 있을 때 — 마우스 대신 돋보기가 따라다닌다 */
-.world-box.holding-lens, .world-box.holding-lens * { cursor: none; }
+.world-box.holding-lens, .world-box.holding-lens * { cursor: none !important; }
 .item.lifted { visibility: hidden; }
 .lens {
   position: absolute; left: 0; top: 0; z-index: 12; pointer-events: none;
