@@ -14,8 +14,12 @@ type Common = { cache: PartsCache; table: AnchorTable; onClose: () => void }
 /* ------------------------------------------------------------------ */
 
 export function Jar({
-  cache, table, onClose, onSend,
-}: Common & { onSend: (name: string, note: string) => void }) {
+  cache, table, onClose, onSend, closeRef,
+}: Common & {
+  onSend: (name: string, note: string) => void
+  /** 창 바깥을 눌렀을 때 쓸 닫기 — ✕ 와 똑같이 단계에 맞춰 닫는다 */
+  closeRef?: { current: (() => void) | null }
+}) {
   const [name, setName] = useState('')
   const [note, setNote] = useState('')
   /** 이름 넣기 → 아기요정 마법 → 태어난 모이모와 방명록 */
@@ -40,6 +44,7 @@ export function Jar({
     onSend(born.name, note.trim())
   }
   const close = () => (step === 'born' ? finish() : step === 'name' ? onClose() : undefined)
+  if (closeRef) closeRef.current = close
 
   return (
     // 유리병 그림(ui_jar_bg.svg)을 창으로 쓰고, 원래 모습·이름 칸·✕ 만 위에 얹는다
