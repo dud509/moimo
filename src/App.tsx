@@ -331,7 +331,7 @@ export default function App() {
           // 유리병은 바깥을 눌러도 닫지 않는다 — 태어난 모이모를 마을로 보내기 전에 잃지 않게
           onClick={(e) => { if (panel !== 'jar' && e.target === e.currentTarget) leave(true) }}
         >
-          {panel === 'jar' && <Jar {...common} onSend={send} count={residents.length} />}
+          {panel === 'jar' && <Jar {...common} onSend={send} />}
           {panel === 'camera' && <CameraPanel {...common} residents={residents} />}
           {panel === 'album' && <Album {...common} residents={residents} onFocus={focus} />}
         </div>

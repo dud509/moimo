@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { CANVAS } from '../moimo/parts'
 import type { AnchorTable } from '../moimo/parts'
 import { composeMoimo, moimoDataUri, type PartsCache } from '../moimo/compose'
-import { TOTAL_COMBINATIONS, explain, genesFromName, splitName } from '../moimo/name'
+import { explain, genesFromName, splitName } from '../moimo/name'
 import { goodsSvg } from '../moimo/exportSvg'
 import { MoimoImg } from './World'
 import type { Resident } from './model'
@@ -14,8 +14,8 @@ type Common = { cache: PartsCache; table: AnchorTable; onClose: () => void }
 /* ------------------------------------------------------------------ */
 
 export function Jar({
-  cache, table, onClose, onSend, count,
-}: Common & { onSend: (name: string, note: string) => void; count: number }) {
+  cache, table, onClose, onSend,
+}: Common & { onSend: (name: string, note: string) => void }) {
   const [name, setName] = useState('')
   const [note, setNote] = useState('')
   /** 이름 넣기 → 아기요정 마법 → 태어난 모이모와 방명록 */
@@ -42,82 +42,63 @@ export function Jar({
   const close = () => (step === 'born' ? finish() : step === 'name' ? onClose() : undefined)
 
   return (
-    <div className="jar-modal">
-    <JarLid />
-    <div className={`sheet glass jar-${step}`}>
-      <header className="sheet-head">
-        <div>
-          <p className="eyebrow">별사탕 유리병</p>
-          <h2>
-            {step === 'name' && '이름을 넣으면 모이모가 태어나요'}
-            {step === 'magic' && '아기요정들이 마법을 부리는 중…'}
-            {step === 'born' && born && <>{born.name} 모이모가 태어났어요!</>}
-          </h2>
-        </div>
-        {step !== 'magic' && <button className="icon-btn" onClick={close} aria-label="닫기">✕</button>}
-      </header>
+    // 유리병 그림(ui_jar_bg.svg)을 창으로 쓰고, 원래 모습·이름 칸·✕ 만 위에 얹는다
+    <div className={`jar-ui jar-${step}`}>
+      <img className="jar-ui-bg" src="/world/ui_jar_bg.svg" alt="" draggable={false} />
+      {step !== 'magic' && <button className="jar-ui-x" onClick={close} aria-label="닫기" />}
 
-      <div className="jar-body">
-        <div className="jar-stage">
-          {step === 'name' && <img className="jar-base" src="/items/base.svg" alt="" draggable={false} />}
-          {step === 'magic' && (
-            <div className="magic">
-              <img className="jar-base shake" src="/items/base.svg" alt="" draggable={false} />
-              <img className="fairy f1" src="/items/guide01.svg" alt="" draggable={false} />
-              <img className="fairy f2" src="/items/guide02.svg" alt="" draggable={false} />
-              {SPARKS.map((sp, i) => <i key={i} className="spark" style={{ left: `${sp[0]}%`, top: `${sp[1]}%`, animationDelay: `${sp[2]}s` }}>✦</i>)}
-            </div>
-          )}
-          {step === 'born' && born && (
-            <div className="born">
-              <MoimoImg resident={born} cache={cache} table={table} size={300} className="pop" />
-            </div>
-          )}
-        </div>
-
-        <div className="jar-form">
-          {step === 'name' && (
-            <>
-              <div className="jar-row">
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') make() }}
-                  placeholder="한글 이름"
-                  aria-label="이름"
-                  maxLength={10}
-                  autoFocus
-                />
-                <button className="btn primary" disabled={!born} onClick={make}>만들기</button>
-              </div>
-              {name && !born && <p className="warn">한글 이름으로 두 글자 이상 적어주세요</p>}
-              <p className="footnote">
-                지금 {count.toLocaleString('ko-KR')}명이 모여 있어요 ·
-                가능한 조합 {TOTAL_COMBINATIONS.toLocaleString('ko-KR')}가지
-              </p>
-            </>
-          )}
-          {step === 'born' && (
-            <>
-              <div className="jar-row">
-                <input
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') finish() }}
-                  placeholder="방명록 한 줄 (선택)"
-                  aria-label="방명록"
-                  maxLength={40}
-                  autoFocus
-                />
-                {/* 비워 두면 방명록 없이 마을로 간다 */}
-                <button className="btn primary" onClick={() => finish()}>{note.trim() ? '남기기' : '마을로 가기'}</button>
-              </div>
-            </>
-          )}
-        </div>
+      <div className="jar-ui-stage">
+        {step === 'name' && <img className="jar-ui-base" src="/world/ui_jar_base.svg" alt="" draggable={false} />}
+        {step === 'magic' && (
+          <div className="magic">
+            <img className="jar-ui-base shake" src="/world/ui_jar_base.svg" alt="" draggable={false} />
+            <img className="fairy f1" src="/items/guide01.svg" alt="" draggable={false} />
+            <img className="fairy f2" src="/items/guide02.svg" alt="" draggable={false} />
+            {SPARKS.map((sp, i) => <i key={i} className="spark" style={{ left: `${sp[0]}%`, top: `${sp[1]}%`, animationDelay: `${sp[2]}s` }}>✦</i>)}
+          </div>
+        )}
+        {step === 'born' && born && (
+          <div className="born">
+            <p className="jar-ui-says">{born.name} 모이모가 태어났어요!</p>
+            <MoimoImg resident={born} cache={cache} table={table} size={260} className="pop" />
+          </div>
+        )}
       </div>
-      <CandyPile />
-    </div>
+
+      <div className="jar-ui-pill">
+        {step === 'name' && (
+          <>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') make() }}
+              placeholder="이름을 입력해주세요!"
+              aria-label="이름"
+              maxLength={10}
+              autoFocus
+            />
+            <button className="jar-ui-go" disabled={!born} onClick={make} aria-label="만들기">➜</button>
+          </>
+        )}
+        {step === 'magic' && <p className="jar-ui-wait">아기요정들이 마법을 부리는 중…</p>}
+        {step === 'born' && (
+          <>
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') finish() }}
+              placeholder="방명록 한 줄 (선택)"
+              aria-label="방명록"
+              maxLength={40}
+              autoFocus
+            />
+            {/* 비워 두면 방명록 없이 마을로 간다 */}
+            <button className="jar-ui-go" onClick={finish} aria-label={note.trim() ? '남기기' : '마을로 가기'}>➜</button>
+          </>
+        )}
+      </div>
+      {step === 'name' && name && !born && <p className="jar-ui-warn">한글 이름으로 두 글자 이상 적어주세요</p>}
+      {step === 'born' && <p className="jar-ui-warn soft">엔터를 누르면 마을로 가요</p>}
     </div>
   )
 }
@@ -126,52 +107,6 @@ export function Jar({
 const MAGIC_MS = 2800
 /** 반짝이 자리 — 왼쪽 %, 위 %, 늦게 시작 */
 const SPARKS: [number, number, number][] = [[18, 22, 0], [76, 18, 0.4], [30, 58, 0.8], [70, 52, 0.2], [50, 12, 0.6], [12, 44, 1.0], [86, 36, 1.2]]
-
-/** 유리병 뚜껑과 리본 — 창 위에 얹는다 */
-function JarLid() {
-  return (
-    <div className="jar-lid" aria-hidden>
-      <svg className="jar-bow" viewBox="0 0 120 64">
-        <path d="M60 30 C42 6 14 6 12 26 C10 44 38 46 60 34Z" fill="#FFEEF7" stroke="#E8A6B1" strokeWidth="3.5" strokeLinejoin="round" />
-        <path d="M60 30 C78 6 106 6 108 26 C110 44 82 46 60 34Z" fill="#FFEEF7" stroke="#E8A6B1" strokeWidth="3.5" strokeLinejoin="round" />
-        <path d="M54 36 L40 60 M66 36 L80 60" stroke="#E8A6B1" strokeWidth="5" strokeLinecap="round" />
-        <rect x="51" y="24" width="18" height="16" rx="7" fill="#F9D7D7" stroke="#E8A6B1" strokeWidth="3.5" />
-      </svg>
-    </div>
-  )
-}
-
-/** 병 바닥에 깔린 별사탕 */
-const CANDY = [
-  ['#FDF9D8', '#FFD81A'], ['#F9D7D7', '#E8A6B1'], ['#CCE4EA', '#97C7D3'], ['#FFFFFF', '#AFAFAF'],
-] as const
-function CandyPile() {
-  // 두 줄로 겹쳐 쌓는다 — 뒷줄은 살짝 위로
-  const bits = Array.from({ length: 24 }, (_, i) => {
-    const back = i < 11
-    return { x: (back ? 4 : -8) + (i % 12) * (back ? 29 : 27) + (i % 3) * 3, y: back ? 44 : 66, r: 15 + ((i * 7) % 4), rot: i * 27, c: CANDY[(i * 3) % CANDY.length] }
-  })
-  return (
-    <svg className="candy-pile" viewBox="0 0 300 84" preserveAspectRatio="xMidYMin slice" aria-hidden>
-      {bits.map((b, i) => (
-        <g key={i} transform={`translate(${b.x} ${b.y}) rotate(${b.rot})`}>
-          <path d={star(b.r)} fill={b.c[0]} stroke={b.c[1]} strokeWidth="2.5" strokeLinejoin="round" />
-          <path d={`M${-b.r * 0.35} ${-b.r * 0.1}q${b.r * 0.35} ${-b.r * 0.35} ${b.r * 0.7} 0`} fill="none" stroke={b.c[1]} strokeWidth="2" strokeLinecap="round" opacity="0.7" />
-        </g>
-      ))}
-    </svg>
-  )
-}
-/** 뭉툭한 별사탕 모양 — 뿔 여섯 개 */
-function star(r: number) {
-  let d = ''
-  for (let k = 0; k < 6; k++) {
-    const a0 = (Math.PI / 3) * k, a1 = a0 + Math.PI / 6, a2 = a0 + Math.PI / 3
-    const p = (a: number, rr: number) => `${(Math.cos(a) * rr).toFixed(1)} ${(Math.sin(a) * rr).toFixed(1)}`
-    d += `${k ? 'L' : 'M'}${p(a0, r * 0.72)}Q${p(a1, r * 1.25)} ${p(a2, r * 0.72)}`
-  }
-  return d + 'Z'
-}
 
 /* ------------------------------------------------------------------ */
 /* 카메라 — 같이 사진찍기                                               */
