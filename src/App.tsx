@@ -74,11 +74,14 @@ export default function App() {
   const worldRef = useRef<WorldHandle>(null)
   const parRef = useRef<HTMLDivElement>(null)
   const fairyRef = useRef<HTMLImageElement>(null)
+  const panelOpen = useRef(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const table = useMemo<AnchorTable>(() => normalizeTable(anchorsJson), [])
 
   useEffect(() => { loadParts().then(setCache) }, [])
+
+  useEffect(() => { panelOpen.current = panel !== null }, [panel])
 
   // 마우스 쪽으로 아기요정이 살짝 늦게 따라오고, 마을은 반대쪽으로 조금 밀린다
   useEffect(() => {
@@ -88,8 +91,11 @@ export default function App() {
     const step = () => {
       fx += (mx + 14 - fx) * 0.2
       fy += (my + 10 - fy) * 0.2
-      px += (-(mx / window.innerWidth - 0.5) * 2 * PARALLAX_PX - px) * 0.06
-      py += (-(my / window.innerHeight - 0.5) * 2 * PARALLAX_PX - py) * 0.06
+      // 창이 떠 있는 동안은 뒤의 마을을 그 자리에 세워 둔다
+      if (!panelOpen.current) {
+        px += (-(mx / window.innerWidth - 0.5) * 2 * PARALLAX_PX - px) * 0.06
+        py += (-(my / window.innerHeight - 0.5) * 2 * PARALLAX_PX - py) * 0.06
+      }
       if (fairyRef.current) fairyRef.current.style.transform = `translate(${fx}px, ${fy}px)`
       if (parRef.current) parRef.current.style.transform = `translate3d(${px}px, ${py}px, 0)`
       raf = requestAnimationFrame(step)
