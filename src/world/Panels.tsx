@@ -122,7 +122,7 @@ const CAM_MAX = 3
 /** 모이모가 사진 속에 설 자리 — 가로 가운데(%) · 사람 얼굴은 가운데에 오니 양옆으로 비킨다 */
 const CAM_SPOTS = [[80], [14, 86], [12, 32, 88]]
 /** 포즈 이름 — POSES 순서 */
-const POSE_NAMES = ['기본', '한 손', '양손', '모으기', '빼꼼']
+const POSE_NAMES = ['기본', '갸웃', '브이', '양손', '빼꼼']
 /** 빼꼼 포즈 — 손이 사진 아래 테두리에 걸치게, 그림 위에서부터 손 높이(비율) */
 const PEEK_POSE = 4
 const PEEK_LINE = 0.6
@@ -270,14 +270,19 @@ export function Camera({
             {cam !== 'on' && (
               <p className="cam-msg">{cam === 'wait' ? '카메라를 켜는 중…' : '카메라를 쓸 수 없어요 — 모이모만 찍혀요'}</p>
             )}
-            {art.map((src, i) => (
-              <img key={picked[i].id} className="cam-moimo" src={src} alt=""
-                style={{ left: `${spots[i]}%`, width: `${CAM_SIZE * 100}%`, transform: `translate(-50%, ${(1 - foot) * 100}%)` }} />
-            ))}
             {count > 0 && <b className="cam-count" key={count}>{count}</b>}
           </>
         )}
       </div>
+      {/* 모이모는 화면 칸 위에 따로 얹는다 — 빼꼼 포즈의 손이 화면 테두리에 걸치도록 잘리지 않게 */}
+      {!shot && (
+        <div className="cam-ui-cast">
+          {art.map((src, i) => (
+            <img key={picked[i].id} className="cam-moimo" src={src} alt=""
+              style={{ left: `${spots[i]}%`, width: `${CAM_SIZE * 100}%`, transform: `translate(-50%, ${(1 - foot) * 100}%)` }} />
+          ))}
+        </div>
+      )}
 
       <div className="cam-ui-side">
         {shot ? (

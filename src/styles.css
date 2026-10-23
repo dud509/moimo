@@ -506,6 +506,7 @@ input, textarea { cursor: text !important; }
   position: absolute; left: 10.98%; top: 15.34%; width: 64.88%; height: 58.44%;
   overflow: hidden; border-radius: 3.38cqw; background: #FEFDF8;
 }
+.cam-ui-cast { position: absolute; left: 10.98%; top: 15.34%; width: 64.88%; height: 58.44%; pointer-events: none; }
 .cam-ui-screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 .cam-ui-screen .cam-shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; }
 .cam-ui-side {
@@ -517,14 +518,14 @@ input, textarea { cursor: text !important; }
 .cam-ui-poses { position: absolute; left: 10.98%; top: 76.5%; width: 64.88%; height: 18%; display: flex; gap: 1cqw; justify-content: center; align-items: center; }
 .cam-ui-pose {
   display: grid; justify-items: center; height: 100%; aspect-ratio: 0.86; padding: 0.3cqw 0 0.4cqw; background: #fff;
-  border: 0.12cqw solid #D9CCBB; border-radius: 1cqw;
+  border: 1px solid #E4D9CA; border-radius: 1cqw;
 }
 .cam-ui-pose img { width: 88%; aspect-ratio: 1; display: block; }
 .cam-ui-pose span { font-size: 1.8cqw; line-height: 1; color: #867561; }
 .cam-ui-pose.on { border-color: var(--accent); background: #FFF6F6; }
 /* 이름 찾기·최근 모이모 — 카메라 바깥 아래 */
 .cam-ui-below {
-  position: absolute; left: 0; right: 0; top: calc(100% + 1.4cqw); height: 9cqw;
+  position: absolute; left: 4.98%; width: 90.5%; top: calc(100% + 1.4cqw); height: 11cqw;
   display: flex; gap: 1.2cqw; align-items: center; padding: 0 1cqw;
   background: rgba(255, 253, 244, 0.92); border: 0.12cqw solid #D9CCBB; border-radius: 2cqw;
 }
@@ -536,7 +537,8 @@ input, textarea { cursor: text !important; }
 .cam-ui-find input:focus { outline: none; border-color: var(--accent-deep); }
 .cam-ui-find p { margin: 0; font-size: 1.6cqw; color: var(--accent-deep); text-align: center; }
 .cam-ui-picks { flex: 1; min-width: 0; height: 100%; display: flex; gap: 0.8cqw; overflow-x: auto; overflow-y: hidden; align-items: center; }
-.cam-ui-picks .pick { flex: none; width: 7cqw; padding: 0.4cqw 0.2cqw; }
+.cam-ui-picks .pick { flex: none; width: 7cqw; padding: 0.4cqw 0.2cqw; border: 1px solid #E4D9CA; }
+.cam-ui-picks .pick.on { border-color: var(--accent); }
 .cam-ui-picks .pick .art { width: 5cqw !important; height: 5cqw !important; }
 .cam-ui-picks .pick span { font-size: 1.6cqw; line-height: 1; }
 .cam-moimo { position: absolute; bottom: 0; pointer-events: none; }
