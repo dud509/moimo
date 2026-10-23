@@ -243,7 +243,8 @@ export default function App() {
     tag(null)
     // 오브제 쪽으로 성큼 다가간 뒤 페이지로 넘어간다
     backCam.current = worldRef.current?.camera() ?? null
-    worldRef.current?.flyTo(it.x, it.y, 1.9)
+    // 너무 당기면 화면이 깨진 것처럼 보여 살짝만 다가간다
+    worldRef.current?.flyTo(it.x, it.y, 1.15)
     window.setTimeout(() => {
       setPanel(id)
       window.history.pushState({ page: id }, '', `#${id}`)

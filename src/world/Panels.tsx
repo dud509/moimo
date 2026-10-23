@@ -82,7 +82,7 @@ export function Jar({
               maxLength={10}
               autoFocus
             />
-            <button className="jar-ui-go" disabled={!born} onClick={make} aria-label="만들기">➜</button>
+            <button className="jar-ui-go" disabled={!born} onClick={make} aria-label="만들기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h13M13 6l6 6-6 6" /></svg></button>
           </>
         )}
         {step === 'magic' && <p className="jar-ui-wait">아기요정들이 마법을 부리는 중…</p>}
@@ -98,7 +98,7 @@ export function Jar({
               autoFocus
             />
             {/* 비워 두면 방명록 없이 마을로 간다 */}
-            <button className="jar-ui-go" onClick={finish} aria-label={note.trim() ? '남기기' : '마을로 가기'}>➜</button>
+            <button className="jar-ui-go" onClick={finish} aria-label={note.trim() ? '남기기' : '마을로 가기'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h13M13 6l6 6-6 6" /></svg></button>
           </>
         )}
       </div>
