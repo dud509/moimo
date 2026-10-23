@@ -5,3 +5,6 @@ dist
 tsconfig.tsbuildinfo
 *.tsbuildinfo
 goods-export
+
+# 졸업전시 디피 스케치 (로컬 전용)
+dp-sketch/
