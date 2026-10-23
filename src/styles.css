@@ -50,7 +50,7 @@ input, textarea { cursor: text !important; }
 .mouse-fairy {
   position: fixed; left: 0; top: 0; z-index: 60; width: 150px; pointer-events: none; user-select: none;
   /* 그림 둘레 여백을 빼서 요정 머리 왼쪽 위가 커서 옆에 오게 */
-  margin: -50px 0 0 -40px; filter: drop-shadow(0 3px 4px rgba(112, 94, 76, 0.18));
+  margin: -50px 0 0 -40px; opacity: 0; transition: opacity 0.2s; filter: drop-shadow(0 3px 4px rgba(112, 94, 76, 0.18));
 }
 .world { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
 .world.glide { transition: transform 0.8s cubic-bezier(0.22, 0.9, 0.24, 1); }

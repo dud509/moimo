@@ -88,7 +88,12 @@ export default function App() {
   useEffect(() => {
     let mx = window.innerWidth / 2, my = window.innerHeight / 2
     let fx = mx, fy = my, px = 0, py = 0, raf = 0
-    const onMove = (e: PointerEvent) => { mx = e.clientX; my = e.clientY }
+    const onMove = (e: PointerEvent) => {
+      mx = e.clientX; my = e.clientY
+      if (fairyRef.current) fairyRef.current.style.opacity = '1'
+    }
+    // 커서가 창 밖으로 나가면 요정도 같이 숨는다
+    const onOut = (e: MouseEvent) => { if (!e.relatedTarget && fairyRef.current) fairyRef.current.style.opacity = '0' }
     const step = () => {
       fx += (mx + 14 - fx) * 0.2
       fy += (my + 10 - fy) * 0.2
@@ -102,8 +107,13 @@ export default function App() {
       raf = requestAnimationFrame(step)
     }
     window.addEventListener('pointermove', onMove)
+    document.addEventListener('mouseout', onOut)
     raf = requestAnimationFrame(step)
-    return () => { window.removeEventListener('pointermove', onMove); cancelAnimationFrame(raf) }
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      document.removeEventListener('mouseout', onOut)
+      cancelAnimationFrame(raf)
+    }
   }, [])
   useEffect(() => {
     measureFootprints([...ITEMS, ...DECOR].map((p) => p.src)).then((f) => {
