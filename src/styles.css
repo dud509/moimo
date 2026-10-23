@@ -513,34 +513,34 @@ input, textarea { cursor: text !important; }
   position: absolute; left: 77.5%; top: 29%; width: 17%; display: grid; gap: 1cqw; justify-items: center; text-align: center;
 }
 .cam-ui-side .btn { width: 100%; padding: 0.8cqw 0; font-size: 2.4cqw; }
-.cam-ui-tip { margin: 0; font-size: 1.9cqw; line-height: 1.15; color: #867561; word-break: keep-all; }
+.cam-ui-tip { margin: 0; font-size: 1.9cqw; line-height: 1.45; color: #867561; word-break: keep-all; }
 /* 포즈 고르기 — 카메라 아래 분홍 띠 */
 .cam-ui-poses { position: absolute; left: 10.98%; top: 76.5%; width: 64.88%; height: 18%; display: flex; gap: 1cqw; justify-content: center; align-items: center; }
 .cam-ui-pose {
   display: grid; justify-items: center; height: 100%; aspect-ratio: 0.86; padding: 0.3cqw 0 0.4cqw; background: #fff;
-  border: 1px solid #E4D9CA; border-radius: 1cqw;
+  border: 1px solid #E4D9CA; border-radius: 1.8cqw;
 }
 .cam-ui-pose img { width: 88%; aspect-ratio: 1; display: block; }
-.cam-ui-pose span { font-size: 1.8cqw; line-height: 1; color: #867561; }
+.cam-ui-pose span { font-size: 1.8cqw; line-height: 1.3; color: #867561; }
 .cam-ui-pose.on { border-color: var(--accent); background: #FFF6F6; }
 /* 이름 찾기·최근 모이모 — 카메라 바깥 아래 */
 .cam-ui-below {
   position: absolute; left: 4.98%; width: 90.5%; top: calc(100% + 1.4cqw); height: 11cqw;
   display: flex; gap: 1.2cqw; align-items: center; padding: 0 1cqw;
-  background: rgba(255, 253, 244, 0.92); border: 0.12cqw solid #D9CCBB; border-radius: 2cqw;
+  background: rgba(255, 253, 244, 0.92); border: 0.12cqw solid #D9CCBB; border-radius: 1cqw;
 }
 .cam-ui-find { flex: none; width: 15cqw; display: grid; gap: 0.4cqw; }
 .cam-ui-find input {
   width: 100%; padding: 0.7cqw 1cqw; font-family: inherit; font-size: 2cqw; text-align: center;
-  border: 0.12cqw solid #867561; border-radius: 99px; background: #fff;
+  border: 0.12cqw solid #867561; border-radius: 0.8cqw; background: #fff;
 }
 .cam-ui-find input:focus { outline: none; border-color: var(--accent-deep); }
-.cam-ui-find p { margin: 0; font-size: 1.6cqw; color: var(--accent-deep); text-align: center; }
+.cam-ui-find p { margin: 0; font-size: 1.6cqw; line-height: 1.3; color: var(--accent-deep); text-align: center; }
 .cam-ui-picks { flex: 1; min-width: 0; height: 100%; display: flex; gap: 0.8cqw; overflow-x: auto; overflow-y: hidden; align-items: center; }
 .cam-ui-picks .pick { flex: none; width: 7cqw; padding: 0.4cqw 0.2cqw; border: 1px solid #E4D9CA; }
 .cam-ui-picks .pick.on { border-color: var(--accent); }
 .cam-ui-picks .pick .art { width: 5cqw !important; height: 5cqw !important; }
-.cam-ui-picks .pick span { font-size: 1.6cqw; line-height: 1; }
+.cam-ui-picks .pick span { font-size: 1.6cqw; line-height: 1.3; }
 .cam-moimo { position: absolute; bottom: 0; pointer-events: none; }
 .cam-msg { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; font-size: 13px; font-weight: 800; color: var(--ink-soft); }
 .cam-count { position: absolute; inset: 0; display: grid; place-items: center; font-size: 120px; font-weight: 900; color: #fff; text-shadow: 0 4px 20px rgba(56, 49, 42, 0.35); animation: pop 0.5s ease both; }
@@ -582,9 +582,9 @@ input, textarea { cursor: text !important; }
 .album-photo p { margin: 0; color: var(--ink-soft); }
 .album-photo time { color: var(--ink-soft); opacity: 0.8; }
 .album-ui .album-photo { padding: 0.8cqw 0.8cqw 1cqw; gap: 0.2cqw; }
-.album-ui .album-photo b { font-size: 2.4cqw; font-weight: 700; line-height: 1; }
-.album-ui .album-photo p { font-size: 1.9cqw; line-height: 1; }
-.album-ui .album-photo time { font-size: 1.5cqw; line-height: 1; }
+.album-ui .album-photo b { font-size: 2.4cqw; font-weight: 700; line-height: 1.3; }
+.album-ui .album-photo p { font-size: 1.9cqw; line-height: 1.3; }
+.album-ui .album-photo time { font-size: 1.5cqw; line-height: 1.3; }
 
 /* 돋보기 창 — 검색칸이 렌즈, 옆으로 손잡이 */
 .glass-modal { max-width: 480px; }
