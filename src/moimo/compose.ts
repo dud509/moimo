@@ -383,12 +383,17 @@ export function composeMoimo(
     // 포즈 몸을 먼저 팔 색으로 통째로 깔고, 그 위의 면·무늬는 기본 몸 안쪽만 보이게 자른다.
     // 선은 자르지 않는다
     const sil = `tsil-${uid}`
+    const own = `town-${uid}`
     pieces.push({
       z: Z_BODY - 0.05,
-      svg: `<defs><clipPath id="${sil}">${silhouette(cache.get(TORSO_URL) ?? '')}</clipPath></defs>` +
+      svg: `<defs><clipPath id="${sil}">${silhouette(cache.get(TORSO_URL) ?? '')}</clipPath>` +
+        `<clipPath id="${own}">${silhouette(torsoRaw)}</clipPath></defs>` +
         innards(prepareSvg(torsoRaw, { fill: handHex, line, accent }, `${uid}tb`)),
     })
-    pieces.push(...bodySet.map((p) => (p.z < Z_MORPH + 0.5 ? { ...p, svg: `<g clip-path="url(#${sil})">${p.svg}</g>` } : p)))
+    // 기본 몸 안쪽이면서 포즈 몸 안쪽인 곳만 — 무늬가 옛 팔 자리로 번지지 않게 둘 다로 자른다
+    pieces.push(...bodySet.map((p) => (p.z < Z_MORPH + 0.5
+      ? { ...p, svg: `<g clip-path="url(#${own})"><g clip-path="url(#${sil})">${p.svg}</g></g>` }
+      : p)))
   } else {
     pieces.push(...bodySet)
   }
