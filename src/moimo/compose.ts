@@ -357,27 +357,17 @@ export function composeMoimo(
     : bodyPieces({ bodyRaw, morphRaw, morph: genes.morph, color, tone: genes.tone, body: genes.body, uid: `${uid}h` })
       .map((p) => ({ ...p, z: Z_HEAD + (p.z - Z_BODY) / 10 }))
   if (poseRaw && torsoRaw) {
-    // 무늬 그림은 기본 몸에 맞춰 그려져 있어, 팔을 옮긴 자리는 무늬가 덮지 못해 흰 틈이 난다.
-    // 포즈 몸을 먼저 팔 색으로 통째로 깔고, 그 위의 면·무늬는 기본 몸 안쪽만 보이게 자른다.
-    // 선은 자르지 않는다
-    const sil = `tsil-${uid}`
+    // 포즈 몸이 기본 몸을 통째로 대신한다. 무늬는 기본 몸에 맞춰 그려져 있어 포즈 몸 바깥으로 번지지 않게 자른다
     const own = `town-${uid}`
-    pieces.push({
-      z: Z_BODY - 0.05,
-      svg: `<defs><clipPath id="${sil}">${silhouette(cache.get(TORSO_URL) ?? '')}</clipPath>` +
-        `<clipPath id="${own}">${silhouette(torsoRaw)}</clipPath></defs>` +
-        innards(prepareSvg(torsoRaw, { fill: handHex, line, accent }, `${uid}tb`)),
-    })
-    // 기본 몸 안쪽이면서 포즈 몸 안쪽인 곳만 — 무늬가 옛 팔 자리로 번지지 않게 둘 다로 자른다
-    pieces.push(...bodySet.map((p) => (p.z < Z_MORPH + 0.5
-      ? { ...p, svg: `<g clip-path="url(#${own})"><g clip-path="url(#${sil})">${p.svg}</g></g>` }
-      : p)))
+    pieces.push({ z: Z_BODY - 0.05, svg: `<defs><clipPath id="${own}">${silhouette(torsoRaw)}</clipPath></defs>` })
+    pieces.push(...bodySet.map((p) => (p.z < Z_MORPH + 0.5 ? { ...p, svg: `<g clip-path="url(#${own})">${p.svg}</g>` } : p)))
   } else {
     pieces.push(...bodySet)
   }
   if (handsRaw) {
     // 손에는 무늬를 얹지 않고 팔과 같은 색으로
-    pieces.push({ z: Z_FRONT, svg: innards(prepareSvg(handsRaw, { fill: handHex, line, accent }, `${uid}k`)) })
+    const hands = innards(prepareSvg(handsRaw, { fill: handHex, line, accent }, `${uid}k`))
+    pieces.push({ z: Z_FRONT, svg: pose.handsDy ? `<g transform="translate(0 ${pose.handsDy})">${hands}</g>` : hands })
   }
 
   // 꼬리는 몸통에 이어 붙은 것이라, 무늬가 몸통 바깥을 덮으면 함께 칠한다

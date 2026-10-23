@@ -19,7 +19,8 @@ const ART_SRCS = [
  * cx·cy 는 렌즈 한가운데(그림 네모를 0~1 로 본 값), rx·ry 는 렌즈 반지름
  * (rx 는 폭, ry 는 높이에 대한 몫). 돋보기 그림에서 렌즈 안쪽 테를 잰 값이다.
  */
-const LENS = { w: 290, ratio: 1.172, cx: 0.58, cy: 0.29, rx: 0.35, ry: 0.245 }
+/** 손에 든 돋보기 — ui_glass.svg(1438×1993) 의 렌즈 가운데·반지름을 그림 크기에 대한 비율로 */
+const LENS = { w: 405, ratio: 1.386, cx: 0.5824, cy: 0.4122, rx: 0.25, ry: 0.18 }
 
 /** 그림마다 [화면에 놓이는 폭, 맞출 선 굵기] — 선 굵기를 화면 기준으로 맞춘다 */
 const ART_LINES: Record<string, readonly [number, number]> = Object.fromEntries([
@@ -448,7 +449,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
 
       {lens && (
         <div className="lens" ref={lensRef} style={{ width: LENS.w, height: LENS.w * LENS.ratio }}>
-          {art['/items/glass.svg'] && <img src={art['/items/glass.svg'].url} alt="" draggable={false} />}
+          <img src="/world/ui_glass.svg" alt="" draggable={false} />
         </div>
       )}
     </div>

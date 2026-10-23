@@ -15,7 +15,10 @@
     'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: #867561 transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #867561; border-radius: 6px; }
 html, body, #root { height: 100%; }
 body {
   margin: 0;
@@ -504,18 +507,29 @@ input, textarea { cursor: text !important; }
 .cam-ui-screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 .cam-ui-screen .cam-shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; }
 .cam-ui-side {
-  position: absolute; left: 77%; top: 30%; width: 18%; display: grid; gap: 1cqw; justify-items: center; text-align: center;
+  position: absolute; left: 77.5%; top: 29%; width: 17%; display: grid; gap: 1cqw; justify-items: center; text-align: center;
 }
 .cam-ui-side p { margin: 0; font-size: 1.9cqw; line-height: 1.15; color: #867561; word-break: keep-all; }
 .cam-ui-side .btn { width: 100%; padding: 0.8cqw 0; font-size: 2.4cqw; }
+.cam-ui-poses { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5cqw; width: 100%; }
+.cam-ui-poses .btn { padding: 0.4cqw 0; font-size: 1.9cqw; }
+.cam-ui-poses .btn:last-child { grid-column: 1 / -1; }
+.cam-ui-tip { font-size: 1.6cqw !important; margin-top: 0.6cqw !important; }
+.cam-ui-find { position: absolute; left: 10.98%; top: 79%; width: 15%; display: grid; gap: 0.4cqw; }
+.cam-ui-find input {
+  width: 100%; padding: 0.7cqw 1cqw; font-family: inherit; font-size: 2cqw; text-align: center;
+  border: 0.22cqw solid #867561; border-radius: 99px; background: #fff;
+}
+.cam-ui-find input:focus { outline: none; border-color: var(--accent-deep); }
+.cam-ui-find p { margin: 0; font-size: 1.6cqw; color: var(--accent-deep); text-align: center; }
 .cam-ui-picks {
-  position: absolute; left: 10.98%; top: 77%; width: 81%; height: 17%;
+  position: absolute; left: 27%; top: 77%; width: 65%; height: 17%;
   display: flex; gap: 0.8cqw; overflow-x: auto; overflow-y: hidden; align-items: center; padding: 0 0.4cqw;
 }
 .cam-ui-picks .pick { flex: none; width: 7cqw; padding: 0.4cqw 0.2cqw; }
 .cam-ui-picks .pick .art { width: 5cqw !important; height: 5cqw !important; }
 .cam-ui-picks .pick span { font-size: 1.6cqw; line-height: 1; }
-.cam-moimo { position: absolute; bottom: 0; transform: translate(-50%, 8%); pointer-events: none; }
+.cam-moimo { position: absolute; bottom: 0; pointer-events: none; }
 .cam-msg { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; font-size: 13px; font-weight: 800; color: var(--ink-soft); }
 .cam-count { position: absolute; inset: 0; display: grid; place-items: center; font-size: 120px; font-weight: 900; color: #fff; text-shadow: 0 4px 20px rgba(56, 49, 42, 0.35); animation: pop 0.5s ease both; }
 .cam-shot { display: block; width: min(100%, 560px); margin: 0 auto; box-shadow: 0 6px 16px rgba(56, 49, 42, 0.14); }

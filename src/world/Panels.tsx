@@ -121,6 +121,11 @@ const SPARKS: [number, number, number][] = [[18, 22, 0], [76, 18, 0.4], [30, 58,
 const CAM_MAX = 3
 /** 모이모가 사진 속에 설 자리 — 가로 가운데(%) · 사람 얼굴은 가운데에 오니 양옆으로 비킨다 */
 const CAM_SPOTS = [[76], [18, 82], [14, 34, 84]]
+/** 포즈 이름 — POSES 순서 */
+const POSE_NAMES = ['기본', '한 손', '양손', '모으기', '빼꼼']
+/** 빼꼼 포즈 — 손이 사진 아래 테두리에 걸치게, 그림 위에서부터 손 높이(비율) */
+const PEEK_POSE = 4
+const PEEK_LINE = 0.6
 /** 사진 속 모이모 크기 — 사진 너비에 대한 비율 */
 const CAM_SIZE = 0.34
 
@@ -157,11 +162,17 @@ export function Camera({
       ? p.filter((x) => x.id !== r.id)
       : p.length >= CAM_MAX ? p : [...p, r])
 
+  const [pose, setPose] = useState(0)
+  const [query, setQuery] = useState('')
   const spots = CAM_SPOTS[Math.max(0, picked.length - 1)]
   const art = useMemo(
-    () => picked.map((r) => moimoDataUri(composeMoimo(r.genes, cache, table))),
-    [picked, cache, table],
+    () => picked.map((r) => moimoDataUri(composeMoimo(r.genes, cache, table, { pose }))),
+    [picked, cache, table, pose],
   )
+  // 사진 속에서 모이모 발(또는 빼꼼 포즈의 손)이 닿는 높이 — 그림 위에서부터의 비율
+  const foot = pose === PEEK_POSE ? PEEK_LINE : 0.92
+  const q = query.trim()
+  const found = q ? residents.filter((r) => r.name.includes(q)).slice(0, 20) : []
 
   /** 3·2·1 세고 찍는다 */
   const start = () => {
@@ -203,7 +214,7 @@ export function Camera({
     await Promise.all(art.map((src, i) => new Promise<void>((done) => {
       const img = new Image()
       img.onload = () => {
-        ctx.drawImage(img, PAD + (W * spots[i]) / 100 - size / 2, PAD + H - size * 0.92, size, size)
+        ctx.drawImage(img, PAD + (W * spots[i]) / 100 - size / 2, PAD + H - size * foot, size, size)
         done()
       }
       img.onerror = () => done()
@@ -251,7 +262,7 @@ export function Camera({
             )}
             {art.map((src, i) => (
               <img key={picked[i].id} className="cam-moimo" src={src} alt=""
-                style={{ left: `${spots[i]}%`, width: `${CAM_SIZE * 100}%` }} />
+                style={{ left: `${spots[i]}%`, width: `${CAM_SIZE * 100}%`, transform: `translate(-50%, ${(1 - foot) * 100}%)` }} />
             ))}
             {count > 0 && <b className="cam-count" key={count}>{count}</b>}
           </>
@@ -265,13 +276,27 @@ export function Camera({
             <button className="btn" onClick={() => setShot(null)}>다시 찍기</button>
           </>
         ) : (
-          <p>아래에서 모이모를<br />{CAM_MAX}명까지 고르고<br />동그란 버튼을 찰칵!</p>
+          <>
+            <p>포즈</p>
+            <div className="cam-ui-poses">
+              {POSE_NAMES.map((label, p) => (
+                <button key={p} className={`btn${pose === p ? ' primary' : ''}`} onClick={() => setPose(p)}>{label}</button>
+              ))}
+            </div>
+            <p className="cam-ui-tip">모이모를 {CAM_MAX}명까지 고르고<br />동그란 버튼을 찰칵!</p>
+          </>
         )}
       </div>
 
       {!shot && (
+        <div className="cam-ui-find">
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="이름 찾기" aria-label="이름 찾기" />
+          {q && !found.length && <p>아직 생성되지 않았어요!</p>}
+        </div>
+      )}
+      {!shot && (
         <div className="cam-ui-picks">
-          {[...residents].reverse().slice(0, 60).map((r) => (
+          {(q ? found : [...residents].reverse().slice(0, 60)).map((r) => (
             <button
               key={r.id}
               className={`pick${picked.some((x) => x.id === r.id) ? ' on' : ''}`}
