@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CANVAS } from '../moimo/parts'
+import { CANVAS, PASTEL_BG } from '../moimo/parts'
 import type { AnchorTable } from '../moimo/parts'
 import { composeMoimo, moimoDataUri, type PartsCache } from '../moimo/compose'
 import { explain, genesFromName, splitName } from '../moimo/name'
@@ -339,9 +339,6 @@ export function Camera({
 /* 앨범 — 생성 기록과 방명록                                            */
 /* ------------------------------------------------------------------ */
 
-/** 폴라로이드 사진 바탕색 — 몸통 색 순서(파랑·노랑·분홍·밀크티·민트·연보라)대로, 받은 색을 흰색에 40% 섞어 연하게 */
-const PHOTO_BG = ['#E3F1F6', '#FFF3C6', '#FBE5EC', '#F5E6D9', '#DFEFE5', '#EBE5F2']
-
 export function Album({
   cache, table, onClose, residents, onFocus,
 }: Common & { residents: Resident[]; onFocus: (r: Resident) => void }) {
@@ -365,7 +362,7 @@ export function Album({
       <div className="album-grid">
         {made.map((r, i) => (
           <button key={r.id} className="album-photo" style={{ rotate: `${((i * 37) % 5) - 2}deg` }} onClick={() => onFocus(r)}>
-            <span className="album-pic" style={{ background: PHOTO_BG[r.genes.color - 1] ?? PHOTO_BG[0] }}><MoimoImg resident={r} cache={cache} table={table} size={120} /></span>
+            <span className="album-pic" style={{ background: PASTEL_BG[r.genes.color - 1] ?? PASTEL_BG[0] }}><MoimoImg resident={r} cache={cache} table={table} size={120} /></span>
             <b>{r.name}</b>
             {r.note && <p>“{r.note}”</p>}
             <time>{when(r.at)}</time>

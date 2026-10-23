@@ -1,3 +1,4 @@
+import { PASTEL_BG } from '../moimo/parts'
 import {
   forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState,
 } from 'react'
@@ -424,10 +425,11 @@ export const World = forwardRef<WorldHandle, Props>(function World(
           if (s.kind === 'prop') return <Prop key={s.p.id} prop={s.p} art={art[PROP_KINDS[s.p.kind].src]} />
           const r = s.r
           const dim = hits ? !hits.has(r.id) : false
+          const named = showNames || r.id === tagged || (hits && hits.has(r.id)) || (lens && underLens.has(r.id))
           return (
             <button
               key={r.id}
-              className={`moimo${r.id === arrivedId ? ' arrive' : ''}${r.mine ? ' mine' : ''}${dim ? ' dim' : ''}${r.id === tagged ? ' tagged' : ''}`}
+              className={`moimo${r.id === arrivedId ? ' arrive' : ''}${r.mine ? ' mine' : ''}${dim ? ' dim' : ''}${r.id === tagged ? ' tagged' : ''}${named ? ' named' : ''}`}
               style={{
                 left: r.x,
                 top: r.y,
@@ -437,8 +439,8 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             >
               <Shadow />
               <MoimoImg resident={r} cache={cache} table={table} />
-              {(showNames || r.id === tagged || (hits && hits.has(r.id)) || (lens && underLens.has(r.id))) && (
-                <span className={`moimo-name${r.id === tagged ? ' tag' : ''}`}>
+              {named && (
+                <span className={`moimo-name${r.id === tagged ? ' tag' : ''}`} style={{ background: PASTEL_BG[r.genes.color - 1] }}>
                   {r.name}
                 </span>
               )}

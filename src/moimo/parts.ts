@@ -39,6 +39,9 @@ export const BODY_COLORS = [
 
 export type BodyColor = (typeof BODY_COLORS)[number]
 
+/** 폴라로이드·이름표 바탕 — 몸통 색 순서(BODY_COLORS)대로 한층 연하게 */
+export const PASTEL_BG = ['#E3F1F6', '#FFF3C6', '#FBE5EC', '#F5E6D9', '#DFEFE5', '#EBE5F2']
+
 /** 이 몸통 색의 짙은 쪽 — 무늬를 진하게 넣을 때 쓴다 */
 export const deepFor = (c: BodyColor): string => c.deep
 
