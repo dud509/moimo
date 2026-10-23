@@ -476,23 +476,45 @@ input, textarea { cursor: text !important; }
 .born::before { content: ''; position: absolute; inset: -30px; border-radius: 50%; background: radial-gradient(circle, #FFF8DC 0%, transparent 65%); animation: fade 0.6s ease both; }
 .born > * { position: relative; }
 
-/* 카메라 창 — 하늘색 몸체, 위에 뷰파인더와 셔터, 사진 칸은 폴라로이드 */
-.cam-modal { max-width: 760px; }
-.sheet.cam {
-  height: min(84vh, 720px); border: 3px solid #867561; border-radius: 34px;
-  background: #E5F0FB; box-shadow: 0 18px 40px rgba(120, 140, 170, 0.2);
+/*
+ * 카메라 창 — 그림(ui_camera.svg 2010×1297) 한 장을 창으로 쓴다.
+ * 화면 칸(221,199 · 1304×758) 안에 웹캠, 동그란 버튼(1598,133 · 208)은 셔터, ✕ 는 그림 속 자리.
+ */
+.cam-ui {
+  position: relative; container-type: inline-size;
+  width: min(94vw, 1180px, calc(90vh * 1.5496)); aspect-ratio: 2009.79 / 1297;
+  font-family: 'Dongle', var(--font);
+  animation: pop 0.32s cubic-bezier(0.2, 1.2, 0.4, 1) both;
 }
-.sheet.cam .sheet-head { position: relative; justify-content: center; text-align: center; background: #D4E5F6; border-bottom: 3px solid #867561; padding: 22px 70px 16px; }
-.sheet.cam .sheet-head .icon-btn { position: absolute; right: 16px; top: 16px; }
-.cam-finder { position: absolute; left: 26px; top: 20px; width: 46px; height: 30px; border-radius: 9px; background: #F3F9FF; border: 3px solid #867561; box-shadow: inset 0 0 0 5px #5A5A59; }
-.cam-shutter { position: absolute; right: 64px; top: 22px; width: 24px; height: 24px; border-radius: 50%; background: #F9D7D7; border: 3px solid #867561; }
-.sheet.cam .pad { background: #FFFDF4; flex: 1; margin: 14px; border-radius: 22px; border: 2.5px solid #C9D9EA; }
-.cam-frame {
-  position: relative; width: min(100%, 560px); aspect-ratio: 4 / 3; margin: 0 auto; overflow: hidden;
-  background: #E5F0FB; border: 12px solid #fff; border-bottom-width: 46px; border-radius: 4px;
-  box-shadow: 0 6px 16px rgba(56, 49, 42, 0.14), 0 0 0 1px #EEE7D6;
+.cam-ui-bg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none;
+  filter: drop-shadow(0 18px 30px rgba(112, 94, 76, 0.16)); }
+.cam-ui-x { position: absolute; left: 94.14%; top: 3.62%; width: 4.48%; aspect-ratio: 1; border: 0; border-radius: 50%; background: transparent; }
+.cam-ui-x:hover { background: rgba(134, 117, 97, 0.1); }
+.cam-ui-shutter {
+  position: absolute; left: 79.51%; top: 10.25%; width: 10.35%; aspect-ratio: 1; border: 0; border-radius: 50%;
+  background: transparent; transition: box-shadow 0.15s, background 0.15s;
 }
-.cam-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.cam-ui-shutter:not(:disabled):hover { background: rgba(255, 255, 255, 0.14); box-shadow: 0 0 0 0.6cqw #F7D947; }
+.cam-ui-shutter:not(:disabled):active { background: rgba(255, 255, 255, 0.3); }
+.cam-ui-shutter:disabled { cursor: default; }
+.cam-ui-screen {
+  position: absolute; left: 10.98%; top: 15.34%; width: 64.88%; height: 58.44%;
+  overflow: hidden; border-radius: 3.38cqw; background: #FEFDF8;
+}
+.cam-ui-screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.cam-ui-screen .cam-shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; }
+.cam-ui-side {
+  position: absolute; left: 77%; top: 30%; width: 18%; display: grid; gap: 1cqw; justify-items: center; text-align: center;
+}
+.cam-ui-side p { margin: 0; font-size: 1.9cqw; line-height: 1.15; color: #867561; word-break: keep-all; }
+.cam-ui-side .btn { width: 100%; padding: 0.8cqw 0; font-size: 2.4cqw; }
+.cam-ui-picks {
+  position: absolute; left: 10.98%; top: 77%; width: 81%; height: 17%;
+  display: flex; gap: 0.8cqw; overflow-x: auto; overflow-y: hidden; align-items: center; padding: 0 0.4cqw;
+}
+.cam-ui-picks .pick { flex: none; width: 7cqw; padding: 0.4cqw 0.2cqw; }
+.cam-ui-picks .pick .art { width: 5cqw !important; height: 5cqw !important; }
+.cam-ui-picks .pick span { font-size: 1.6cqw; line-height: 1; }
 .cam-moimo { position: absolute; bottom: 0; transform: translate(-50%, 8%); pointer-events: none; }
 .cam-msg { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; font-size: 13px; font-weight: 800; color: var(--ink-soft); }
 .cam-count { position: absolute; inset: 0; display: grid; place-items: center; font-size: 120px; font-weight: 900; color: #fff; text-shadow: 0 4px 20px rgba(56, 49, 42, 0.35); animation: pop 0.5s ease both; }

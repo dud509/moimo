@@ -179,7 +179,8 @@ export function Camera({
   /** 웹캠 화면(거울처럼 뒤집어)과 모이모를 한 장에 굽는다 — 아래는 폴라로이드 여백 */
   const snap = async () => {
     const v = videoRef.current
-    const W = 1200, H = 900, PAD = 40, FOOT = 170
+    // 카메라 그림의 화면 칸(1304×758)과 같은 비율로 찍는다
+    const W = 1368, H = 796, PAD = 40, FOOT = 170
     const cv = document.createElement('canvas')
     cv.width = W + PAD * 2
     cv.height = H + PAD + FOOT
@@ -227,24 +228,23 @@ export function Camera({
   }
 
   return (
-    <div className="obj-modal cam-modal">
-    <div className="sheet cam">
-      <header className="sheet-head">
-        {/* 카메라 윗면 — 뷰파인더와 셔터 */}
-        <i className="cam-finder" aria-hidden />
-        <div>
-          <p className="eyebrow">카메라</p>
-          <h2>모이모와 같이 사진찍기</h2>
-        </div>
-        <i className="cam-shutter" aria-hidden />
-        <button className="icon-btn" onClick={onClose} aria-label="닫기">✕</button>
-      </header>
+    // 카메라 그림(ui_camera.svg)을 창으로 쓴다 — 화면 칸에 웹캠, 동그란 버튼이 셔터, 아래 띠에 고르는 목록
+    <div className="cam-ui">
+      <img className="cam-ui-bg" src="/world/ui_camera.svg" alt="" draggable={false} />
+      <button className="cam-ui-x" onClick={onClose} aria-label="닫기" />
+      <button
+        className="cam-ui-shutter"
+        disabled={!picked.length || count > 0 || !!shot}
+        onClick={start}
+        aria-label="찰칵"
+        title="찰칵"
+      />
 
-      <div className="pad">
+      <div className="cam-ui-screen">
         {shot ? (
           <img className="cam-shot" src={shot} alt="찍은 사진" />
         ) : (
-          <div className="cam-frame">
+          <>
             <video ref={videoRef} muted playsInline />
             {cam !== 'on' && (
               <p className="cam-msg">{cam === 'wait' ? '카메라를 켜는 중…' : '카메라를 쓸 수 없어요 — 모이모만 찍혀요'}</p>
@@ -254,39 +254,35 @@ export function Camera({
                 style={{ left: `${spots[i]}%`, width: `${CAM_SIZE * 100}%` }} />
             ))}
             {count > 0 && <b className="cam-count" key={count}>{count}</b>}
-          </div>
-        )}
-
-        <div className="cam-actions">
-          {shot ? (
-            <>
-              <button className="btn" onClick={() => setShot(null)}>다시 찍기</button>
-              <button className="btn primary" onClick={save}>사진 저장</button>
-            </>
-          ) : (
-            <button className="btn primary cam-snap" disabled={!picked.length || count > 0} onClick={start}>찰칵</button>
-          )}
-        </div>
-
-        {!shot && (
-          <>
-            <p className="hint-sm cam-hint">같이 찍을 모이모를 골라요 · 최대 {CAM_MAX}명</p>
-            <div className="picks">
-              {[...residents].reverse().slice(0, 60).map((r) => (
-                <button
-                  key={r.id}
-                  className={`pick${picked.some((x) => x.id === r.id) ? ' on' : ''}`}
-                  onClick={() => toggle(r)}
-                >
-                  <MoimoImg resident={r} cache={cache} table={table} size={54} />
-                  <span>{r.name}</span>
-                </button>
-              ))}
-            </div>
           </>
         )}
       </div>
-    </div>
+
+      <div className="cam-ui-side">
+        {shot ? (
+          <>
+            <button className="btn primary" onClick={save}>사진 저장</button>
+            <button className="btn" onClick={() => setShot(null)}>다시 찍기</button>
+          </>
+        ) : (
+          <p>아래에서 모이모를<br />{CAM_MAX}명까지 고르고<br />동그란 버튼을 찰칵!</p>
+        )}
+      </div>
+
+      {!shot && (
+        <div className="cam-ui-picks">
+          {[...residents].reverse().slice(0, 60).map((r) => (
+            <button
+              key={r.id}
+              className={`pick${picked.some((x) => x.id === r.id) ? ' on' : ''}`}
+              onClick={() => toggle(r)}
+            >
+              <MoimoImg resident={r} cache={cache} table={table} size={54} />
+              <span>{r.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
