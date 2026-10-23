@@ -305,17 +305,13 @@ export function Album({
   const when = (t: number) => new Date(t).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div className="obj-modal album-modal">
-    {/* 다이어리 옆 색인 띠 */}
-    <i className="album-tab t1" aria-hidden /><i className="album-tab t2" aria-hidden />
-    <div className="sheet album">
-      <i className="album-rings" aria-hidden />
-      <header className="sheet-head">
-        <div>
-          <p className="eyebrow">앨범</p>
-          <h2>{made.length}명이 다녀갔어요</h2>
-        </div>
-        <button className="icon-btn" onClick={onClose}>✕</button>
+    // 다이어리 그림(ui_dariy.svg)을 창으로 쓰고, 맨 앞 속지 자리에 사진을 붙인다
+    <div className="album-ui">
+      <img className="album-ui-bg" src="/world/ui_dariy.svg" alt="" draggable={false} />
+      <div className="album-ui-page">
+      <header className="album-ui-head">
+        <h2>{made.length}명이 다녀갔어요</h2>
+        <button className="icon-btn" onClick={onClose} aria-label="닫기">✕</button>
       </header>
 
       {/* 사진 앨범처럼 — 한 줄에 셋, 모이모마다 폴라로이드 한 장 */}
@@ -332,7 +328,7 @@ export function Album({
           <p className="empty">아직 아무도 만들지 않았어요.<br />별사탕 유리병에서 첫 모이모를 만들어보세요.</p>
         )}
       </div>
-    </div>
+      </div>
     </div>
   )
 }

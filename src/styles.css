@@ -11,7 +11,7 @@
   --line: #E9DFC6;
   --accent: #E4A0A8;
   --accent-deep: #C97F89;
-  --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+  --font: 'Dongle', 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
     'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
 }
 
@@ -20,6 +20,8 @@ html, body, #root { height: 100%; }
 body {
   margin: 0;
   font-family: var(--font);
+  /* Dongle 은 같은 크기에서 글자가 작게 나와, 글자 높이를 맞춰 키운다 */
+  font-size-adjust: 0.52;
   color: var(--ink);
   background: var(--ground);
   overflow: hidden;
@@ -410,7 +412,7 @@ input, textarea { cursor: text !important; }
 .jar-ui {
   position: relative; container-type: inline-size;
   width: min(94vw, 1180px, calc(92vh * 1.2287)); aspect-ratio: 2009.79 / 1635.72;
-  font-family: 'Dongle', var(--font); color: #6F6F6F;
+  font-family: 'Dongle', var(--font); color: #6F6F6F; font-size-adjust: none;
   animation: pop 0.32s cubic-bezier(0.2, 1.2, 0.4, 1) both;
 }
 .jar-ui-bg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none;
@@ -499,36 +501,42 @@ input, textarea { cursor: text !important; }
 .cam-snap { min-width: 140px; font-size: 16px; }
 .cam-hint { text-align: center; margin: 8px 0 10px; }
 
-/* 앨범 창 — 분홍 다이어리, 왼쪽 고리, 줄 노트, 옆에 색인 띠 */
-.album-modal { max-width: 720px; }
-.sheet.album {
-  position: relative; height: min(84vh, 720px); border: 3px solid #867561; border-radius: 14px 30px 30px 14px;
-  background: #FDDDE8; padding: 12px 12px 12px 34px; box-shadow: 0 18px 40px rgba(170, 120, 140, 0.18);
+/*
+ * 앨범 창 — 다이어리 그림(ui_dariy.svg 1403×894) 한 장을 창으로 쓴다.
+ * 맨 앞 속지(83,61 · 1103×770) 자리에 머리말과 사진첩을 얹는다.
+ */
+.album-ui {
+  position: relative; container-type: inline-size;
+  width: min(94vw, 1180px, calc(90vh * 1.5694)); aspect-ratio: 1403 / 894;
+  animation: pop 0.32s cubic-bezier(0.2, 1.2, 0.4, 1) both;
 }
-.sheet.album > .sheet-head, .sheet.album > .album-grid { background: #FFFBE9; }
-.sheet.album > .sheet-head { border-radius: 14px 18px 0 0; border: 2.5px solid #E4CFA8; border-bottom-style: dashed; }
-.album-grid {
-  flex: 1; overflow: auto; display: grid; grid-template-columns: repeat(3, 1fr); align-content: start; gap: 22px 18px;
-  padding: 22px 22px 28px; border: 2.5px solid #E4CFA8; border-top: 0; border-radius: 0 0 18px 18px;
+.album-ui-bg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none;
+  filter: drop-shadow(0 18px 30px rgba(112, 94, 76, 0.16)); }
+.album-ui-page {
+  position: absolute; left: 5.92%; top: 6.82%; width: 78.6%; height: 86.1%;
+  display: flex; flex-direction: column; padding: 2.2cqw 2.6cqw 1.6cqw;
+}
+.album-ui-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2cqw; }
+.album-ui-head h2 { margin: 0; font-size: 3.4cqw; font-weight: 700; color: #867561; line-height: 1; }
+.album-ui .album-grid {
+  flex: 1; min-height: 0; overflow: auto; display: grid; grid-template-columns: repeat(3, 1fr); align-items: start; align-content: start;
+  padding: 1cqw 0.8cqw 1.6cqw; border: 0; border-radius: 0; background: none; gap: 2cqw 2.2cqw;
 }
 .album-grid .empty { grid-column: 1 / -1; }
 .album-photo {
-  display: grid; justify-items: center; gap: 2px; padding: 10px 10px 12px; border: 0; background: #fff;
+  display: grid; justify-items: center; border: 0; background: #fff;
   box-shadow: 0 4px 10px rgba(56, 49, 42, 0.12), 0 0 0 1px #EEE7D6; transition: transform 0.15s ease;
 }
 .album-photo:hover { transform: translateY(-3px) scale(1.03); }
-.album-pic { display: grid; place-items: center; width: 100%; aspect-ratio: 1; background: #F7F1E1; margin-bottom: 6px; }
-.album-pic svg { width: 88%; height: auto; }
-.album-photo b { font-size: 14px; font-weight: 900; }
-.album-photo p { margin: 0; font-size: 12px; font-weight: 600; color: var(--ink-soft); line-height: 1.4; }
-.album-photo time { font-size: 10px; font-weight: 700; color: var(--ink-soft); opacity: 0.8; }
-.album-rings {
-  position: absolute; left: 8px; top: 60px; bottom: 60px; width: 18px; pointer-events: none;
-  background: radial-gradient(circle at 9px 9px, #FFFDF4 5px, #867561 5px 8px, transparent 8px) 0 0 / 18px 64px repeat-y;
-}
-.album-tab { position: absolute; right: -14px; width: 22px; height: 54px; border: 3px solid #867561; border-left: 0; border-radius: 0 10px 10px 0; z-index: -1; }
-.album-tab.t1 { top: 90px; background: #FFF6CC; }
-.album-tab.t2 { top: 156px; background: #F7EEFF; }
+.album-pic { display: grid; place-items: center; width: 100%; aspect-ratio: 1; background: #F7F1E1; margin-bottom: 0.5cqw; }
+.album-pic .art { width: 88% !important; height: 88% !important; }
+.album-photo b { color: var(--ink); }
+.album-photo p { margin: 0; color: var(--ink-soft); }
+.album-photo time { color: var(--ink-soft); opacity: 0.8; }
+.album-ui .album-photo { padding: 0.8cqw 0.8cqw 1cqw; gap: 0.2cqw; }
+.album-ui .album-photo b { font-size: 2.4cqw; font-weight: 700; line-height: 1; }
+.album-ui .album-photo p { font-size: 1.9cqw; line-height: 1; }
+.album-ui .album-photo time { font-size: 1.5cqw; line-height: 1; }
 
 /* 돋보기 창 — 검색칸이 렌즈, 옆으로 손잡이 */
 .glass-modal { max-width: 480px; }
