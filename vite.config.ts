@@ -40,13 +40,18 @@ function goodsSave(): Plugin {
         req.on('data', (c) => chunks.push(c as Buffer))
         req.on('end', async () => {
           try {
-            const { folder, file, svg } = JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, string>
+            const { folder, file, svg, png } = JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, string>
             // 폴더·파일 이름에 경로 문자가 섞여 밖으로 새지 않게 한다
             const safe = (s: string) => s.replace(/[\\/:*?"<>|.]/g, '_').trim()
-            if (!safe(folder) || !safe(file) || !svg?.includes('<svg')) throw new Error('잘못된 요청')
+            if (!safe(folder) || !safe(file)) throw new Error('잘못된 요청')
             const dir = resolve(__dirname, 'goods-export', safe(folder))
             await mkdir(dir, { recursive: true })
-            await writeFile(resolve(dir, `${safe(file)}.svg`), svg, 'utf8')
+            // 화면 캡처 같은 그림은 png(data URL)로 받는다
+            if (png?.startsWith('data:image/png;base64,')) {
+              await writeFile(resolve(dir, `${safe(file)}.png`), Buffer.from(png.split(',')[1], 'base64'))
+            } else if (svg?.includes('<svg')) {
+              await writeFile(resolve(dir, `${safe(file)}.svg`), svg, 'utf8')
+            } else throw new Error('잘못된 요청')
             res.statusCode = 200
             res.end('ok')
           } catch (err) {
