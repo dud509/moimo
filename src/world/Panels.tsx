@@ -120,14 +120,16 @@ const SPARKS: [number, number, number][] = [[18, 22, 0], [76, 18, 0.4], [30, 58,
 /** 같이 찍을 수 있는 모이모 수 */
 const CAM_MAX = 3
 /** 모이모가 사진 속에 설 자리 — 가로 가운데(%) · 사람 얼굴은 가운데에 오니 양옆으로 비킨다 */
-const CAM_SPOTS = [[76], [18, 82], [14, 34, 84]]
+const CAM_SPOTS = [[74], [20, 80], [14, 38, 86]]
 /** 포즈 이름 — POSES 순서 */
 const POSE_NAMES = ['기본', '한 손', '양손', '모으기', '빼꼼']
 /** 빼꼼 포즈 — 손이 사진 아래 테두리에 걸치게, 그림 위에서부터 손 높이(비율) */
 const PEEK_POSE = 4
 const PEEK_LINE = 0.6
+/** 서 있는 포즈의 발끝 높이(그림 위에서부터 비율) — 발이 사진 아래 테두리에 닿게 */
+const FEET_LINE = 0.8
 /** 사진 속 모이모 크기 — 사진 너비에 대한 비율 */
-const CAM_SIZE = 0.34
+const CAM_SIZE = 0.62
 
 export function Camera({
   cache, table, onClose, residents,
@@ -170,7 +172,15 @@ export function Camera({
     [picked, cache, table, pose],
   )
   // 사진 속에서 모이모 발(또는 빼꼼 포즈의 손)이 닿는 높이 — 그림 위에서부터의 비율
-  const foot = pose === PEEK_POSE ? PEEK_LINE : 0.92
+  const foot = pose === PEEK_POSE ? PEEK_LINE : FEET_LINE
+  // 포즈 고르기 미리보기 — 고른 첫 모이모(없으면 가장 최근 모이모)로
+  const sample = picked[0] ?? residents[residents.length - 1]
+  const poseArt = useMemo(
+    () => (sample ? POSE_NAMES.map((_, p) => moimoDataUri(composeMoimo(sample.genes, cache, table, { pose: p })
+      // 미리보기는 몸 쪽만 크게 — 그림 둘레 여백을 잘라 낸다
+      .replace(/viewBox="[^"]*"/, 'viewBox="96 120 320 320"'))) : []),
+    [sample, cache, table],
+  )
   const q = query.trim()
   const found = q ? residents.filter((r) => r.name.includes(q)).slice(0, 20) : []
 
@@ -280,7 +290,10 @@ export function Camera({
             <p>포즈</p>
             <div className="cam-ui-poses">
               {POSE_NAMES.map((label, p) => (
-                <button key={p} className={`btn${pose === p ? ' primary' : ''}`} onClick={() => setPose(p)}>{label}</button>
+                <button key={p} className={`cam-ui-pose${pose === p ? ' on' : ''}`} onClick={() => setPose(p)} title={label}>
+                  {poseArt[p] && <img src={poseArt[p]} alt="" />}
+                  <span>{label}</span>
+                </button>
               ))}
             </div>
             <p className="cam-ui-tip">모이모를 {CAM_MAX}명까지 고르고<br />동그란 버튼을 찰칵!</p>

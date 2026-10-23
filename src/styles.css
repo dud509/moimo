@@ -511,9 +511,14 @@ input, textarea { cursor: text !important; }
 }
 .cam-ui-side p { margin: 0; font-size: 1.9cqw; line-height: 1.15; color: #867561; word-break: keep-all; }
 .cam-ui-side .btn { width: 100%; padding: 0.8cqw 0; font-size: 2.4cqw; }
-.cam-ui-poses { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5cqw; width: 100%; }
-.cam-ui-poses .btn { padding: 0.4cqw 0; font-size: 1.9cqw; }
-.cam-ui-poses .btn:last-child { grid-column: 1 / -1; }
+.cam-ui-poses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4cqw; width: 100%; }
+.cam-ui-pose {
+  display: grid; justify-items: center; padding: 0.2cqw 0 0.3cqw; background: #fff;
+  border: 0.12cqw solid #D9CCBB; border-radius: 0.8cqw;
+}
+.cam-ui-pose img { width: 100%; aspect-ratio: 1; display: block; }
+.cam-ui-pose span { font-size: 1.4cqw; line-height: 1; color: #867561; }
+.cam-ui-pose.on { border-color: var(--accent); background: #FFF6F6; }
 .cam-ui-tip { font-size: 1.6cqw !important; margin-top: 0.6cqw !important; }
 .cam-ui-find { position: absolute; left: 10.98%; top: 79%; width: 15%; display: grid; gap: 0.4cqw; }
 .cam-ui-find input {
