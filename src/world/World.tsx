@@ -71,12 +71,15 @@ function Guide({ item, itemArt, art, on }: { item: (typeof ITEMS)[number]; itemA
   if (!art) return null
   const g = GUIDES[item.guide]
   const h = g.w * art.ratio
-  // 오브제 왼쪽 위 어깨에 살짝 겹쳐 떠오른다
+  // 바라보는 쪽을 향해 오브제 어깨(또는 머리) 위에 살짝 겹쳐 떠오른다
   const top = item.y - (item.w * (itemArt?.ratio ?? item.ratio)) / 2
   return (
     <span
       className={`item-guide${on ? ' on' : ''}`}
-      style={{ left: item.x - item.w / 2 - g.w * 0.35, top: top - h * 0.55, width: g.w, height: h }}
+      style={{
+        left: g.side === 'left' ? item.x - item.w / 2 - g.w * 0.35 : g.side === 'right' ? item.x + item.w / 2 - g.w * 0.65 : item.x - g.w / 2,
+        top: top - h * (g.side === 'top' ? 0.8 : 0.55), width: g.w, height: h,
+      }}
     >
       <Shadow />
       <img src={art.url} alt="" draggable={false} />

@@ -73,7 +73,7 @@ export type Item = Placed & {
 export const ITEMS: Item[] = [
   { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', src: '/items/jar02.svg',  x: 1811, y: 1212, w: 337, ratio: 1.23, guide: 0 },
   { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 900, w: 257, ratio: 1.053, guide: 1 },
-  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774, guide: 0 },
+  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774, guide: 2 },
   { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1657, w: 197, ratio: 1.172, guide: 1 },
 ]
 
@@ -86,12 +86,17 @@ export const DECOR: Placed[] = [
   { src: '/items/box01.svg',   x: 1990, y: 1691, w: 289, ratio: 0.915 },
 ]
 
-export type Guide = { src: string; w: number; ratio: number }
+/** side — 요정이 바라보는 쪽의 반대편에 둔다(오른쪽을 보면 오브제 왼쪽에, 정면이면 위에) */
+export type Guide = { src: string; w: number; ratio: number; side: 'left' | 'right' | 'top' }
 
-/** 안내 요정 둘. 평소엔 없고, 누를 수 있는 오브제를 올려 보면 그 곁에 나타난다 */
+/** 안내 요정 셋. 평소엔 없고, 누를 수 있는 오브제를 올려 보면 그 곁에 나타난다 */
 export const GUIDES: Guide[] = [
-  { src: '/items/guide01.svg', w: 78, ratio: 0.983 },
-  { src: '/items/guide02.svg', w: 72, ratio: 1.069 },
+  // 분홍 — 오른쪽을 본다
+  { src: '/items/guide01.svg', w: 78, ratio: 0.983, side: 'left' },
+  // 노랑 — 왼쪽을 본다
+  { src: '/items/guide02.svg', w: 72, ratio: 1.069, side: 'right' },
+  // 하늘 — 정면을 본다
+  { src: '/items/guide04.svg', w: 74, ratio: 1, side: 'top' },
 ]
 
 /* ------------------------------------------------------------------ */
