@@ -7,8 +7,12 @@ import type { MoimoGenes } from './name'
  * 몸통 모양으로 잘라 낸 무늬 같은 것은 도형 크기로 재면 넓게 잡히므로,
  * 한 번 그려 보고 칠해진 픽셀로 잰다.
  */
-export async function goodsSvg(genes: MoimoGenes, name: string, cache: PartsCache, table: AnchorTable): Promise<string> {
-  const svg = composeMoimo(genes, cache, table)
+export async function goodsSvg(
+  genes: MoimoGenes, name: string, cache: PartsCache, table: AnchorTable,
+  /** 응용 포즈 — 엽서에서만 쓴다 */
+  look: { pose?: number; tilt?: number } = {},
+): Promise<string> {
+  const svg = composeMoimo(genes, cache, table, look)
   const S = 1024
   const img = new Image()
   img.src = moimoDataUri(svg.replace(/<svg /, `<svg width="${S}" height="${S}" `))

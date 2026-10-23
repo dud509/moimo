@@ -399,6 +399,19 @@ export const bodyUrl = (n: number) => `/parts/body/${pad(n)}.svg`
  * 머리 뒤로 들어간다. torso.svg 가 없으면 NN.svg 한 장을 통째로 그린다.
  */
 export const TORSO_URL = '/parts/body/torso.svg'
+
+/**
+ * 응용 포즈 — 몸(torso)만 갈아 끼운다. 머리·얼굴 파츠는 그대로.
+ * tilt 는 고개를 목(가운데, HEAD_BOTTOM)을 중심으로 돌리는 각도(도, − 는 왼쪽으로).
+ * front 는 손만 있는 몸이라 머리 앞에 그리고, 몸통 장식은 붙일 몸이 없어 뺀다.
+ */
+export const POSES: { torso: string; tilt: number; front?: boolean }[] = [
+  { torso: TORSO_URL, tilt: 0 },
+  { torso: '/parts/body/torso01.svg', tilt: -6 },
+  { torso: '/parts/body/torso02.svg', tilt: 0 },
+  { torso: '/parts/body/torso03.svg', tilt: 0 },
+  { torso: '/parts/body/torso04.svg', tilt: 0, front: true },
+]
 /** 머리는 몸통장식(4) 위, 볼장식(5) 아래 */
 export const Z_HEAD = 4.1
 export const partUrl = (slot: SlotKey, n: number) => `/parts/${slot}/${pad(n)}.svg`

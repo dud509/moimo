@@ -8,7 +8,7 @@
 import {
   BODY_COLORS, CANVAS, FADE_END, FADE_HOLD, HEAD_BOTTOM, MARKS, MORPH_BLUR, MORPH_BODY_EDGE, MORPH_SPREAD, MORPH_TAIL, regionsFor,
   SLOTS, Z_BODY, Z_MORPH, edgeFor,
-  bodyUrl, TORSO_URL, Z_HEAD, composeAnchor, decoFor, fillFor, isCleared, usesPoint, isSvgText, morphUrls, partUrl, partUrls, prepareSvg, syOf, toneFor, zFor,
+  bodyUrl, POSES, TORSO_URL, Z_HEAD, composeAnchor, decoFor, fillFor, isCleared, usesPoint, isSvgText, morphUrls, partUrl, partUrls, prepareSvg, syOf, toneFor, zFor,
   type AnchorTable, type SlotKey,
 } from './parts'
 import type { MoimoGenes } from './name'
@@ -26,6 +26,32 @@ export function innards(svg: string): string {
 }
 
 const C = CANVAS / 2
+
+/**
+ * SVG 안의 맨 바깥 요소들을 하나씩 떼어 낸다 — 응용 포즈의 몸 파일에서
+ * 첫 묶음(몸)과 나머지(손)를 가르려고 쓴다.
+ */
+function topLevel(svg: string): string[] {
+  const inner = innards(svg)
+  const out: string[] = []
+  const tag = /<!--[\s\S]*?-->|<\/?[a-zA-Z][^>]*>/g
+  let depth = 0
+  let start = -1
+  for (let m = tag.exec(inner); m; m = tag.exec(inner)) {
+    const t = m[0]
+    if (t.startsWith('<!--')) continue
+    const closing = t.startsWith('</')
+    const selfClosing = t.endsWith('/>')
+    if (!closing && depth === 0) start = m.index
+    if (closing) depth -= 1
+    else if (!selfClosing) depth += 1
+    if (depth === 0 && start >= 0) { out.push(inner.slice(start, m.index + t.length)); start = -1 }
+  }
+  return out
+}
+
+/** 떼어 낸 요소들을 원래 <svg> 껍데기에 다시 담는다 */
+const rewrap = (svg: string, parts: string[]) => `${svg.match(/<svg[^>]*>/i)?.[0] ?? '<svg>'}${parts.join('')}</svg>`
 
 /** 이름이 다시 붙기 전에 자리를 지키는 색 — 그 뒤에 가리개로 바꾼다 */
 const SENTINEL = '#123456'
@@ -281,11 +307,18 @@ export function stackBody(opts: {
   ]
 }
 
+/** 머리 앞에 그리는 층 — 머리장식(7)보다 위 */
+const Z_FRONT = 8
+
 export function composeMoimo(
   genes: MoimoGenes,
   cache: PartsCache,
   table: AnchorTable,
+  /** 응용 포즈 번호(POSES) — 0 이 기본 자세. tilt 를 주면 그 포즈의 고개 각도 대신 쓴다 */
+  look: { pose?: number; tilt?: number } = {},
 ): string {
+  const pose = POSES[look.pose ?? 0] ?? POSES[0]
+  const tilt = look.tilt ?? pose.tilt
   const color = BODY_COLORS[genes.color - 1] ?? BODY_COLORS[0]
   const { fill: bodyHex, line, accent, mark } = toneFor(color, genes.morph, genes.tone)
   const uid = `m${genes.body}${genes.color}${genes.morph}${genes.eye}${genes.mouth}${genes.cheek}${genes.hair}${genes.tail}${genes.deco}`
@@ -305,10 +338,27 @@ export function composeMoimo(
     : undefined
   const morphRaw = morphUrl ? cache.get(morphUrl) : undefined
 
-  pieces.push(...stackBody({
-    bodyRaw, torsoRaw: cache.get(TORSO_URL),
-    morphRaw, morph: genes.morph, color, tone: genes.tone, body: genes.body, uid,
-  }))
+  // 응용 포즈의 몸 파일은 첫 묶음이 몸, 나머지가 손이다. 몸은 머리 뒤, 손은 맨 앞에 그린다.
+  // front 포즈(손만 있는 몸)는 전부 손이다
+  const poseRaw = pose.torso === TORSO_URL ? undefined : cache.get(pose.torso)
+  const poseParts = poseRaw ? topLevel(poseRaw) : []
+  const handsRaw = poseRaw && poseParts.length > (pose.front ? 0 : 1)
+    ? rewrap(poseRaw, pose.front ? poseParts : poseParts.slice(1))
+    : undefined
+  const torsoRaw = pose.front
+    ? undefined
+    : poseRaw ? rewrap(poseRaw, poseParts.slice(0, 1)) : cache.get(TORSO_URL)
+
+  pieces.push(...(torsoRaw
+    ? stackBody({ bodyRaw, torsoRaw, morphRaw, morph: genes.morph, color, tone: genes.tone, body: genes.body, uid })
+    // 몸이 없으면 머리 한 장만 머리 층에 그린다
+    : bodyPieces({ bodyRaw, morphRaw, morph: genes.morph, color, tone: genes.tone, body: genes.body, uid: `${uid}h` })
+      .map((p) => ({ ...p, z: Z_HEAD + (p.z - Z_BODY) / 10 }))))
+  if (handsRaw) {
+    // 손에는 무늬를 얹지 않고 팔과 같은 색으로 — 몸을 통째로 덮는 무늬면 그 색, 아니면 바탕색
+    const handHex = MORPH_TAIL.has(genes.morph) ? mark : bodyHex
+    pieces.push({ z: Z_FRONT, svg: innards(prepareSvg(handsRaw, { fill: handHex, line, accent }, `${uid}k`)) })
+  }
 
   // 꼬리는 몸통에 이어 붙은 것이라, 무늬가 몸통 바깥을 덮으면 함께 칠한다
   const bodyTone = MORPH_TAIL.has(genes.morph) ? mark : bodyHex
@@ -322,6 +372,8 @@ export function composeMoimo(
     const n = genes[s.key as keyof MoimoGenes] as number
     const base = usesPoint(key, n) ? decoHex : key === 'tail' ? bodyTone : bodyHex
     const before = pieces.length
+    // 몸 없이 손만 있는 포즈에는 몸통 장식을 붙일 곳이 없다
+    if (key === 'deco' && pose.front) continue
     const url = partUrls(key, n, genes.body).find((u) => cache.has(u)) ?? partUrl(key, n)
     push(zFor(key, n, s.z), url, fillFor(key, n, base), composeAnchor(table, genes.body, key, n, genes.eye))
     if (key === 'cheek' && pieces.length > before) cheekPiece = pieces[before]
@@ -340,6 +392,14 @@ export function composeMoimo(
   }
 
   pieces.sort((a, b) => a.z - b.z)
+  // 고개 기울이기 — 머리 층(머리·귀·얼굴 파츠)만 목을 중심으로 돌린다. 몸·몸통 장식·꼬리는 그대로
+  const svgs = pieces.map((p) => p.svg)
+  if (tilt) {
+    const head = pieces.findIndex((p) => p.z >= Z_HEAD && p.z < Z_FRONT)
+    const end = pieces.findIndex((p) => p.z >= Z_FRONT)
+    const to = end < 0 ? pieces.length : end
+    if (head >= 0) svgs.splice(head, to - head, `<g transform="rotate(${tilt} ${C} ${HEAD_BOTTOM})">${svgs.slice(head, to).join('')}</g>`)
+  }
 
   return (
     // xlink 도 선언해 둔다. 파츠 중에 xlink:href 를 쓰는 것이 있어(볼 03),
@@ -349,7 +409,7 @@ export function composeMoimo(
     `<clipPath id="half-l-${uid}"><rect x="0" y="0" width="${C}" height="${CANVAS}"/></clipPath>` +
     `<clipPath id="half-r-${uid}"><rect x="${C}" y="0" width="${C}" height="${CANVAS}"/></clipPath>` +
     `</defs>` +
-    pieces.map((p) => p.svg).join('') +
+    svgs.join('') +
     `</svg>`
   )
 }
@@ -370,6 +430,7 @@ export async function loadParts(): Promise<PartsCache> {
   const urls: string[] = []
   for (let i = 1; i <= 12; i++) urls.push(bodyUrl(i))
   urls.push(TORSO_URL)
+  for (const p of POSES) if (!urls.includes(p.torso)) urls.push(p.torso)
   for (const s of SLOTS) {
     for (let i = 1; i <= COUNTS[s.key]; i++) {
       for (let b = 1; b <= 12; b++) urls.push(...partUrls(s.key as SlotKey, i, b))
