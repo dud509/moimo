@@ -211,7 +211,7 @@ input, textarea { cursor: text !important; }
 .moimo.tagged, .moimo.named { z-index: 7; }
 .moimo-name.tag {
   bottom: -14px; padding: 4px 13px; font-size: 15px;
-  box-shadow: 0 3px 0 #867561; animation: tag-in 0.3s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  animation: tag-in 0.3s cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }
 @keyframes tag-in { from { transform: translate(-50%, -8px) scale(0.6); opacity: 0 } to { transform: translateX(-50%); opacity: 1 } }
 .reset-btn {
