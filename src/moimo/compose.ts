@@ -382,8 +382,8 @@ export function composeMoimo(
     const n = genes[s.key as keyof MoimoGenes] as number
     const base = usesPoint(key, n) ? decoHex : key === 'tail' ? bodyTone : bodyHex
     const before = pieces.length
-    // 몸 없이 손만 있는 포즈에는 몸통 장식을 붙일 곳이 없다
-    if (key === 'deco' && pose.front) continue
+    // 몸 없이 손만 있는 포즈에는 몸통 장식·꼬리를 붙일 곳이 없다
+    if ((key === 'deco' || key === 'tail') && pose.front) continue
     const url = partUrls(key, n, genes.body).find((u) => cache.has(u)) ?? partUrl(key, n)
     push(zFor(key, n, s.z), url, fillFor(key, n, base), composeAnchor(table, genes.body, key, n, genes.eye))
     if (key === 'cheek' && pieces.length > before) cheekPiece = pieces[before]

@@ -485,8 +485,10 @@ input, textarea { cursor: text !important; }
  */
 .cam-ui {
   position: relative; container-type: inline-size;
-  width: min(94vw, 1180px, calc(90vh * 1.5496)); aspect-ratio: 2009.79 / 1297;
+  width: min(94vw, 1100px, calc(74vh * 1.5496)); aspect-ratio: 2009.79 / 1297;
   font-family: 'Dongle', var(--font);
+  /* 아래로 나온 이름 찾기 띠만큼 비워 가운데를 맞춘다 */
+  margin-bottom: 13vh;
   animation: pop 0.32s cubic-bezier(0.2, 1.2, 0.4, 1) both;
 }
 .cam-ui-bg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none;
@@ -509,28 +511,31 @@ input, textarea { cursor: text !important; }
 .cam-ui-side {
   position: absolute; left: 77.5%; top: 29%; width: 17%; display: grid; gap: 1cqw; justify-items: center; text-align: center;
 }
-.cam-ui-side p { margin: 0; font-size: 1.9cqw; line-height: 1.15; color: #867561; word-break: keep-all; }
 .cam-ui-side .btn { width: 100%; padding: 0.8cqw 0; font-size: 2.4cqw; }
-.cam-ui-poses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4cqw; width: 100%; }
+.cam-ui-tip { margin: 0; font-size: 1.9cqw; line-height: 1.15; color: #867561; word-break: keep-all; }
+/* 포즈 고르기 — 카메라 아래 분홍 띠 */
+.cam-ui-poses { position: absolute; left: 10.98%; top: 76.5%; width: 64.88%; height: 18%; display: flex; gap: 1cqw; justify-content: center; align-items: center; }
 .cam-ui-pose {
-  display: grid; justify-items: center; padding: 0.2cqw 0 0.3cqw; background: #fff;
-  border: 0.12cqw solid #D9CCBB; border-radius: 0.8cqw;
+  display: grid; justify-items: center; height: 100%; aspect-ratio: 0.86; padding: 0.3cqw 0 0.4cqw; background: #fff;
+  border: 0.12cqw solid #D9CCBB; border-radius: 1cqw;
 }
-.cam-ui-pose img { width: 100%; aspect-ratio: 1; display: block; }
-.cam-ui-pose span { font-size: 1.4cqw; line-height: 1; color: #867561; }
+.cam-ui-pose img { width: 88%; aspect-ratio: 1; display: block; }
+.cam-ui-pose span { font-size: 1.8cqw; line-height: 1; color: #867561; }
 .cam-ui-pose.on { border-color: var(--accent); background: #FFF6F6; }
-.cam-ui-tip { font-size: 1.6cqw !important; margin-top: 0.6cqw !important; }
-.cam-ui-find { position: absolute; left: 10.98%; top: 79%; width: 15%; display: grid; gap: 0.4cqw; }
+/* 이름 찾기·최근 모이모 — 카메라 바깥 아래 */
+.cam-ui-below {
+  position: absolute; left: 0; right: 0; top: calc(100% + 1.4cqw); height: 9cqw;
+  display: flex; gap: 1.2cqw; align-items: center; padding: 0 1cqw;
+  background: rgba(255, 253, 244, 0.92); border: 0.12cqw solid #D9CCBB; border-radius: 2cqw;
+}
+.cam-ui-find { flex: none; width: 15cqw; display: grid; gap: 0.4cqw; }
 .cam-ui-find input {
   width: 100%; padding: 0.7cqw 1cqw; font-family: inherit; font-size: 2cqw; text-align: center;
-  border: 0.22cqw solid #867561; border-radius: 99px; background: #fff;
+  border: 0.12cqw solid #867561; border-radius: 99px; background: #fff;
 }
 .cam-ui-find input:focus { outline: none; border-color: var(--accent-deep); }
 .cam-ui-find p { margin: 0; font-size: 1.6cqw; color: var(--accent-deep); text-align: center; }
-.cam-ui-picks {
-  position: absolute; left: 27%; top: 77%; width: 65%; height: 17%;
-  display: flex; gap: 0.8cqw; overflow-x: auto; overflow-y: hidden; align-items: center; padding: 0 0.4cqw;
-}
+.cam-ui-picks { flex: 1; min-width: 0; height: 100%; display: flex; gap: 0.8cqw; overflow-x: auto; overflow-y: hidden; align-items: center; }
 .cam-ui-picks .pick { flex: none; width: 7cqw; padding: 0.4cqw 0.2cqw; }
 .cam-ui-picks .pick .art { width: 5cqw !important; height: 5cqw !important; }
 .cam-ui-picks .pick span { font-size: 1.6cqw; line-height: 1; }

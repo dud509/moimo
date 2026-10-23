@@ -120,7 +120,7 @@ const SPARKS: [number, number, number][] = [[18, 22, 0], [76, 18, 0.4], [30, 58,
 /** 같이 찍을 수 있는 모이모 수 */
 const CAM_MAX = 3
 /** 모이모가 사진 속에 설 자리 — 가로 가운데(%) · 사람 얼굴은 가운데에 오니 양옆으로 비킨다 */
-const CAM_SPOTS = [[74], [20, 80], [14, 38, 86]]
+const CAM_SPOTS = [[80], [14, 86], [12, 32, 88]]
 /** 포즈 이름 — POSES 순서 */
 const POSE_NAMES = ['기본', '한 손', '양손', '모으기', '빼꼼']
 /** 빼꼼 포즈 — 손이 사진 아래 테두리에 걸치게, 그림 위에서부터 손 높이(비율) */
@@ -286,28 +286,29 @@ export function Camera({
             <button className="btn" onClick={() => setShot(null)}>다시 찍기</button>
           </>
         ) : (
-          <>
-            <p>포즈</p>
-            <div className="cam-ui-poses">
-              {POSE_NAMES.map((label, p) => (
-                <button key={p} className={`cam-ui-pose${pose === p ? ' on' : ''}`} onClick={() => setPose(p)} title={label}>
-                  {poseArt[p] && <img src={poseArt[p]} alt="" />}
-                  <span>{label}</span>
-                </button>
-              ))}
-            </div>
-            <p className="cam-ui-tip">모이모를 {CAM_MAX}명까지 고르고<br />동그란 버튼을 찰칵!</p>
-          </>
+          <p className="cam-ui-tip">아래에서 모이모를<br />{CAM_MAX}명까지 고르고<br />동그란 버튼을 찰칵!</p>
         )}
       </div>
 
+      {/* 카메라 아래 분홍 띠 — 포즈 고르기 */}
       {!shot && (
+        <div className="cam-ui-poses">
+          {POSE_NAMES.map((label, p) => (
+            <button key={p} className={`cam-ui-pose${pose === p ? ' on' : ''}`} onClick={() => setPose(p)} title={label}>
+              {poseArt[p] && <img src={poseArt[p]} alt="" />}
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* 카메라 바깥 아래 — 이름 찾기와 최근 모이모 */}
+      {!shot && (
+        <div className="cam-ui-below">
         <div className="cam-ui-find">
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="이름 찾기" aria-label="이름 찾기" />
           {q && !found.length && <p>아직 생성되지 않았어요!</p>}
         </div>
-      )}
-      {!shot && (
         <div className="cam-ui-picks">
           {(q ? found : [...residents].reverse().slice(0, 60)).map((r) => (
             <button
@@ -319,6 +320,7 @@ export function Camera({
               <span>{r.name}</span>
             </button>
           ))}
+        </div>
         </div>
       )}
     </div>
