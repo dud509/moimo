@@ -310,6 +310,27 @@ export function stackBody(opts: {
 /** 머리 앞에 그리는 층 — 머리장식(7)보다 위 */
 const Z_FRONT = 8
 
+/**
+ * 몸에 붙는 뿌리가 몸 모양만큼 오목하게 비어 있는 꼬리. 기본 자세에서는 팔이
+ * 그 자리를 가리지만 포즈에서 팔을 옮기면 빈자리가 하얗게 드러난다.
+ */
+const TAIL_ROOT = new Set([1, 2, 6, 7, 9])
+/** 꼬리 뿌리 둘레를 얼마나 메울지(선 굵기, px) */
+const TAIL_REACH = 30
+
+/**
+ * 꼬리 뿌리 메우기 — 열린 외곽선을 그대로 한 번 더 깔아 채운다. 열린 선을 채우면
+ * 양 끝을 곧게 이은 안쪽이 칠해져 오목한 자리가 메워진다. 선은 위에 그대로 남는다
+ */
+function fillRoot(svg: string): string {
+  const copies: string[] = []
+  const re = /<path\b[^>]*\bfill="none"[^>]*\/>/gi
+  for (let m = re.exec(svg); m; m = re.exec(svg)) {
+    copies.push(m[0].replace(/\bfill="none"/i, 'fill="#fff"').replace(/\bstroke="[^"]*"/i, 'stroke="none"'))
+  }
+  return copies.length ? svg.replace(/(<svg[^>]*>)/i, `$1${copies.join('')}`) : svg
+}
+
 export function composeMoimo(
   genes: MoimoGenes,
   cache: PartsCache,
@@ -325,9 +346,10 @@ export function composeMoimo(
 
   const pieces: { z: number; svg: string }[] = []
 
-  const push = (z: number, url: string, fill: string, anchor: ReturnType<typeof composeAnchor>) => {
-    const raw = cache.get(url)
+  const push = (z: number, url: string, fill: string, anchor: ReturnType<typeof composeAnchor>, rootFill = false) => {
+    let raw = cache.get(url)
     if (!raw) return
+    if (rootFill) raw = fillRoot(raw)
     pieces.push({ z, svg: layer(innards(prepareSvg(raw, { fill, line, accent }, uid + z)), anchor, uid) })
   }
 
@@ -382,6 +404,7 @@ export function composeMoimo(
   const decoHex = decoFor(color)
 
   let cheekPiece: { z: number; svg: string } | undefined
+  let rootTail: { z: number; svg: string } | undefined
   for (const s of SLOTS) {
     const key = s.key as SlotKey
     const n = genes[s.key as keyof MoimoGenes] as number
@@ -390,7 +413,10 @@ export function composeMoimo(
     // 몸 없이 손만 있는 포즈에는 몸통 장식을 붙일 곳이 없다
     if (key === 'deco' && pose.front) continue
     const url = partUrls(key, n, genes.body).find((u) => cache.has(u)) ?? partUrl(key, n)
-    push(zFor(key, n, s.z), url, fillFor(key, n, base), composeAnchor(table, genes.body, key, n, genes.eye))
+    // 포즈에서는 팔이 옮겨 가 꼬리 뿌리의 오목한 빈자리가 드러나므로 메운다
+    const root = key === 'tail' && poseRaw !== undefined && TAIL_ROOT.has(n)
+    push(zFor(key, n, s.z), url, fillFor(key, n, base), composeAnchor(table, genes.body, key, n, genes.eye), root)
+    if (root && pieces.length > before) rootTail = pieces[before]
     if (key === 'cheek' && pieces.length > before) cheekPiece = pieces[before]
   }
 
@@ -404,6 +430,18 @@ export function composeMoimo(
       `<rect x="0" y="0" width="${CANVAS}" height="${CANVAS}" fill="#fff"/>` +
       layer(hole, composeAnchor(table, genes.body, 'eye', genes.eye, genes.eye), uid) +
       `</mask></defs><g mask="url(#${id})">${cheekPiece.svg}</g>`
+  }
+
+  // 꼬리 뿌리와 몸 사이 — 기본 몸 모양 가운데 꼬리 바로 옆만 팔 색으로 꼬리 밑에 깐다(선은 없다)
+  if (rootTail && torsoRaw) {
+    const near = `tnear-${uid}`
+    pieces.push({
+      z: rootTail.z - 0.05,
+      svg: `<defs><mask id="${near}" maskUnits="userSpaceOnUse" x="0" y="0" width="${CANVAS}" height="${CANVAS}">` +
+        `<style>#${near} * { fill: #fff !important; stroke: #fff !important; stroke-width: ${TAIL_REACH}px !important; }</style>` +
+        `${rootTail.svg}</mask></defs>` +
+        `<g mask="url(#${near})" fill="${handHex}">${silhouette(cache.get(TORSO_URL) ?? '')}</g>`,
+    })
   }
 
   pieces.sort((a, b) => a.z - b.z)
