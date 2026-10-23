@@ -147,13 +147,13 @@ input, textarea { cursor: text !important; }
 .lens img {
   display: block; width: 100%; height: 100%; object-fit: contain;
   /* 렌즈 안쪽은 비워서 아래 마을이 보이게 한다 */
-  -webkit-mask-image: radial-gradient(ellipse 35% 24.5% at 58% 29%, transparent 97%, #000 100%);
-  mask-image: radial-gradient(ellipse 35% 24.5% at 58% 29%, transparent 97%, #000 100%);
+  -webkit-mask-image: radial-gradient(ellipse 25% 18% at 58.24% 41.22%, transparent 97%, #000 100%);
+  mask-image: radial-gradient(ellipse 25% 18% at 58.24% 41.22%, transparent 97%, #000 100%);
   filter: drop-shadow(0 10px 12px rgba(112, 94, 76, 0.2));
 }
 /* 렌즈 유리 — 아주 옅은 하늘빛 */
 .lens::before {
-  content: ''; position: absolute; left: 23%; top: 4.5%; width: 70%; height: 49%;
+  content: ''; position: absolute; left: 33.24%; top: 23.22%; width: 50%; height: 36%;
   border-radius: 50%; background: rgba(205, 228, 250, 0.16);
 }
 .lens-hint {
