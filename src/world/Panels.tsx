@@ -118,14 +118,14 @@ const SPARKS: [number, number, number][] = [[18, 22, 0], [76, 18, 0.4], [30, 58,
 /* ------------------------------------------------------------------ */
 
 /** 같이 찍을 수 있는 모이모 수 */
-const CAM_MAX = 3
+const CAM_MAX = 2
 /** 모이모가 사진 속에 설 자리 — 가로 가운데(%) · 사람 얼굴은 가운데에 오니 양옆으로 비킨다 */
-const CAM_SPOTS = [[80], [14, 86], [12, 32, 88]]
+const CAM_SPOTS = [[80], [18, 82]]
 /** 포즈 이름 — POSES 순서 */
 const POSE_NAMES = ['기본', '갸웃', '브이', '양손', '빼꼼']
-/** 빼꼼 포즈 — 손이 사진 아래 테두리에 걸치게, 그림 위에서부터 손 높이(비율) */
+/** 빼꼼 포즈 — 손이 사진 아래 테두리에 얹히게, 그림 위에서부터 손 아래끝 높이(비율) */
 const PEEK_POSE = 4
-const PEEK_LINE = 0.6
+const PEEK_LINE = 0.63
 /** 서 있는 포즈의 발끝 높이(그림 위에서부터 비율) — 발이 사진 아래 테두리에 닿게 */
 const FEET_LINE = 0.8
 /** 사진 속 모이모 크기 — 사진 너비에 대한 비율 */
@@ -220,6 +220,8 @@ export function Camera({
       ctx.drawImage(v, (W - dw) / 2, (H - dh) / 2, dw, dh)
       ctx.restore()
     }
+    ctx.save()
+    ctx.beginPath(); ctx.rect(PAD, PAD, W, H); ctx.clip()
     const size = W * CAM_SIZE
     await Promise.all(art.map((src, i) => new Promise<void>((done) => {
       const img = new Image()
@@ -230,6 +232,7 @@ export function Camera({
       img.onerror = () => done()
       img.src = src
     })))
+    ctx.restore()
     ctx.fillStyle = '#38312A'
     ctx.font = '700 34px Pretendard, sans-serif'
     ctx.textAlign = 'center'
@@ -274,7 +277,7 @@ export function Camera({
           </>
         )}
       </div>
-      {/* 모이모는 화면 칸 위에 따로 얹는다 — 빼꼼 포즈의 손이 화면 테두리에 걸치도록 잘리지 않게 */}
+      {/* 모이모는 화면 칸 위에 따로 얹고 화면 칸 모양으로 자른다 — 넘치면 귀 끝이 잘리는 편이 낫다 */}
       {!shot && (
         <div className="cam-ui-cast">
           {art.map((src, i) => (
@@ -291,7 +294,7 @@ export function Camera({
             <button className="btn" onClick={() => setShot(null)}>다시 찍기</button>
           </>
         ) : (
-          <p className="cam-ui-tip">아래에서 모이모를<br />{CAM_MAX}명까지 고르고<br />동그란 버튼을 찰칵!</p>
+          <p className="cam-ui-tip">모이모를 고르고<br />버튼을 눌러보세요<br />(최대 두 명)</p>
         )}
       </div>
 
