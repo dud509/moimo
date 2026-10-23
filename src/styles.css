@@ -112,7 +112,7 @@ input, textarea { cursor: text !important; }
   transform-origin: 50% 100%;
   transition: transform 0.22s ease;
 }
-.item:hover { transform: scale(1.04); }
+.item:hover { transform: scale(1.04); z-index: 8; }
 /* 오브제에 마우스를 올리면 그림 둘레에 흰 테를 두른다 */
 .item:hover .item-art {
   /* 흰 테 바깥에 연한 베이지 선 — 오려 붙인 스티커처럼. 바탕이 밝아 흰 테만으로는 안 보인다 */
