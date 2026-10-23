@@ -90,8 +90,8 @@ export type Guide = { src: string; w: number; ratio: number }
 
 /** 안내 요정 둘. 평소엔 없고, 누를 수 있는 오브제를 올려 보면 그 곁에 나타난다 */
 export const GUIDES: Guide[] = [
-  { src: '/items/guide01.svg', w: 96, ratio: 0.983 },
-  { src: '/items/guide02.svg', w: 89, ratio: 1.069 },
+  { src: '/items/guide01.svg', w: 78, ratio: 0.983 },
+  { src: '/items/guide02.svg', w: 72, ratio: 1.069 },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -123,7 +123,7 @@ export const MOIMO_W = 120
  */
 export const OBJECT_LINE_PX = 3
 /** 안내 요정 선 굵기 — 작은 그림이라 오브제보다 가늘게 맞춘다 */
-export const GUIDE_LINE_PX = 2.2
+export const GUIDE_LINE_PX = 3
 /**
  * 오브제·소품 선 색. 그림 파일은 #867561 로 그려 두었는데, 모이모가 제 색에
  * 물든 선을 쓰면서 오브제 선이 모이모만큼 진하면 모이모가 묻힌다. 한결

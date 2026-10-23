@@ -71,11 +71,12 @@ function Guide({ item, itemArt, art, on }: { item: (typeof ITEMS)[number]; itemA
   if (!art) return null
   const g = GUIDES[item.guide]
   const h = g.w * art.ratio
-  const bottom = item.y + (item.w * (itemArt?.ratio ?? item.ratio)) / 2
+  // 오브제 머리 위 가운데에 살짝 겹쳐 떠오른다
+  const top = item.y - (item.w * (itemArt?.ratio ?? item.ratio)) / 2
   return (
     <span
       className={`item-guide${on ? ' on' : ''}`}
-      style={{ left: item.x + item.w / 2 - 6, top: bottom - h, width: g.w, height: h }}
+      style={{ left: item.x - g.w / 2, top: top - h * 0.8, width: g.w, height: h }}
     >
       <Shadow />
       <img src={art.url} alt="" draggable={false} />
