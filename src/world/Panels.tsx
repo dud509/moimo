@@ -344,14 +344,9 @@ export function Camera({
  * price 를 비워 두면 '현장에서 확인'으로 나온다.
  */
 const GOODS: { id: string; name: string; price?: string; note?: string }[] = [
-  { id: 'acrylic', name: '아크릴 키링', note: '24종 랜덤' },
-  { id: 'cushion', name: '쿠션 키링' },
-  { id: 'korotto', name: '코롯토', note: '12종' },
-  { id: 'badge', name: '뱃지' },
-  { id: 'coaster', name: '티코스터' },
-  { id: 'mug', name: '머그컵' },
-  { id: 'postcard', name: '엽서', note: '9종' },
-  { id: 'sticker', name: '조각 스티커', price: '나눔', note: '전시장에서 무료로 드려요' },
+  { id: 'acrylic', name: '아크릴 키링', price: '3,500원', note: '24종 · 디자인당 6세트 한정' },
+  { id: 'badge', name: '뱃지 4개 세트', price: '5,000원', note: '3종 · 디자인당 6세트 한정' },
+  { id: 'sticker', name: '조각 스티커', price: '나눔', note: '한 분당 1개씩만 드려요' },
 ]
 
 export function Goods({ onClose }: { onClose: () => void }) {
