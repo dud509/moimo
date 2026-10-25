@@ -336,6 +336,56 @@ export function Camera({
 }
 
 /* ------------------------------------------------------------------ */
+/* 선물 상자 — 굿즈 구경하기 (판매는 전시장에서만)                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 굿즈 목록. 사진은 public/goods/<id>.png 로 넣으면 뜬다(없으면 '사진 준비 중').
+ * price 를 비워 두면 '현장에서 확인'으로 나온다.
+ */
+const GOODS: { id: string; name: string; price?: string; note?: string }[] = [
+  { id: 'acrylic', name: '아크릴 키링', note: '24종 랜덤' },
+  { id: 'cushion', name: '쿠션 키링' },
+  { id: 'korotto', name: '코롯토', note: '12종' },
+  { id: 'badge', name: '뱃지' },
+  { id: 'coaster', name: '티코스터' },
+  { id: 'mug', name: '머그컵' },
+  { id: 'postcard', name: '엽서', note: '9종' },
+  { id: 'sticker', name: '조각 스티커', price: '나눔', note: '전시장에서 무료로 드려요' },
+]
+
+export function Goods({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="obj-modal goods-modal">
+    <div className="sheet goods">
+      <header className="sheet-head">
+        <div>
+          <h2>모이모 굿즈</h2>
+          <p className="goods-sub">온라인 판매는 하지 않아요 · 전시장 현장에서 만나요!</p>
+        </div>
+        <button className="icon-btn" onClick={onClose} aria-label="닫기">✕</button>
+      </header>
+      <div className="goods-grid">
+        {GOODS.map((g) => (
+          <figure key={g.id} className="goods-card">
+            <span className="goods-pic">
+              <img src={`/goods/${g.id}.png`} alt={g.name} onError={(e) => { e.currentTarget.style.display = 'none' }} />
+              <i>사진 준비 중</i>
+            </span>
+            <figcaption>
+              <b>{g.name}</b>
+              <span>{g.price ?? '가격은 현장에서'}</span>
+              {g.note && <small>{g.note}</small>}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /* 앨범 — 생성 기록과 방명록                                            */
 /* ------------------------------------------------------------------ */
 
