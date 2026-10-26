@@ -18,6 +18,14 @@ const GOODS: readonly { id: 'acrylic' | 'cushion' | 'name' | 'badge' | 'sticker'
 ]
 // 나눔 스티커 추천 24 — 몸통 12종 × 2(같은 몸통 둘은 눈이 다르게), 색 6 × 4, 눈 11종 모두, 굿즈와 겹치는 이름 없음
 const STICKER_SUGGEST = ['정윤지', '홍민지', '김재민', '배성민', '진채영', '이나영', '김동건', '정미경', '학도현', '배석현', '호칠성', '이현숙', '민지수', '서면수', '차유나', '옥하늘', '남경아', '전재윤', '진경은', '민하은', '나정훈', '최국희', '유혜린', '송나래']
+// 굿즈마다 «추천 넣기» 로 한 번에 채우는 목록 — 고른 목록은 브라우저에만 있어서 바꾼 이름을 여기 적어 둔다
+const SUGGEST: Partial<Record<GoodsId, string[]>> = {
+  sticker: STICKER_SUGGEST,
+  // 볼 03: 신택현·지옐린·홍책원
+  acrylic: ['갈하린', '권도정', '김지소', '나준기', '박은혁', '백영호', '서경민', '설재석', '손수아', '신택현', '신형주', '심은서', '오병철', '일하윤', '전세영', '정지호', '조혜경', '지도은', '지옐린', '진다민', '최미수', '최민철', '하건은', '홍책원'],
+  // 볼 03: 김학현·신석호 · 무늬: 파도윤(뺌)·설나름(04)·종지은(05 누름) · 색: 기유찬(연보라→파랑) · 눈 01: 설나름
+  name: ['고채영', '김학현', '파도윤', '설나름', '신석호', '윤민규', '이경민', '기유찬', '전민성', '종지은', '최혜지', '한준수'],
+}
 type GoodsId = (typeof GOODS)[number]['id']
 const countText = (g: (typeof GOODS)[number], n: number) => (g.goal ? `${n}/${g.goal}` : String(n))
 type Picks = Record<GoodsId, string[]>
@@ -254,6 +262,17 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
     setExporting(failed ? `${done - failed}장 저장 · ${failed}장 실패` : `${done}장 저장 완료`)
     setTimeout(() => setExporting(null), 4000)
   }
+  // 직접 넣은 이름을 한 장에 모아 goods-export/직접 넣은 이름/ 으로 — 이름 목록은 <desc> 에도 적어 둔다
+  const [extraMsg, setExtraMsg] = useState('')
+  const exportExtra = async () => {
+    if (!extra.length) { setExtraMsg('직접 넣은 이름이 없어요'); return }
+    setExtraMsg('뽑는 중…')
+    const items: { name: string; svg: string }[] = []
+    for (const n of extra) { const g = genesFromName(n); if (g) items.push({ name: n, svg: await goodsSvg(g, n, cache, table) }) }
+    const sheet = goodsSheet(items, 8).replace(/(<svg[^>]*>)/, `$1<desc>${extra.join(',')}</desc>`)
+    const r = await fetch('/__goods', { method: 'POST', body: JSON.stringify({ folder: '직접 넣은 이름', file: `모아보기_${items.length}명`, svg: sheet }) })
+    setExtraMsg(r.ok ? `${items.length}명 저장했어요` : '저장 실패')
+  }
   const copy = () => {
     const text = GOODS.map((g) => `${g.label}: ${picks[g.id].join(', ') || '-'}`).join('\n')
     navigator.clipboard?.writeText(text)
@@ -302,8 +321,8 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
             <div className="sum-head">
               <b onClick={() => setGoods(g.id)}>{g.label} <small>{countText(g, picks[g.id].length)}</small></b>
               <span>
-                {g.id === 'sticker' && (
-                  <button className="mini" onClick={() => setPicks((p) => ({ ...p, sticker: [...STICKER_SUGGEST] }))}>추천 24 넣기</button>
+                {SUGGEST[g.id] && (
+                  <button className="mini" onClick={() => setPicks((p) => ({ ...p, [g.id]: [...SUGGEST[g.id]!] }))}>추천 {SUGGEST[g.id]!.length} 넣기</button>
                 )}
                 {picks[g.id].length > 0 && (
                   <button className="mini" onClick={() => { if (confirm(`${g.label}에 고른 ${picks[g.id].length}명을 모두 뺄까요?`)) setPicks((p) => ({ ...p, [g.id]: [] })) }}>모두 빼기</button>
@@ -327,6 +346,7 @@ function Page({ cache, table }: { cache: PartsCache; table: AnchorTable }) {
           </div>
         ))}
         <button onClick={copy}>목록 복사</button>
+        <button onClick={() => { void exportExtra() }}>직접 넣은 이름 모아 뽑기</button> <small>{extraMsg}</small>
         <button onClick={() => { void exportAll() }} disabled={exporting !== null}>
           {exporting ?? 'SVG 뽑기 → goods-export/'}
         </button>
