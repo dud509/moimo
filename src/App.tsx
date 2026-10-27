@@ -4,6 +4,7 @@ import { normalizeTable, type AnchorTable } from './moimo/parts'
 import anchorsJson from './data/anchors.json'
 import { World, type Camera, type WorldHandle } from './world/World'
 import { Album, Camera as CameraPanel, Goods, Jar } from './world/Panels'
+import { Manual } from './world/Manual'
 import { measureFootprints } from './world/footprint'
 import {
   DECOR, ITEMS, WORLD, loadWorld, setFootprints, residentFromName, resetWorld, saveWorld, seedCountFor, trimWorld,
@@ -366,6 +367,8 @@ export default function App() {
       >
         초기화
       </button>
+
+      <Manual cache={cache} table={table} />
 
       {toast && <div className="toast">{toast}</div>}
       <span className="world-size" hidden>{WORLD.w}×{WORLD.h}</span>
