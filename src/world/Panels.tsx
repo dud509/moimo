@@ -65,7 +65,7 @@ export function Jar({
         {step === 'born' && born && (
           <div className="born">
             <p className="jar-ui-says">{born.name} 모이모가 태어났어요!</p>
-            <MoimoImg resident={born} cache={cache} table={table} size={260} className="pop" />
+            <MoimoImg resident={born} cache={cache} table={table} size={260} className="soft-in" />
           </div>
         )}
       </div>
