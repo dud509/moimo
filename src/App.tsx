@@ -204,7 +204,7 @@ export default function App() {
         worldRef.current?.flyTo(r.x, r.y, Math.max(0.8, worldRef.current.camera().scale))
       }, 60)
       window.setTimeout(() => setArrived((id) => (id === r.id ? null : id)), 2400)
-      say(`${r.name} 도착! 마을이 한 명 더 북적여요`)
+      say(`${r.name} 도착! 한층 복작여졌어요`)
       return trimWorld([...prev, r])
     })
   }, [say, leave])
