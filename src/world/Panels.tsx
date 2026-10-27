@@ -92,7 +92,7 @@ export function Jar({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') finish() }}
-              placeholder="방명록 한 줄 (선택)"
+              placeholder="한마디 남겨주세요"
               aria-label="방명록"
               maxLength={40}
               autoFocus
@@ -103,7 +103,6 @@ export function Jar({
         )}
       </div>
       {step === 'name' && name && !born && <p className="jar-ui-warn">한글 이름으로 두 글자 이상 적어주세요</p>}
-      {step === 'born' && <p className="jar-ui-warn soft">엔터를 누르면 마을로 가요</p>}
     </div>
   )
 }
