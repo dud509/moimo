@@ -220,11 +220,11 @@ input, textarea { cursor: text !important; }
 .moimo.arrive { animation: soft-in 0.6s ease-out both; z-index: 6; }
 .moimo.arrive::before {
   content: ''; position: absolute; z-index: -1; left: 50%; bottom: 2%;
-  width: 90%; height: 22%; translate: -50% 40%;
-  border-radius: 50%; border: 2px solid #B0A192;
+  width: 60%; height: 14%; translate: -50% 40%;
+  border-radius: 50%; border: 1.5px solid #B0A192;
   animation: ripple 1s ease-out 0.55s both;
 }
-@keyframes ripple { from { transform: scale(0.3); opacity: 0.9 } to { transform: scale(1.6); opacity: 0 } }
+@keyframes ripple { from { transform: scale(0.5); opacity: 0.7 } to { transform: scale(1.1); opacity: 0 } }
 
 /* ---------------- HUD ---------------- */
 
