@@ -264,7 +264,7 @@ input, textarea { cursor: text !important; }
 .sound-btn:hover { color: var(--ink); }
 .counter {
   pointer-events: auto; display: flex; align-items: center; gap: 10px;
-  padding: 0 12px; line-height: 1.1; background: var(--paper);
+  padding: 3px 14px; line-height: 1.1; background: var(--paper);
   border: 2.5px solid #B0A192; border-radius: 999px;
 }
 .counter span { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
