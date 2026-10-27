@@ -79,7 +79,7 @@ export function Manual({ cache, table }: { cache: PartsCache | null; table: Anch
             {SPLITS.map((t) => <li key={t}>{t}</li>)}
           </ul>
         </div>
-        <p className="manual-note">같은 ㅇ이어도 서로 다른 모이모가 돼요. 도·두, 현·혁처럼 눈·입·꼬리·장식도 이렇게 나눴어요.</p>
+        <p className="manual-note">같은 ㅇ이어도 서로 다른 모이모가 돼요. 모든 파츠를 이렇게 세분화했어요.</p>
       </div>
     </aside>
   )
