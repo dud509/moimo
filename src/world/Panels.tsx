@@ -59,7 +59,21 @@ export function Jar({
             <img className="jar-ui-base shake" src="/world/ui_jar_base.svg" alt="" draggable={false} />
             <img className="fairy f1" src="/items/guide01.svg" alt="" draggable={false} />
             <img className="fairy f2" src="/items/guide02.svg" alt="" draggable={false} />
-            {SPARKS.map((sp, i) => <i key={i} className="spark" style={{ left: `${sp[0]}%`, top: `${sp[1]}%`, animationDelay: `${sp[2]}s` }}>✦</i>)}
+            {SPARKS.map(([sx, sy, tx, ty, delay], i) => (
+              <svg
+                key={i}
+                className="spark"
+                viewBox="0 0 20 20"
+                style={{
+                  ['--sx' as string]: `${sx}%`, ['--sy' as string]: `${sy}%`,
+                  ['--tx' as string]: `${tx}%`, ['--ty' as string]: `${ty}%`,
+                  animationDelay: `${delay}s`,
+                }}
+                aria-hidden
+              >
+                <path d="M10 1C11 7 13 9 19 10C13 11 11 13 10 19C9 13 7 11 1 10C7 9 9 7 10 1Z" fill={SPARK_COLORS[i % SPARK_COLORS.length]} />
+              </svg>
+            ))}
           </div>
         )}
         {step === 'born' && born && (
@@ -103,6 +117,7 @@ export function Jar({
         )}
       </div>
       {step === 'name' && name && !born && <p className="jar-ui-warn">한글 이름으로 두 글자 이상 적어주세요</p>}
+      {step === 'born' && <p className="jar-ui-warn soft">다이어리에서 다시 확인할 수 있어요!</p>}
     </div>
   )
 }
@@ -110,7 +125,16 @@ export function Jar({
 /** 아기요정 마법 시간 */
 const MAGIC_MS = 2800
 /** 반짝이 자리 — 왼쪽 %, 위 %, 늦게 시작 */
-const SPARKS: [number, number, number][] = [[18, 22, 0], [76, 18, 0.4], [30, 58, 0.8], [70, 52, 0.2], [50, 12, 0.6], [12, 44, 1.0], [86, 36, 1.2]]
+/**
+ * 마법 반짝이 — 요정의 지팡이 끝(왼쪽 요정 ~[42,50], 오른쪽 ~[58,52])에서 나와
+ * 원래 모습의 몸에 톡 닿고 퍼진다. [나온 곳 x,y, 닿는 곳 x,y, 늦게 시작(초)] (무대 %)
+ */
+const SPARKS: [number, number, number, number, number][] = [
+  [42, 50, 46, 78, 0], [58, 52, 54, 84, 0.25], [42, 50, 49, 74, 0.5], [58, 52, 53, 76, 0.75],
+  [42, 50, 47, 90, 1.0], [58, 52, 52, 92, 1.2], [42, 50, 48, 84, 1.45], [58, 52, 55, 80, 1.65],
+]
+/** 반짝이 색 — 모이모 몸통 색(분홍·노랑·하늘·연보라·민트)을 흰 바탕에서 보이게 한 톤 진하게 */
+const SPARK_COLORS = ['#F4C3D2', '#F7D947', '#A9CFE0', '#C6B9E3', '#B5DBC1']
 
 /* ------------------------------------------------------------------ */
 /* 카메라 — 같이 사진찍기                                               */
