@@ -264,8 +264,8 @@ input, textarea { cursor: text !important; }
 .sound-btn:hover { color: var(--ink); }
 .counter {
   pointer-events: auto; display: flex; align-items: center; gap: 10px;
-  padding: 4px 14px; background: var(--paper);
-  border: 2.5px solid var(--ink); border-radius: 999px;
+  padding: 0 12px; line-height: 1.1; background: var(--paper);
+  border: 2.5px solid #B0A192; border-radius: 999px;
 }
 .counter span { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
 .counter b { font-size: 20px; font-weight: 900; font-variant-numeric: tabular-nums; }
