@@ -38,13 +38,14 @@ button { cursor: pointer; }
 body, body * { cursor: var(--wand), auto !important; }
 input, textarea { cursor: text !important; }
 
-.app { position: relative; height: 100%; overflow: hidden; }
+.app { position: relative; height: 100%; overflow: hidden; background: var(--ground); }
 .booting { height: 100%; display: grid; place-items: center; color: var(--ink-soft); font-weight: 700; }
 
 /* ---------------- 마을 ---------------- */
 
 .world-box {
-  position: absolute; inset: 0; overflow: hidden;
+  /* 자르는 건 바깥 .app 에 맡긴다 — 마우스 따라 마을이 밀릴 때 화면 끝이 잘려 보이지 않게 */
+  position: absolute; inset: 0; overflow: visible;
   cursor: grab; touch-action: none; background: var(--ground);
 }
 .world-box:active { cursor: grabbing; }
