@@ -127,7 +127,7 @@ input, textarea { cursor: text !important; }
   position: absolute; left: 50%; top: 100%; z-index: 2;
   transform: translate(-50%, 4px);
   display: flex; align-items: center; gap: 8px;
-  margin-top: 10px; padding: 8px 16px; border-radius: 999px;
+  margin-top: 10px; padding: 4px 16px; border-radius: 999px;
   background: var(--paper); border: 2.5px solid var(--ink);
   white-space: nowrap; opacity: 0; pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
@@ -264,7 +264,7 @@ input, textarea { cursor: text !important; }
 .sound-btn:hover { color: var(--ink); }
 .counter {
   pointer-events: auto; display: flex; align-items: center; gap: 10px;
-  padding: 10px 18px; background: var(--paper);
+  padding: 4px 14px; background: var(--paper);
   border: 2.5px solid var(--ink); border-radius: 999px;
 }
 .counter span { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
@@ -278,7 +278,7 @@ input, textarea { cursor: text !important; }
 }
 .dock::-webkit-scrollbar { display: none; }
 .dock button {
-  border: 0; background: transparent; padding: 9px 16px; border-radius: 999px;
+  border: 0; background: transparent; padding: 5px 16px; border-radius: 999px;
   font-size: 13px; font-weight: 800; white-space: nowrap;
 }
 .dock button:hover { background: var(--ink); color: var(--paper); }
@@ -286,7 +286,7 @@ input, textarea { cursor: text !important; }
 
 .fab {
   position: absolute; right: 22px; bottom: 22px;
-  padding: 15px 24px; border: 2.5px solid var(--ink); border-radius: 999px;
+  padding: 8px 22px; border: 2.5px solid var(--ink); border-radius: 999px;
   background: var(--accent); color: #fff; font-size: 15px; font-weight: 800;
   box-shadow: 0 5px 0 var(--accent-deep);
 }
@@ -305,7 +305,7 @@ input, textarea { cursor: text !important; }
 @keyframes page-in { from { opacity: 0; transform: scale(1.04) } to { opacity: 1; transform: none } }
 .page-back {
   position: absolute; top: 22px; left: 22px; z-index: 2;
-  padding: 10px 18px; border-radius: 999px;
+  padding: 5px 16px; border-radius: 999px;
   background: var(--paper); border: 2.5px solid var(--ink);
   font-size: 14px; font-weight: 800;
 }
@@ -387,7 +387,7 @@ input, textarea { cursor: text !important; }
 .check { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; margin: 4px 0 14px; }
 
 .btn {
-  padding: 13px 20px; border: 2.5px solid var(--ink); border-radius: 999px;
+  padding: 7px 18px; border: 2.5px solid var(--ink); border-radius: 999px;
   font-size: 14px; font-weight: 800; background: var(--paper);
 }
 .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent-deep); }
@@ -662,7 +662,7 @@ input, textarea { cursor: text !important; }
   animation: pop 0.24s cubic-bezier(0.2, 1.2, 0.4, 1) both;
 }
 .goods-btn {
-  margin-top: 10px; padding: 8px 14px; border-radius: 999px;
+  margin-top: 10px; padding: 4px 14px; border-radius: 999px;
   border: 2px dashed var(--ink-soft); background: transparent;
   font-size: 12px; font-weight: 800; color: var(--ink-soft);
 }
@@ -672,14 +672,13 @@ input, textarea { cursor: text !important; }
 
 .toast {
   position: absolute; left: 50%; bottom: 88px; transform: translateX(-50%); z-index: 25;
-  padding: 13px 24px; background: var(--ink); color: var(--paper);
+  padding: 6px 20px; background: var(--ink); color: var(--paper);
   border-radius: 999px; font-size: 13.5px; font-weight: 800; white-space: nowrap;
   animation: pop 0.3s cubic-bezier(0.2, 1.2, 0.4, 1) both;
 }
 
 @media (max-width: 820px) {
   .card { right: 12px; left: 12px; width: auto; }
-  .counter span { display: none; }
   .fab { bottom: 78px; padding: 12px 18px; font-size: 13px; }
   .dock { bottom: 14px; }
   .toast { bottom: 140px; }

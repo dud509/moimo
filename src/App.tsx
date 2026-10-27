@@ -307,25 +307,6 @@ export default function App() {
             <span>지금 모여 있는 모이모</span>
             <b>{residents.length.toLocaleString('ko-KR')}</b>
           </div>
-          {/* 노래 — 꼭 필요한 기능은 아니라 구석에 작게 둔다. 처음엔 꺼져 있다 */}
-          <button
-            className={`sound-btn${playing ? ' on' : ''}`}
-            onClick={toggleMusic}
-            aria-label={playing ? '노래 끄기' : '노래 켜기'}
-            title={playing ? '노래 끄기' : '노래 켜기'}
-          >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" />
-              {playing ? (
-                <>
-                  <path d="M15.5 9a4 4 0 0 1 0 6" />
-                  <path d="M18 6.5a7.5 7.5 0 0 1 0 11" />
-                </>
-              ) : (
-                <path d="M16 9.5l5 5M21 9.5l-5 5" />
-              )}
-            </svg>
-          </button>
         </div>
       </header>
 
