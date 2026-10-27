@@ -20,7 +20,18 @@ const GRID = [
 ]
 
 /** 흔한 글자는 따로 떼어 나눴다 — 이름 뒤 글자의 ㅇ 하나로 맛보기. 어떤 모습인지는 스포라 글자만 */
-const SPLITS = ['영·연·원', '아·윤', '그 밖의 ㅇ']
+const SPLITS = [
+  { text: 'ㅇ', tint: '#FFF0B8' },
+  { text: '영·연·원', tint: '#FBD9E3' },
+  { text: '아·윤', tint: '#E3DCF4' },
+]
+
+/** 네 갈래 반짝이 */
+const Twinkle = ({ color, size }: { color: string; size: number }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden>
+    <path d="M10 0C11 7 13 9 20 10C13 11 11 13 10 20C9 13 7 11 0 10C7 9 9 7 10 0Z" fill={color} />
+  </svg>
+)
 
 /**
  * 빼꼼 요정 — 512 캔버스 오른쪽 끝에 몸 반쪽만 그려져 있다. 잘린 쪽(x=512)을
@@ -69,9 +80,21 @@ export function Manual({ cache, table }: { cache: PartsCache | null; table: Anch
           파츠는 자음·모음마다 하나씩 정했어요. 다만 자주 쓰이는 글자는 자모 단위보다
           더 잘게, 글자 하나하나로 나눠 따로 파츠를 줬어요.
         </p>
-        <ul className="manual-chips">
-          {SPLITS.map((t) => <li key={t}>{t}</li>)}
-        </ul>
+        {/* ㅇ 하나가 그 안에서 다시 잘게 나뉜다 */}
+        <div className="manual-split">
+          <div className="manual-split-head">
+            <Twinkle color="#F4C6D4" size={12} />
+            <i className="dot" style={{ background: '#FBE7A6' }} />
+            <b>ㅇ</b>
+            <Twinkle color="#F7DE8E" size={12} />
+            <Twinkle color="#D9D0EF" size={9} />
+          </div>
+          <ul>
+            {SPLITS.map((t) => (
+              <li key={t.text} style={{ ['--tint' as string]: t.tint }}>{t.text}</li>
+            ))}
+          </ul>
+        </div>
         <p className="manual-note">같은 ㅇ이어도 서로 다른 모이모가 돼요. 도·두, 현·혁처럼 눈·입·꼬리·장식도 이렇게 나눴어요.</p>
       </div>
     </aside>
