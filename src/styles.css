@@ -160,13 +160,13 @@ input, textarea { cursor: text !important; }
 .lens-hint {
   position: absolute; left: 50%; top: 96px; transform: translateX(-50%); z-index: 15;
   display: flex; align-items: center; gap: 8px;
-  padding: 4px 4px 4px 16px; border-radius: 999px;
+  padding: 2px 2px 2px 14px; border-radius: 999px;
   background: var(--paper); border: 2.5px solid #B0A192; color: #B0A192;
-  font-size: 20px; font-weight: 800; white-space: nowrap;
+  font-size: 14px; font-weight: 800; white-space: nowrap;
 }
 /* 내려놓기 — 오브제 선 색으로, 누르기 쉽게 크게 */
 .lens-hint button {
-  padding: 4px 18px; border-radius: 999px; border: 0;
+  padding: 1px 16px; border-radius: 999px; border: 0; line-height: 1.1;
   background: #B0A192; color: var(--paper); font-size: 24px; font-weight: 800;
 }
 
@@ -205,9 +205,9 @@ input, textarea { cursor: text !important; }
 }
 .moimo-name {
   position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%);
-  padding: 3px 9px; border-radius: 999px;
+  padding: 1px 8px; border-radius: 999px;
   background: var(--paper); border: 2px solid #867561; color: #867561;
-  font-size: 13px; font-weight: 800; line-height: 1.3; white-space: nowrap;
+  font-size: 13px; font-weight: 800; line-height: 1.1; white-space: nowrap;
 }
 /* 눌러서 단 이름표 — 발밑에 통 하고 붙는다 */
 .moimo.tagged, .moimo.named { z-index: 7; }
