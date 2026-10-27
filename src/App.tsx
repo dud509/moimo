@@ -7,7 +7,7 @@ import { Album, Camera as CameraPanel, Goods, Jar } from './world/Panels'
 import { Manual } from './world/Manual'
 import { measureFootprints } from './world/footprint'
 import {
-  DECOR, ITEMS, WORLD, loadWorld, setFootprints, residentFromName, resetWorld, saveWorld, seedCountFor, trimWorld,
+  DECOR, ITEMS, WORLD, loadWorld, setFootprints, residentFromName, saveWorld, seedCountFor, trimWorld,
   type ItemId, type Resident,
 } from './world/model'
 import './styles.css'
@@ -354,19 +354,6 @@ export default function App() {
           {panel === 'goods' && <Goods onClose={() => leave(true)} />}
         </div>
       )}
-
-      {/* 초기화 — 전시 전 시험으로 만든 모이모를 지울 때만. 눈에 덜 띄게 구석에 둔다 */}
-      <button
-        className="reset-btn"
-        onClick={() => {
-          if (!window.confirm('마을을 처음 상태로 되돌릴까요? 직접 만든 모이모가 모두 지워져요.')) return
-          resetWorld()
-          setResidents(loadWorld(seedCountFor(window.innerWidth, window.innerHeight)))
-          say('마을을 처음 상태로 되돌렸어요')
-        }}
-      >
-        초기화
-      </button>
 
       <Manual cache={cache} table={table} />
 
