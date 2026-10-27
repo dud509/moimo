@@ -219,12 +219,13 @@ input, textarea { cursor: text !important; }
 /* 새로 온 모이모 — 튕기지 않고 제자리에 스르륵, 발밑에 둥근 물결이 한 번 번진다 */
 .moimo.arrive { animation: soft-in 0.6s ease-out both; z-index: 6; }
 .moimo.arrive::before {
-  content: ''; position: absolute; z-index: -1; left: 50%; bottom: 2%;
-  width: 60%; height: 14%; translate: -50% 40%;
-  border-radius: 50%; border: 1.5px solid #B0A192;
+  /* 발이 그림 높이의 80% 자리에 있다 — 그 둘레에 붙여 번진다 */
+  content: ''; position: absolute; z-index: -1; left: 50%; top: 80%;
+  width: 80%; height: 18%; translate: -50% -50%;
+  border-radius: 50%; border: 2px solid #B0A192;
   animation: ripple 1s ease-out 0.55s both;
 }
-@keyframes ripple { from { transform: scale(0.5); opacity: 0.7 } to { transform: scale(1.1); opacity: 0 } }
+@keyframes ripple { from { transform: scale(0.6); opacity: 0.8 } to { transform: scale(1.3); opacity: 0 } }
 
 /* ---------------- HUD ---------------- */
 
@@ -467,30 +468,19 @@ input, textarea { cursor: text !important; }
 .fairy.f2 { right: 31%; top: 26%; animation: fly2 2.8s ease-in-out both; }
 @keyframes fly1 { 0% { transform: translate(-60px, 30px) rotate(-10deg); opacity: 0 } 20% { opacity: 1 } 50% { transform: translate(10px, -14px) rotate(8deg) } 75% { transform: translate(0, 6px) rotate(-6deg) } 100% { transform: translate(-10px, -10px) rotate(6deg) } }
 @keyframes fly2 { 0% { transform: translate(60px, 30px) rotate(10deg); opacity: 0 } 20% { opacity: 1 } 50% { transform: translate(-10px, -20px) rotate(-8deg) } 75% { transform: translate(0, 4px) rotate(6deg) } 100% { transform: translate(10px, -6px) rotate(-6deg) } }
-/* 반짝이 — 지팡이 끝에서 살짝 떠올랐다가 하늘하늘 내려앉아 몸에 스며든다 */
+/* 반짝이 — 모이모 몸 둘레에서 하나씩 피어나 살짝 떠오르며 스르륵 사라진다 */
 .spark {
   position: absolute; z-index: 3; width: var(--size); height: var(--size);
   margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
-  animation: spark-drift 1.4s cubic-bezier(0.35, 0, 0.45, 1) both;
+  left: var(--tx); top: var(--ty);
+  filter: drop-shadow(0 0 0.5cqw #F7D947);
+  animation: spark-float 1.3s ease-in-out both;
 }
-.spark svg {
-  display: block; width: 100%; height: 100%; overflow: visible;
-  stroke: #B0A192; stroke-width: 0.8; stroke-linejoin: round;
-  animation: spark-sway 1.4s ease-in-out both;
-}
-@keyframes spark-drift {
-  0% { left: var(--sx); top: var(--sy) }
-  35% { left: var(--mx); top: var(--my) }
-  100% { left: var(--tx); top: var(--ty) }
-}
-@keyframes spark-sway {
-  0% { transform: translateX(0); opacity: 0 }
-  15% { opacity: 1 }
-  30% { transform: translateX(0.8cqw); opacity: 0.6 }
-  50% { transform: translateX(-0.8cqw); opacity: 1 }
-  70% { transform: translateX(0.5cqw); opacity: 0.7 }
-  85% { opacity: 1 }
-  100% { transform: translateX(0); opacity: 0 }
+.spark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+@keyframes spark-float {
+  0% { transform: translateY(0.6cqw); opacity: 0 }
+  40% { opacity: 1 }
+  100% { transform: translateY(-1.6cqw); opacity: 0 }
 }
 .born { position: relative; }
 .born::before { content: ''; position: absolute; inset: -30px; border-radius: 50%; background: radial-gradient(circle, #FFF8DC 0%, transparent 65%); animation: fade 0.6s ease both; }

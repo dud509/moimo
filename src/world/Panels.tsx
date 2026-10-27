@@ -59,21 +59,18 @@ export function Jar({
             <img className="jar-ui-base shake" src="/world/ui_jar_base.svg" alt="" draggable={false} />
             <img className="fairy f1" src="/items/guide01.svg" alt="" draggable={false} />
             <img className="fairy f2" src="/items/guide02.svg" alt="" draggable={false} />
-            {SPARKS.map(([sx, sy, tx, ty, delay], i) => (
-              // 바깥은 길을 따라 둥실 떠가고, 안쪽은 좌우로 하늘하늘 흔들리며 깜빡인다
+            {SPARKS.map(([tx, ty, delay], i) => (
               <span
                 key={i}
                 className="spark"
                 style={{
-                  ['--sx' as string]: `${sx}%`, ['--sy' as string]: `${sy}%`,
-                  ['--mx' as string]: `${(sx + tx) / 2 + (sx < 50 ? -6 : 6)}%`, ['--my' as string]: `${sy - 10}%`,
                   ['--tx' as string]: `${tx}%`, ['--ty' as string]: `${ty}%`,
                   ['--size' as string]: `${i % 3 === 0 ? 2.6 : i % 3 === 1 ? 1.8 : 1.3}cqw`,
                   animationDelay: `${delay}s`,
                 }}
                 aria-hidden
               >
-                <svg viewBox="0 0 20 20" style={{ animationDelay: `${delay}s` }}>
+                <svg viewBox="0 0 20 20">
                   {i % 3 === 2
                     ? <circle cx="10" cy="10" r="5" fill={SPARK_COLORS[i % SPARK_COLORS.length]} />
                     : <path d="M10 1C11 7 13 9 19 10C13 11 11 13 10 19C9 13 7 11 1 10C7 9 9 7 10 1Z" fill={SPARK_COLORS[i % SPARK_COLORS.length]} />}
@@ -131,14 +128,10 @@ export function Jar({
 /** 아기요정 마법 시간 */
 const MAGIC_MS = 2800
 /** 반짝이 자리 — 왼쪽 %, 위 %, 늦게 시작 */
-/**
- * 마법 반짝이 — 요정의 지팡이 끝(왼쪽 요정 ~[42,50], 오른쪽 ~[58,52])에서 나와
- * 원래 모습의 몸에 톡 닿고 퍼진다. [나온 곳 x,y, 닿는 곳 x,y, 늦게 시작(초)] (무대 %)
- */
-const SPARKS: [number, number, number, number, number][] = [
-  [42, 50, 46, 78, 0], [58, 52, 54, 82, 0.15], [42, 50, 49, 72, 0.35], [58, 52, 53, 76, 0.5],
-  [42, 50, 45, 88, 0.7], [58, 52, 55, 90, 0.85], [42, 50, 48, 84, 1.0], [58, 52, 52, 74, 1.15],
-  [42, 50, 47, 94, 1.3], [58, 52, 54, 86, 1.45], [42, 50, 50, 80, 1.6], [58, 52, 51, 92, 1.75],
+/** 마법 반짝이 — 원래 모습의 몸 둘레에서 하나씩 피어난다. [x, y (무대 %), 늦게 시작(초)] */
+const SPARKS: [number, number, number][] = [
+  [46, 74, 0], [55, 80, 0.2], [43, 86, 0.4], [52, 70, 0.6], [57, 90, 0.8], [48, 92, 1.0],
+  [41, 76, 1.15], [54, 84, 1.3], [50, 78, 1.45], [45, 66, 1.6], [58, 72, 1.75], [47, 88, 1.9],
 ]
 /** 반짝이 색 — 노랑과 흰색만 */
 const SPARK_COLORS = ['#F7D947', '#FFFFFF']
