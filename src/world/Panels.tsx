@@ -37,45 +37,35 @@ async function shareDataUrl(url: string, name: string) {
 
 const CARD_W = 900
 const CARD_H = 1350
-const CARD_LINE = '#B0A192'
 
-/**
- * 포토카드 — 2:3 세로 카드. 몸통 색에 맞춘 연한 바탕 위에 흰 창, 그 안에 모이모,
- * 아래에 이름과 날짜. 모서리는 둥글게 오려 낸다
- */
+/** 포토카드 — 2:3 세로, 흰 바탕에 모이모와 마을에서 쓰는 이름표만 */
 async function makePhotoCard(r: Resident, cache: PartsCache, table: AnchorTable): Promise<string> {
-  await document.fonts.load('120px Dongle').catch(() => undefined)
+  await document.fonts.load('80px Dongle').catch(() => undefined)
   const cv = document.createElement('canvas')
   cv.width = CARD_W
   cv.height = CARD_H
   const ctx = cv.getContext('2d')!
-  ctx.beginPath(); ctx.roundRect(0, 0, CARD_W, CARD_H, 56); ctx.clip()
-  ctx.fillStyle = PASTEL_BG[r.genes.color - 1] ?? PASTEL_BG[0]
+  ctx.fillStyle = '#FFFFFF'
   ctx.fillRect(0, 0, CARD_W, CARD_H)
-  // 흰 창
-  const M = 64
-  const winH = 880
-  ctx.beginPath(); ctx.roundRect(M, M, CARD_W - M * 2, winH, 40)
-  ctx.fillStyle = '#FFFDF4'; ctx.fill()
-  ctx.lineWidth = 5; ctx.strokeStyle = CARD_LINE; ctx.stroke()
-  // 모이모
+  // 모이모 — 512 캔버스 둘레 여백이 넓어서 크게 그린다
   const img = new Image()
   await new Promise<void>((done) => { img.onload = () => done(); img.onerror = () => done(); img.src = moimoDataUri(composeMoimo(r.genes, cache, table)) })
-  // 512 캔버스 둘레 여백이 넓어서 크게 그리고 흰 창 안으로 오린다
-  const size = 1180
-  ctx.save()
-  ctx.beginPath(); ctx.roundRect(M, M, CARD_W - M * 2, winH, 40); ctx.clip()
-  ctx.drawImage(img, (CARD_W - size) / 2, M + (winH - size) / 2 + 20, size, size)
-  ctx.restore()
-  // 이름 · 날짜
+  const size = 1050
+  ctx.drawImage(img, (CARD_W - size) / 2, 70, size, size)
+  // 이름표 — 마을 이름표처럼 몸통 색에 맞춘 연한 바탕 + 갈색 테두리 알약
+  ctx.font = '80px Dongle, sans-serif'
+  const tw = ctx.measureText(r.name).width
+  const pw = tw + 90
+  const ph = 96
+  const px = (CARD_W - pw) / 2
+  const py = 880
+  ctx.beginPath(); ctx.roundRect(px, py, pw, ph, ph / 2)
+  ctx.fillStyle = PASTEL_BG[r.genes.color - 1] ?? PASTEL_BG[0]; ctx.fill()
+  ctx.lineWidth = 5; ctx.strokeStyle = '#867561'; ctx.stroke()
+  ctx.fillStyle = '#867561'
   ctx.textAlign = 'center'
-  ctx.fillStyle = '#6F6151'
-  ctx.font = '140px Dongle, sans-serif'
-  ctx.fillText(r.name, CARD_W / 2, M + winH + 150)
-  const d = new Date()
-  ctx.fillStyle = CARD_LINE
-  ctx.font = '56px Dongle, sans-serif'
-  ctx.fillText(`MOIMO WORLD · ${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`, CARD_W / 2, CARD_H - 70)
+  ctx.textBaseline = 'middle'
+  ctx.fillText(r.name, CARD_W / 2, py + ph / 2 + 4)
   return cv.toDataURL('image/png')
 }
 
