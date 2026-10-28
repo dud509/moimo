@@ -790,3 +790,4 @@ input, textarea { cursor: text !important; }
 .manual-book .manual-note { margin: 10px 0 0; font-size: 11px; }
 
 @keyframes fresh-dot { to { visibility: hidden } }
+.lens-hint button small { font-size: 0.6em; opacity: 0.8; margin-left: 2px; }

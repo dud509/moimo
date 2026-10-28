@@ -183,6 +183,16 @@ const FOOT_HALF = 22
 /** 모이모와 별사탕이 비켜 서야 하는 그림들 */
 const GUARDS = [...ITEMS, ...DECOR].map(guard)
 
+/**
+ * 기능 말풍선 자리 — 오브제 바로 위에 늘 떠 있으니 모이모가 가리지 않게 비워 둔다.
+ * 말풍선 글씨(42px)와 여백·꼬리·둥실거림을 넉넉히 잡았다
+ */
+const BUBBLE_ZONES = ITEMS.map((it) => {
+  const g = guard(it)
+  const hw = (it.tag.length * 30 + 90) / 2
+  return { x0: g.cx - hw, x1: g.cx + hw, y0: g.y0 - 105, y1: g.y0 + 10 }
+})
+
 /** 이 자리에 서도 되나 — 오브제를 가리지 않고 이웃과도 떨어져 있나 */
 function standsFree(x: number, y: number, gap: number, taken: { x: number; y: number }[]): boolean {
   if (x < 120 || x > WORLD.w - 120 || y < 140 || y > WORLD.h - 110) return false
@@ -206,6 +216,10 @@ function standsFree(x: number, y: number, gap: number, taken: { x: number; y: nu
     // 외곽선을 못 쟀으면 네모 전체를 피한다
     if (!f) return false
     if (onArt(g, f, x, fy) || onArt(g, f, x - FOOT_HALF, fy) || onArt(g, f, x + FOOT_HALF, fy)) return false
+  }
+  // 말풍선 자리는 몸이 조금도 걸치지 않게 비운다
+  for (const z of BUBBLE_ZONES) {
+    if (x + MOIMO_W / 2 > z.x0 && x - MOIMO_W / 2 < z.x1 && y > z.y0 && y - MOIMO_W < z.y1) return false
   }
   // 소품과는 겹치지 않는다. 소품은 무리 바깥에 있으니 둘레에서만 마주친다
   for (const p of PROPS) {
@@ -527,7 +541,7 @@ export function seedCountFor(_vw: number, _vh: number): number {
  * 오브제나 별사탕 자리가 바뀌면 예전에 서 있던 모이모가 그 위에 겹친다.
  * 그런 모이모만 빈자리로 옮기고, 나머지는 서 있던 자리를 그대로 지킨다.
  */
-function settle(list: Resident[]): Resident[] {
+export function settle(list: Resident[]): Resident[] {
   let s = 20261001
   const rnd = () => {
     s = (s * 1664525 + 1013904223) >>> 0

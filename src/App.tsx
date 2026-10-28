@@ -8,7 +8,7 @@ import { fetchShared, postShared } from './world/shared'
 import { Manual } from './world/Manual'
 import { measureFootprints } from './world/footprint'
 import {
-  DECOR, ITEMS, WORLD, loadWorld, setFootprints, residentFromName, saveWorld, trimWorld,
+  DECOR, ITEMS, WORLD, loadWorld, setFootprints, residentFromName, saveWorld, settle, trimWorld,
   type ItemId, type Resident,
 } from './world/model'
 import './styles.css'
@@ -133,7 +133,8 @@ export default function App() {
     Promise.all([measureFootprints([...ITEMS, ...DECOR].map((p) => p.src)), fetchShared()]).then(([f, list]) => {
       setFootprints(f)
       shared.current = list !== null
-      setResidents(trimWorld(list ?? loadWorld(0)))
+      // 서버의 모이모도 지금 배치(말풍선 자리 등)에 맞춰 겹친 것만 옮긴다 — 순서대로라 모두에게 같다
+      setResidents(trimWorld(list ? settle(list) : loadWorld(0)))
       setSettled(true)
     })
   }, [])
@@ -148,7 +149,7 @@ export default function App() {
           const ids = new Set(list.map((r) => r.id))
           const pending = prev.filter((r) => !ids.has(r.id) && Date.now() - r.at < 30_000)
           if (!pending.length && list.length === prev.length && list.every((r, i) => r.id === prev[i]?.id)) return prev
-          return trimWorld([...list, ...pending])
+          return trimWorld([...settle(list), ...pending])
         })
       })
     }, SYNC_MS)
@@ -348,7 +349,7 @@ export default function App() {
       {lens && (
         <div className="lens-hint">
           모이모에 돋보기를 대 보세요
-          <button onClick={() => setLens(false)}>내려놓기</button>
+          <button onClick={() => setLens(false)}>내려놓기 <small>ESC</small></button>
         </div>
       )}
 
