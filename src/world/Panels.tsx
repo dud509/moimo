@@ -266,12 +266,27 @@ export function Camera({
     setShot(cv.toDataURL('image/png'))
   }
 
+  const fileName = () => `moimo-${picked.map((r) => r.name).join('-') || 'photo'}.png`
   const save = () => {
     if (!shot) return
     const a = document.createElement('a')
     a.href = shot
-    a.download = `moimo-${picked.map((r) => r.name).join('-') || 'photo'}.png`
+    a.download = fileName()
     a.click()
+  }
+  // 공유 — 맥·아이폰에선 공유 시트가 떠서 에어드롭으로 바로 보낼 수 있다
+  const canShare = typeof navigator !== 'undefined' && !!navigator.canShare
+  const share = async () => {
+    if (!shot) return
+    // 사파리는 누른 순간에 바로 share 를 불러야 해서, 기다림 없이 그 자리에서 파일로 바꾼다
+    const bin = atob(shot.split(',')[1])
+    const bytes = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+    const file = new File([bytes], fileName(), { type: 'image/png' })
+    if (!navigator.canShare?.({ files: [file] })) { save(); return }
+    try {
+      await navigator.share({ files: [file], title: '모이모 월드' })
+    } catch { /* 공유 창을 닫았다 */ }
   }
 
   return (
@@ -313,7 +328,8 @@ export function Camera({
       <div className="cam-ui-side">
         {shot ? (
           <>
-            <button className="btn primary" onClick={save}>사진 저장</button>
+            {canShare && <button className="btn primary" onClick={share}>공유 · 에어드롭</button>}
+            <button className={`btn${canShare ? '' : ' primary'}`} onClick={save}>사진 저장</button>
             <button className="btn" onClick={() => setShot(null)}>다시 찍기</button>
           </>
         ) : (
