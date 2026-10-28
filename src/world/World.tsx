@@ -115,6 +115,9 @@ function Prop({ prop, art }: { prop: (typeof PROPS)[number]; art?: Tight }) {
  */
 const IS_SAFARI = typeof navigator !== 'undefined' && /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent)
 
+/** 막 태어난 모이모에 점을 달아 두는 시간 */
+const FRESH_MS = 2 * 60_000
+
 export const MoimoImg = memo(function MoimoImg({
   resident, cache, table, size = MOIMO_PX, className,
 }: {
@@ -426,10 +429,8 @@ export const World = forwardRef<WorldHandle, Props>(function World(
           >
             <Shadow />
             <ItemImage art={art[it.src]} />
-            <span className="item-label">
-              <b>{it.name}</b>
-              <i>{it.tag}</i>
-            </span>
+            {/* 누르면 뭘 하는지 늘 말풍선으로 띄워 둔다 */}
+            <span className="item-label">{it.tag}</span>
           </button>
         ))}
 
@@ -443,14 +444,18 @@ export const World = forwardRef<WorldHandle, Props>(function World(
           const r = s.r
           const dim = hits ? !hits.has(r.id) : false
           const named = showNames || r.id === tagged || (hits && hits.has(r.id)) || (lens && underLens.has(r.id))
+          // 막 태어난 모이모(2분 안)만 머리 위에 점을 단다. 남은 시간이 지나면 CSS 가 알아서 지운다
+          const age = Date.now() - r.at
+          const fresh = r.mine && age >= 0 && age < FRESH_MS
           return (
             <button
               key={r.id}
-              className={`moimo${r.id === arrivedId ? ' arrive' : ''}${r.mine ? ' mine' : ''}${dim ? ' dim' : ''}${r.id === tagged ? ' tagged' : ''}${named ? ' named' : ''}`}
+              className={`moimo${r.id === arrivedId ? ' arrive' : ''}${fresh ? ' mine' : ''}${dim ? ' dim' : ''}${r.id === tagged ? ' tagged' : ''}${named ? ' named' : ''}`}
               style={{
                 left: r.x,
                 top: r.y,
                 transform: 'translate(-50%, -100%)',
+                ...(fresh ? { ['--fresh-left' as string]: `${(FRESH_MS - age) / 1000}s` } : {}),
               }}
               onClick={() => { if (!dragged.current) onResident(r) }}
             >

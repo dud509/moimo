@@ -123,22 +123,22 @@ input, textarea { cursor: text !important; }
     drop-shadow(1.5px 0 0 #E2D6BD) drop-shadow(-1.5px 0 0 #E2D6BD) drop-shadow(0 1.5px 0 #E2D6BD) drop-shadow(0 -1.5px 0 #E2D6BD)
     drop-shadow(0 6px 8px rgba(112, 94, 76, 0.2));
 }
-.item:hover .item-label { opacity: 1; transform: translate(-50%, 0); }
-/* 이름표는 평소엔 숨겨 두고 올려 보면 나온다 — 시안처럼 그림만 보이게 */
+/* 기능 말풍선 — 오브제 위에 늘 떠 있어 무엇을 할 수 있는지 알려 준다. 꼬리는 아래로 */
 .item-label {
-  position: absolute; left: 50%; top: 100%; z-index: 2;
-  transform: translate(-50%, 4px);
-  display: flex; align-items: center; gap: 8px;
-  margin-top: 10px; padding: 4px 16px; border-radius: 999px;
-  background: var(--paper); border: 2.5px solid var(--ink);
-  white-space: nowrap; opacity: 0; pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  position: absolute; left: 50%; bottom: 100%; z-index: 2;
+  transform: translate(-50%, -14px);
+  padding: 4px 18px; border-radius: 999px;
+  background: var(--paper); border: 3px solid #B0A192; color: #8A7B6B;
+  font-size: 42px; line-height: 1.1; white-space: nowrap; pointer-events: none;
+  animation: bubble-float 3s ease-in-out infinite;
 }
-.item-label b { font-size: 16px; font-weight: 800; }
-.item-label i {
-  font-style: normal; font-size: 12px; font-weight: 700; color: #fff;
-  background: var(--accent); padding: 3px 9px; border-radius: 999px;
+.item-label::after {
+  content: ''; position: absolute; left: 50%; top: 100%;
+  width: 14px; height: 14px; margin: -7px 0 0 -7px;
+  background: var(--paper); border: solid #B0A192; border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
 }
+@keyframes bubble-float { 0%, 100% { translate: 0 0 } 50% { translate: 0 -5px } }
 
 /* 돋보기를 들고 있을 때 — 마우스 대신 돋보기가 따라다닌다 */
 .world-box.holding-lens, .world-box.holding-lens * { cursor: none !important; }
@@ -204,6 +204,7 @@ input, textarea { cursor: text !important; }
   content: ''; position: absolute; left: 50%; top: -4px;
   width: 8px; height: 8px; margin-left: -4px; border-radius: 50%;
   background: var(--accent); box-shadow: 0 0 0 2.5px var(--paper);
+  animation: fresh-dot var(--fresh-left, 120s) step-end forwards;
 }
 .moimo-name {
   position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%);
@@ -781,3 +782,5 @@ input, textarea { cursor: text !important; }
 .manual-split ul { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; margin: 0; padding: 0; list-style: none; }
 .manual-split li { text-align: center; font-family: 'NanumSquareRoundB', sans-serif; font-size: 12px; }
 .manual-book .manual-note { margin: 10px 0 0; font-size: 11px; }
+
+@keyframes fresh-dot { to { visibility: hidden } }
