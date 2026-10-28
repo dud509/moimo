@@ -455,7 +455,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
             <Shadow />
             <ItemImage art={art[it.src]} />
             {/* 누르면 뭘 하는지 늘 말풍선으로 띄워 둔다 */}
-            <span className={`item-label ${it.bubble}`}>{it.tag}</span>
+            <span className={`item-label ${it.bubble}${it.id === 'jar' ? ' main' : ''}`}>{it.tag}</span>
           </button>
         ))}
 

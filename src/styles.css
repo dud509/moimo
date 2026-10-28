@@ -142,6 +142,9 @@ input, textarea { cursor: text !important; }
 .item-label.left::after { right: 14%; top: 100%; margin-top: -7px; transform: rotate(20deg); }
 .item-label.right { left: 62%; bottom: 88%; }
 .item-label.right::after { left: 14%; top: 100%; margin-top: -7px; transform: rotate(70deg); }
+/* 모이모 만들기 — 가장 먼저 누를 곳이라 색을 뒤집어 강조한다 */
+.item-label.main { background: #B0A192; color: var(--paper); }
+.item-label.main::after { background: #B0A192; }
 @keyframes bubble-float { 0%, 100% { translate: 0 0 } 50% { translate: 0 -5px } }
 
 /* 돋보기를 들고 있을 때 — 마우스 대신 돋보기가 따라다닌다 */
