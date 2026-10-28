@@ -34,6 +34,8 @@ const MOUSE_FAIRY = '/items/guide.svg'
 const PARALLAX_PX = 16
 /** 함께 보는 마을을 몇 ms 마다 새로 받아 올지 */
 const SYNC_MS = 10_000
+/** 이만큼 아무도 만지지 않으면 처음 화면으로 돌아간다 */
+const IDLE_MS = 2 * 60_000
 /** 이름표가 붙어 있는 시간 */
 const TAG_MS = 4000
 
@@ -210,6 +212,24 @@ export default function App() {
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [restoreCamera])
+
+  // 2분 동안 아무도 만지지 않으면 처음 화면으로 — 열린 창·돋보기도 내려놓고 마을 가운데로 돌아간다
+  useEffect(() => {
+    let t = 0
+    const idle = () => {
+      if (panelOpen.current) {
+        if (window.location.hash === '#jar') jarClose.current?.()
+        else leave(true)
+      }
+      setLens(false)
+      window.setTimeout(() => worldRef.current?.goHome(), panelOpen.current ? 400 : 0)
+    }
+    const poke = () => { window.clearTimeout(t); t = window.setTimeout(idle, IDLE_MS) }
+    const evs = ['pointerdown', 'wheel', 'keydown', 'touchstart'] as const
+    evs.forEach((e) => window.addEventListener(e, poke, { passive: true }))
+    poke()
+    return () => { window.clearTimeout(t); evs.forEach((e) => window.removeEventListener(e, poke)) }
+  }, [leave])
 
   // Esc 로 돋보기를 내려놓는다
   useEffect(() => {

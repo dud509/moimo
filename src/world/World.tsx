@@ -43,6 +43,8 @@ export type Camera = { tx: number; ty: number; scale: number }
 export type WorldHandle = {
   flyTo: (wx: number, wy: number, scale?: number) => void
   camera: () => Camera
+  /** 처음 화면(가운데, 처음 배율)으로 미끄러져 돌아간다 */
+  goHome: () => void
 }
 
 /** 아무리 줄여도 이 아래로는 안 간다 */
@@ -283,7 +285,11 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     window.setTimeout(() => setGlide(false), 900)
   }, [apply, clamp, cover])
 
-  useImperativeHandle(ref, () => ({ flyTo, camera: () => ({ ...camRef.current }) }), [flyTo])
+  useImperativeHandle(ref, () => ({
+    flyTo,
+    camera: () => ({ ...camRef.current }),
+    goHome: () => flyTo(CENTER.x, CENTER.y, home()),
+  }), [flyTo, home])
 
   useEffect(() => {
     const el = boxRef.current
