@@ -47,6 +47,8 @@ input, textarea { cursor: text !important; }
   /* 자르는 건 바깥 .app 에 맡긴다 — 마우스 따라 마을이 밀릴 때 화면 끝이 잘려 보이지 않게 */
   position: absolute; inset: 0; overflow: visible;
   cursor: grab; touch-action: none; background: var(--ground);
+  /* 끌 때 사파리가 글자·그림을 잡아 끌지 않게 */
+  user-select: none; -webkit-user-select: none; -webkit-user-drag: none;
 }
 .world-box:active { cursor: grabbing; }
 .parallax { position: absolute; inset: 0; will-change: transform; }

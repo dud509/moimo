@@ -92,21 +92,28 @@ export default function App() {
     const onMove = (e: PointerEvent) => {
       mx = e.clientX; my = e.clientY
       if (fairyRef.current) fairyRef.current.style.opacity = '1'
+      wake()
     }
     // 커서가 창 밖으로 나가면 요정도 같이 숨는다
     const onOut = (e: MouseEvent) => { if (!e.relatedTarget && fairyRef.current) fairyRef.current.style.opacity = '0' }
+    // 다 따라잡으면 멈춰 쉰다 — 가만히 있을 때까지 매 프레임 마을을 옮기면 사파리가 버벅인다
     const step = () => {
       fx += (mx + 14 - fx) * 0.2
       fy += (my + 10 - fy) * 0.2
+      let moving = Math.abs(mx + 14 - fx) > 0.3 || Math.abs(my + 10 - fy) > 0.3
       // 창이 떠 있는 동안은 뒤의 마을을 그 자리에 세워 둔다
       if (!panelOpen.current) {
-        px += (-(mx / window.innerWidth - 0.5) * 2 * PARALLAX_PX - px) * 0.06
-        py += (-(my / window.innerHeight - 0.5) * 2 * PARALLAX_PX - py) * 0.06
+        const tx = -(mx / window.innerWidth - 0.5) * 2 * PARALLAX_PX
+        const ty = -(my / window.innerHeight - 0.5) * 2 * PARALLAX_PX
+        px += (tx - px) * 0.06
+        py += (ty - py) * 0.06
+        if (Math.abs(tx - px) > 0.05 || Math.abs(ty - py) > 0.05) moving = true
+        if (parRef.current) parRef.current.style.transform = `translate3d(${px.toFixed(2)}px, ${py.toFixed(2)}px, 0)`
       }
       if (fairyRef.current) fairyRef.current.style.transform = `translate(${fx}px, ${fy}px)`
-      if (parRef.current) parRef.current.style.transform = `translate3d(${px}px, ${py}px, 0)`
-      raf = requestAnimationFrame(step)
+      raf = moving ? requestAnimationFrame(step) : 0
     }
+    const wake = () => { if (!raf) raf = requestAnimationFrame(step) }
     window.addEventListener('pointermove', onMove)
     document.addEventListener('mouseout', onOut)
     raf = requestAnimationFrame(step)

@@ -2,7 +2,7 @@ import { PASTEL_BG } from '../moimo/parts'
 import {
   forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState,
 } from 'react'
-import { composeMoimo, type PartsCache } from '../moimo/compose'
+import { composeMoimo, moimoDataUri, type PartsCache } from '../moimo/compose'
 import type { AnchorTable } from '../moimo/parts'
 import { CANDY_LINE_PX, CANDY_W, DECOR, FRAME, GUIDE_LINE_PX, GUIDES, ITEMS, MOIMO_W, OBJECT_LINE_PX, WORLD, CENTER, PROPS, PROP_KINDS, type ItemId, type Placed, type Resident } from './model'
 import { useTightArt, type Tight } from './tight'
@@ -109,6 +109,12 @@ function Prop({ prop, art }: { prop: (typeof PROPS)[number]; art?: Tight }) {
 
 /* ------------------------------------------------------------------ */
 
+/**
+ * 사파리는 화면에 심은 SVG 수백 개를 마을이 움직일 때마다 다시 그려서 몹시 버벅인다.
+ * 사파리에서만 그림 파일로 구워 걸어, 한 번 그린 것을 그대로 옮기게 한다
+ */
+const IS_SAFARI = typeof navigator !== 'undefined' && /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent)
+
 export const MoimoImg = memo(function MoimoImg({
   resident, cache, table, size = MOIMO_PX, className,
 }: {
@@ -123,6 +129,13 @@ export const MoimoImg = memo(function MoimoImg({
     () => composeMoimo(resident.genes, cache, table),
     [resident.genes, cache, table],
   )
+  if (IS_SAFARI) {
+    return (
+      <span className={`art ${className ?? ''}`} style={{ width: size, height: size }} role="img" aria-label={resident.name}>
+        <img src={moimoDataUri(html)} alt="" width={size} height={size} draggable={false} style={{ width: '100%', height: '100%', display: 'block' }} />
+      </span>
+    )
+  }
   return (
     <span
       className={`art ${className ?? ''}`}
