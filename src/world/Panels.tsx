@@ -10,6 +10,76 @@ import type { Resident } from './model'
 type Common = { cache: PartsCache; table: AnchorTable; onClose: () => void }
 
 /* ------------------------------------------------------------------ */
+/* 그림 저장·공유 — 카메라 사진과 포토카드가 같이 쓴다                  */
+/* ------------------------------------------------------------------ */
+
+function saveDataUrl(url: string, name: string) {
+  const a = document.createElement('a')
+  a.href = url
+  a.download = name
+  a.click()
+}
+
+/** 공유 시트(맥·아이폰은 에어드롭)를 띄울 수 있는 브라우저인가 */
+const CAN_SHARE = typeof navigator !== 'undefined' && !!navigator.canShare
+
+/** 사파리는 누른 순간에 바로 share 를 불러야 해서, 기다림 없이 그 자리에서 파일로 바꾼다 */
+async function shareDataUrl(url: string, name: string) {
+  const bin = atob(url.split(',')[1])
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  const file = new File([bytes], name, { type: 'image/png' })
+  if (!navigator.canShare?.({ files: [file] })) { saveDataUrl(url, name); return }
+  try {
+    await navigator.share({ files: [file], title: '모이모 월드' })
+  } catch { /* 공유 창을 닫았다 */ }
+}
+
+const CARD_W = 900
+const CARD_H = 1350
+const CARD_LINE = '#B0A192'
+
+/**
+ * 포토카드 — 2:3 세로 카드. 몸통 색에 맞춘 연한 바탕 위에 흰 창, 그 안에 모이모,
+ * 아래에 이름과 날짜. 모서리는 둥글게 오려 낸다
+ */
+async function makePhotoCard(r: Resident, cache: PartsCache, table: AnchorTable): Promise<string> {
+  await document.fonts.load('120px Dongle').catch(() => undefined)
+  const cv = document.createElement('canvas')
+  cv.width = CARD_W
+  cv.height = CARD_H
+  const ctx = cv.getContext('2d')!
+  ctx.beginPath(); ctx.roundRect(0, 0, CARD_W, CARD_H, 56); ctx.clip()
+  ctx.fillStyle = PASTEL_BG[r.genes.color - 1] ?? PASTEL_BG[0]
+  ctx.fillRect(0, 0, CARD_W, CARD_H)
+  // 흰 창
+  const M = 64
+  const winH = 880
+  ctx.beginPath(); ctx.roundRect(M, M, CARD_W - M * 2, winH, 40)
+  ctx.fillStyle = '#FFFDF4'; ctx.fill()
+  ctx.lineWidth = 5; ctx.strokeStyle = CARD_LINE; ctx.stroke()
+  // 모이모
+  const img = new Image()
+  await new Promise<void>((done) => { img.onload = () => done(); img.onerror = () => done(); img.src = moimoDataUri(composeMoimo(r.genes, cache, table)) })
+  // 512 캔버스 둘레 여백이 넓어서 크게 그리고 흰 창 안으로 오린다
+  const size = 1180
+  ctx.save()
+  ctx.beginPath(); ctx.roundRect(M, M, CARD_W - M * 2, winH, 40); ctx.clip()
+  ctx.drawImage(img, (CARD_W - size) / 2, M + (winH - size) / 2 + 20, size, size)
+  ctx.restore()
+  // 이름 · 날짜
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#6F6151'
+  ctx.font = '140px Dongle, sans-serif'
+  ctx.fillText(r.name, CARD_W / 2, M + winH + 150)
+  const d = new Date()
+  ctx.fillStyle = CARD_LINE
+  ctx.font = '56px Dongle, sans-serif'
+  ctx.fillText(`MOIMO WORLD · ${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`, CARD_W / 2, CARD_H - 70)
+  return cv.toDataURL('image/png')
+}
+
+/* ------------------------------------------------------------------ */
 /* 별사탕 유리병 — 이름을 넣으면 모이모가 태어난다                       */
 /* ------------------------------------------------------------------ */
 
@@ -44,13 +114,24 @@ export function Jar({
     onSend(born.name, note.trim())
   }
   const close = () => (step === 'born' ? finish() : step === 'name' ? onClose() : undefined)
+  // 태어나면 포토카드를 미리 구워 둔다 — 공유는 누르는 순간 바로 띄워야 한다
+  const [card, setCard] = useState<string | null>(null)
+  useEffect(() => {
+    if (step !== 'born' || !born) return
+    let alive = true
+    makePhotoCard(born, cache, table).then((url) => { if (alive) setCard(url) })
+    return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step])
+  const cardName = born ? `모이모_${born.name}.png` : 'moimo.png'
   if (closeRef) closeRef.current = close
 
   return (
     // 유리병 그림(ui_jar_bg.svg)을 창으로 쓰고, 원래 모습·이름 칸·✕ 만 위에 얹는다
     <div className={`jar-ui jar-${step}`}>
       <img className="jar-ui-bg" src="/world/ui_jar_bg.svg" alt="" draggable={false} />
-      {step !== 'magic' && <button className="jar-ui-x" onClick={close} aria-label="닫기" />}
+      {/* ✕ 는 처음(이름 넣기)에만 — 태어난 뒤엔 다들 ✕ 부터 눌러서 방명록을 놓친다 */}
+      {step === 'name' && <button className="jar-ui-x" onClick={close} aria-label="닫기" />}
 
       <div className="jar-ui-stage">
         {step === 'name' && <img className="jar-ui-base" src="/world/ui_jar_base.svg" alt="" draggable={false} />}
@@ -83,6 +164,10 @@ export function Jar({
           <div className="born">
             <p className="jar-ui-says">{born.name} 모이모가 태어났어요!</p>
             <MoimoImg resident={born} cache={cache} table={table} size={260} className="soft-in" />
+            <div className="jar-ui-card">
+              <button disabled={!card} onClick={() => card && saveDataUrl(card, cardName)}>포토카드 저장</button>
+              {CAN_SHARE && <button disabled={!card} onClick={() => card && shareDataUrl(card, cardName)}>에어드롭</button>}
+            </div>
           </div>
         )}
       </div>
@@ -267,27 +352,9 @@ export function Camera({
   }
 
   const fileName = () => `moimo-${picked.map((r) => r.name).join('-') || 'photo'}.png`
-  const save = () => {
-    if (!shot) return
-    const a = document.createElement('a')
-    a.href = shot
-    a.download = fileName()
-    a.click()
-  }
-  // 공유 — 맥·아이폰에선 공유 시트가 떠서 에어드롭으로 바로 보낼 수 있다
-  const canShare = typeof navigator !== 'undefined' && !!navigator.canShare
-  const share = async () => {
-    if (!shot) return
-    // 사파리는 누른 순간에 바로 share 를 불러야 해서, 기다림 없이 그 자리에서 파일로 바꾼다
-    const bin = atob(shot.split(',')[1])
-    const bytes = new Uint8Array(bin.length)
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
-    const file = new File([bytes], fileName(), { type: 'image/png' })
-    if (!navigator.canShare?.({ files: [file] })) { save(); return }
-    try {
-      await navigator.share({ files: [file], title: '모이모 월드' })
-    } catch { /* 공유 창을 닫았다 */ }
-  }
+  const save = () => { if (shot) saveDataUrl(shot, fileName()) }
+  const share = () => { if (shot) shareDataUrl(shot, fileName()) }
+  const canShare = CAN_SHARE
 
   return (
     // 카메라 그림(ui_camera.svg)을 창으로 쓴다 — 화면 칸에 웹캠, 동그란 버튼이 셔터, 아래 띠에 고르는 목록

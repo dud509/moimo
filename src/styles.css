@@ -443,6 +443,13 @@ input, textarea { cursor: text !important; }
 .jar-ui-base { width: 12.64cqw; display: block; }
 .jar-ui .born { display: grid; justify-items: center; }
 .jar-ui .born .art { width: 31cqw !important; height: 31cqw !important; margin: -2.6cqw 0 -3.3cqw; }
+.jar-ui-card { display: flex; gap: 0.8cqw; margin-top: 0.6cqw; }
+.jar-ui-card button {
+  padding: 0.3cqw 1.6cqw; border-radius: 999px; border: 0.2cqw solid #B0A192;
+  background: #FFFDF4; color: #8A7B6B; font-size: 2cqw; line-height: 1.2;
+}
+.jar-ui-card button:hover:not(:disabled) { background: #F7EDD1; }
+.jar-ui-card button:disabled { opacity: 0.4; }
 .jar-ui-says { margin: 0; font-size: 3.4cqw; font-weight: 700; color: #867561; line-height: 1; }
 /* 이름 칸 — 그림 속 칸과 같은 자리·같은 선 */
 .jar-ui-pill {
