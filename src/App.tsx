@@ -3,7 +3,7 @@ import { loadParts, type PartsCache } from './moimo/compose'
 import { normalizeTable, type AnchorTable } from './moimo/parts'
 import anchorsJson from './data/anchors.json'
 import { World, type Camera, type WorldHandle } from './world/World'
-import { Album, Camera as CameraPanel, Goods, Jar } from './world/Panels'
+import { Album, Camera as CameraPanel, Jar } from './world/Panels'
 import { fetchShared, postShared } from './world/shared'
 import { Manual } from './world/Manual'
 import { measureFootprints } from './world/footprint'
@@ -367,7 +367,6 @@ export default function App() {
           {panel === 'jar' && <Jar {...common} onSend={send} closeRef={jarClose} />}
           {panel === 'camera' && <CameraPanel {...common} residents={residents} />}
           {panel === 'album' && <Album {...common} residents={residents} onFocus={focus} />}
-          {panel === 'goods' && <Goods onClose={() => leave(true)} />}
         </div>
       )}
 

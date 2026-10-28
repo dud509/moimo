@@ -118,10 +118,8 @@ input, textarea { cursor: text !important; }
 .item:hover { transform: scale(1.04); z-index: 8; }
 /* 오브제에 마우스를 올리면 그림 둘레에 흰 테를 두른다 */
 .item .item-art, .item:hover .item-art {
-  /* 누를 수 있는 오브제는 처음부터 흰 테를 두른다 — 흰 테 바깥에 연한 베이지 선, 오려 붙인 스티커처럼 */
-  filter: drop-shadow(10px 0 0 #fff) drop-shadow(-10px 0 0 #fff) drop-shadow(0 10px 0 #fff) drop-shadow(0 -10px 0 #fff)
-    drop-shadow(1.5px 0 0 #E2D6BD) drop-shadow(-1.5px 0 0 #E2D6BD) drop-shadow(0 1.5px 0 #E2D6BD) drop-shadow(0 -1.5px 0 #E2D6BD)
-    drop-shadow(0 6px 8px rgba(112, 94, 76, 0.2));
+  /* 누를 수 있는 오브제는 처음부터 흰 테를 두른다 — 단순한 실루엣의 스티커 테(World.tsx 의 #sticker) */
+  filter: url(#sticker);
 }
 /* 기능 말풍선 — 오브제 곁에 늘 떠 있어 무엇을 할 수 있는지 알려 준다. 꼬리는 오브제 쪽으로 */
 .item-label {

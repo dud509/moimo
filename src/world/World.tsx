@@ -409,6 +409,31 @@ export const World = forwardRef<WorldHandle, Props>(function World(
       onPointerUp={endPointer}
       onPointerCancel={endPointer}
     >
+      {/*
+        스티커 테 — 그림 외곽을 크게 부풀렸다가 흐리게 녹여 다시 또렷하게 잘라,
+        자잘한 굴곡 없이 뭉툭한 실루엣으로 만든다(일러스트의 단순화처럼).
+        흰 테 바깥에 베이지 선을 한 겹 더 두르고, 그 위에 원래 그림을 얹는다
+      */}
+      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden>
+        <filter id="sticker" x="-25%" y="-25%" width="150%" height="150%" colorInterpolationFilters="sRGB">
+          <feMorphology in="SourceAlpha" operator="dilate" radius="16" result="fat" />
+          <feGaussianBlur in="fat" stdDeviation="9" result="soft" />
+          <feComponentTransfer in="soft" result="blob">
+            <feFuncA type="discrete" tableValues="0 0 1 1 1" />
+          </feComponentTransfer>
+          <feMorphology in="blob" operator="dilate" radius="2" result="rim" />
+          <feFlood floodColor="#E2D6BD" />
+          <feComposite in2="rim" operator="in" result="line" />
+          <feFlood floodColor="#FFFFFF" />
+          <feComposite in2="blob" operator="in" result="white" />
+          <feDropShadow in="line" dx="0" dy="5" stdDeviation="5" floodColor="#705E4C" floodOpacity="0.16" result="shadowed" />
+          <feMerge>
+            <feMergeNode in="shadowed" />
+            <feMergeNode in="white" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </svg>
       <div ref={worldRef} className={`world${glide ? ' glide' : ''}`} style={{ width: WORLD.w, height: WORLD.h }}>
 
         {DECOR.map((d) => (

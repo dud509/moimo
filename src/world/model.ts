@@ -77,7 +77,6 @@ export const ITEMS: Item[] = [
   { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 900, w: 257, ratio: 1.053, guide: 1, bubble: 'top' },
   { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774, guide: 2, bubble: 'top' },
   { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1657, w: 197, ratio: 1.172, guide: 1, bubble: 'top' },
-  { id: 'goods',  name: '선물 상자',     tag: '굿즈 구경하기', src: '/items/gift.svg',   x: 1572, y: 753, w: 227, ratio: 0.967, guide: 0, bubble: 'top' },
 ]
 
 /** 누를 수 없는 오브제 — 마을을 꾸미는 큰 물건들 */
@@ -86,6 +85,8 @@ export const DECOR: Placed[] = [
   { src: '/items/book.svg',    x: 1159, y: 1315, w: 347, ratio: 0.775 },
   { src: '/items/inbox01.svg', x: 2668, y: 1306, w: 448, ratio: 0.854 },
   { src: '/items/box01.svg',   x: 1990, y: 1691, w: 289, ratio: 0.915 },
+  // 선물 상자 — 굿즈 구경하기는 뺐다. 그림만 남긴다
+  { src: '/items/gift.svg',    x: 1572, y: 753, w: 227, ratio: 0.967 },
 ]
 
 /** side — 요정이 바라보는 쪽의 반대편에 둔다(오른쪽을 보면 오브제 왼쪽에, 정면이면 위에) */
