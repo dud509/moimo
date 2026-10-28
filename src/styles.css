@@ -133,7 +133,8 @@ input, textarea { cursor: text !important; }
   content: ''; position: absolute; width: 14px; height: 14px;
   background: var(--paper); border: solid #B0A192; border-width: 0 3px 3px 0;
 }
-.item-label.top { left: 50%; bottom: 100%; transform: translate(-50%, -14px); }
+/* 흰 테(약 25px)에 닿지 않게 띄운다 */
+.item-label.top { left: 50%; bottom: 100%; transform: translate(-50%, -44px); }
 .item-label.top::after { left: 50%; top: 100%; margin: -7px 0 0 -7px; transform: rotate(45deg); }
 .item-label.bottom { left: 50%; top: 100%; transform: translate(-50%, 14px); }
 .item-label.bottom::after { left: 50%; bottom: 100%; margin: 0 0 -7px -7px; transform: rotate(-135deg); }
@@ -748,6 +749,8 @@ input, textarea { cursor: text !important; }
   transform: translate(100%, -50%);
   transition: transform 0.35s cubic-bezier(0.3, 1.1, 0.5, 1);
   font-family: 'NanumSquareRound', sans-serif; font-size-adjust: none; letter-spacing: -0.02em;
+  /* 요정·책자·안의 글까지 통째로 1.5배 */
+  zoom: 1.5;
 }
 .manual.open { transform: translate(0, -50%); }
 .manual-peek {
@@ -770,7 +773,7 @@ input, textarea { cursor: text !important; }
 .manual-close:hover { color: var(--ink); }
 .manual-book {
   position: relative;
-  width: min(300px, calc(100vw - 60px)); padding: 22px 22px 18px;
+  width: min(300px, calc(100vw / 1.5 - 60px)); padding: 22px 22px 18px;
   background: var(--paper); border: 2.5px solid #867561; border-right: 0;
   border-radius: 18px 0 0 18px; color: var(--ink);
 }

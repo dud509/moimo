@@ -416,7 +416,9 @@ export const World = forwardRef<WorldHandle, Props>(function World(
       */}
       <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden>
         <filter id="sticker" x="-25%" y="-25%" width="150%" height="150%" colorInterpolationFilters="sRGB">
-          <feMorphology in="SourceAlpha" operator="dilate" radius="16" result="fat" />
+          {/* 크게 부풀렸다 덜 줄이면(닫기) 돋보기 알 같은 속 빈 곳까지 메워진다 */}
+          <feMorphology in="SourceAlpha" operator="dilate" radius="40" result="big" />
+          <feMorphology in="big" operator="erode" radius="24" result="fat" />
           <feGaussianBlur in="fat" stdDeviation="9" result="soft" />
           <feComponentTransfer in="soft" result="blob">
             <feFuncA type="discrete" tableValues="0 0 1 1 1" />
