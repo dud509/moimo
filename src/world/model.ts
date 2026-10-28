@@ -62,6 +62,8 @@ export type Item = Placed & {
   tag: string
   /** 올려 보면 곁에 나타나는 안내 요정 — GUIDES 의 몇 번째인지 */
   guide: number
+  /** 기능 말풍선을 어느 쪽에 띄울지 — 화면 가장자리 쪽 오브제는 바깥으로 */
+  bubble: 'top' | 'left' | 'right' | 'bottom'
 }
 
 /**
@@ -71,11 +73,11 @@ export type Item = Placed & {
  * 1px 이 마을의 1.333px 이고, 시안 한가운데가 마을 한가운데(CENTER)다.
  */
 export const ITEMS: Item[] = [
-  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', src: '/items/jar02.svg',  x: 1811, y: 1212, w: 337, ratio: 1.23, guide: 0 },
-  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 900, w: 257, ratio: 1.053, guide: 1 },
-  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774, guide: 2 },
-  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1657, w: 197, ratio: 1.172, guide: 1 },
-  { id: 'goods',  name: '선물 상자',     tag: '굿즈 구경하기', src: '/items/gift.svg',   x: 1572, y: 753, w: 227, ratio: 0.967, guide: 0 },
+  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', src: '/items/jar02.svg',  x: 1811, y: 1212, w: 337, ratio: 1.23, guide: 0, bubble: 'top' },
+  { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 900, w: 257, ratio: 1.053, guide: 1, bubble: 'left' },
+  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774, guide: 2, bubble: 'bottom' },
+  { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1657, w: 197, ratio: 1.172, guide: 1, bubble: 'left' },
+  { id: 'goods',  name: '선물 상자',     tag: '굿즈 구경하기', src: '/items/gift.svg',   x: 1572, y: 753, w: 227, ratio: 0.967, guide: 0, bubble: 'top' },
 ]
 
 /** 누를 수 없는 오브제 — 마을을 꾸미는 큰 물건들 */
@@ -381,7 +383,7 @@ export function scatterProps(count = PROP_COUNT): Prop[] {
 }
 
 /** 바닥에 별사탕을 흩뿌릴지. 끄면 시안 자리·바깥 흩뿌림 모두 빠진다 */
-export const SHOW_PROPS = false
+export const SHOW_PROPS = true
 
 /**
  * 마을에 깔린 소품. 한 번 정해지면 변하지 않는다 —

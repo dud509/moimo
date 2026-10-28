@@ -123,21 +123,26 @@ input, textarea { cursor: text !important; }
     drop-shadow(1.5px 0 0 #E2D6BD) drop-shadow(-1.5px 0 0 #E2D6BD) drop-shadow(0 1.5px 0 #E2D6BD) drop-shadow(0 -1.5px 0 #E2D6BD)
     drop-shadow(0 6px 8px rgba(112, 94, 76, 0.2));
 }
-/* 기능 말풍선 — 오브제 위에 늘 떠 있어 무엇을 할 수 있는지 알려 준다. 꼬리는 아래로 */
+/* 기능 말풍선 — 오브제 곁에 늘 떠 있어 무엇을 할 수 있는지 알려 준다. 꼬리는 오브제 쪽으로 */
 .item-label {
-  position: absolute; left: 50%; bottom: 100%; z-index: 2;
-  transform: translate(-50%, -14px);
-  padding: 4px 18px; border-radius: 999px;
+  position: absolute; z-index: 2;
+  padding: 4px 32px; border-radius: 999px;
   background: var(--paper); border: 3px solid #B0A192; color: #8A7B6B;
   font-size: 42px; line-height: 1.1; white-space: nowrap; pointer-events: none;
   animation: bubble-float 3s ease-in-out infinite;
 }
 .item-label::after {
-  content: ''; position: absolute; left: 50%; top: 100%;
-  width: 14px; height: 14px; margin: -7px 0 0 -7px;
+  content: ''; position: absolute; width: 14px; height: 14px;
   background: var(--paper); border: solid #B0A192; border-width: 0 3px 3px 0;
-  transform: rotate(45deg);
 }
+.item-label.top { left: 50%; bottom: 100%; transform: translate(-50%, -14px); }
+.item-label.top::after { left: 50%; top: 100%; margin: -7px 0 0 -7px; transform: rotate(45deg); }
+.item-label.bottom { left: 50%; top: 100%; transform: translate(-50%, 14px); }
+.item-label.bottom::after { left: 50%; bottom: 100%; margin: 0 0 -7px -7px; transform: rotate(-135deg); }
+.item-label.left { right: 100%; top: 35%; transform: translate(-14px, -50%); }
+.item-label.left::after { left: 100%; top: 50%; margin: -7px 0 0 -7px; transform: rotate(-45deg); }
+.item-label.right { left: 100%; top: 35%; transform: translate(14px, -50%); }
+.item-label.right::after { right: 100%; top: 50%; margin: -7px -7px 0 0; transform: rotate(135deg); }
 @keyframes bubble-float { 0%, 100% { translate: 0 0 } 50% { translate: 0 -5px } }
 
 /* 돋보기를 들고 있을 때 — 마우스 대신 돋보기가 따라다닌다 */
