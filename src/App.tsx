@@ -4,10 +4,11 @@ import { normalizeTable, type AnchorTable } from './moimo/parts'
 import anchorsJson from './data/anchors.json'
 import { World, type Camera, type WorldHandle } from './world/World'
 import { Album, Camera as CameraPanel, Goods, Jar } from './world/Panels'
+import { fetchShared, postShared } from './world/shared'
 import { Manual } from './world/Manual'
 import { measureFootprints } from './world/footprint'
 import {
-  DECOR, ITEMS, WORLD, loadWorld, setFootprints, residentFromName, saveWorld, seedCountFor, trimWorld,
+  DECOR, ITEMS, WORLD, loadWorld, setFootprints, residentFromName, saveWorld, trimWorld,
   type ItemId, type Resident,
 } from './world/model'
 import './styles.css'
@@ -31,6 +32,8 @@ const MUSIC_VOLUME = 0.35
 const MOUSE_FAIRY = '/items/guide.svg'
 /** 마우스를 화면 끝까지 옮겼을 때 마을이 따라 움직이는 거리(px) */
 const PARALLAX_PX = 16
+/** 함께 보는 마을을 몇 ms 마다 새로 받아 올지 */
+const SYNC_MS = 5000
 /** 이름표가 붙어 있는 시간 */
 const TAG_MS = 4000
 
@@ -123,15 +126,36 @@ export default function App() {
       cancelAnimationFrame(raf)
     }
   }, [])
+  /** 서버의 함께 보는 마을에 붙었나 — 아니면 이 브라우저에만 저장한다 */
+  const shared = useRef(false)
   useEffect(() => {
-    measureFootprints([...ITEMS, ...DECOR].map((p) => p.src)).then((f) => {
+    // 전시 오픈 — 미리 심어 둔 이웃 없이 빈 마을에서 시작한다
+    Promise.all([measureFootprints([...ITEMS, ...DECOR].map((p) => p.src)), fetchShared()]).then(([f, list]) => {
       setFootprints(f)
-      setResidents(trimWorld(loadWorld(seedCountFor(window.innerWidth, window.innerHeight))))
+      shared.current = list !== null
+      setResidents(trimWorld(list ?? loadWorld(0)))
       setSettled(true)
     })
   }, [])
+  // 다른 사람이 만든 모이모도 몇 초마다 받아 온다. 막 보낸 것이 아직 서버에 없으면 그대로 둔다
+  useEffect(() => {
+    if (!settled || !shared.current) return
+    const t = window.setInterval(() => {
+      if (document.hidden) return
+      fetchShared().then((list) => {
+        if (!list) return
+        setResidents((prev) => {
+          const ids = new Set(list.map((r) => r.id))
+          const pending = prev.filter((r) => !ids.has(r.id) && Date.now() - r.at < 30_000)
+          if (!pending.length && list.length === prev.length && list.every((r, i) => r.id === prev[i]?.id)) return prev
+          return trimWorld([...list, ...pending])
+        })
+      })
+    }, SYNC_MS)
+    return () => window.clearInterval(t)
+  }, [settled])
   // 다 세우기 전의 빈 마을을 저장하면 저장된 모이모가 날아간다
-  useEffect(() => { if (settled) saveWorld(residents) }, [residents, settled])
+  useEffect(() => { if (settled && !shared.current) saveWorld(residents) }, [residents, settled])
 
   const say = useCallback((text: string) => {
     setToast(text)
@@ -201,19 +225,22 @@ export default function App() {
     if (ITEMS.some((it) => it.id === id)) setPanel(id as ItemId)
   }, [settled])
 
+  // 지금 마을 — send 에서 자리를 정할 때 읽는다 (갱신 함수 안에서 서버로 보내면 두 번 갈 수 있다)
+  const residentsRef = useRef(residents)
+  residentsRef.current = residents
   const send = useCallback((name: string, note: string) => {
-    setResidents((prev) => {
-      const r = residentFromName(name, prev.length, note || undefined, prev)
-      if (!r) return prev
-      leave(false)
-      setArrived(r.id)
-      window.setTimeout(() => {
-        worldRef.current?.flyTo(r.x, r.y, Math.max(0.8, worldRef.current.camera().scale))
-      }, 60)
-      window.setTimeout(() => setArrived((id) => (id === r.id ? null : id)), 2400)
-      say(`${r.name} 도착! 한층 복작여졌어요`)
-      return trimWorld([...prev, r])
-    })
+    const prev = residentsRef.current
+    const r = residentFromName(name, prev.length, note || undefined, prev)
+    if (!r) return
+    leave(false)
+    setArrived(r.id)
+    window.setTimeout(() => {
+      worldRef.current?.flyTo(r.x, r.y, Math.max(0.8, worldRef.current.camera().scale))
+    }, 60)
+    window.setTimeout(() => setArrived((id) => (id === r.id ? null : id)), 2400)
+    say(`${r.name} 도착! 한층 복작여졌어요`)
+    if (shared.current) postShared(r)
+    setResidents((list) => trimWorld([...list, r]))
   }, [say, leave])
 
   /** 마을 노래를 켜고 끈다. 파일이 없으면 그 사실을 알린다 */
