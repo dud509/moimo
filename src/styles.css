@@ -117,8 +117,8 @@ input, textarea { cursor: text !important; }
 }
 .item:hover { transform: scale(1.04); z-index: 8; }
 /* 오브제에 마우스를 올리면 그림 둘레에 흰 테를 두른다 */
-.item:hover .item-art {
-  /* 흰 테 바깥에 연한 베이지 선 — 오려 붙인 스티커처럼. 바탕이 밝아 흰 테만으로는 안 보인다 */
+.item .item-art, .item:hover .item-art {
+  /* 누를 수 있는 오브제는 처음부터 흰 테를 두른다 — 흰 테 바깥에 연한 베이지 선, 오려 붙인 스티커처럼 */
   filter: drop-shadow(10px 0 0 #fff) drop-shadow(-10px 0 0 #fff) drop-shadow(0 10px 0 #fff) drop-shadow(0 -10px 0 #fff)
     drop-shadow(1.5px 0 0 #E2D6BD) drop-shadow(-1.5px 0 0 #E2D6BD) drop-shadow(0 1.5px 0 #E2D6BD) drop-shadow(0 -1.5px 0 #E2D6BD)
     drop-shadow(0 6px 8px rgba(112, 94, 76, 0.2));
