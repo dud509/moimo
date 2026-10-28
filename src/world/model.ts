@@ -75,7 +75,7 @@ export type Item = Placed & {
 export const ITEMS: Item[] = [
   { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', src: '/items/jar02.svg',  x: 1811, y: 1212, w: 337, ratio: 1.23, guide: 0, bubble: 'top' },
   { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 900, w: 257, ratio: 1.053, guide: 1, bubble: 'left' },
-  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774, guide: 2, bubble: 'bottom' },
+  { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774, guide: 2, bubble: 'right' },
   { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1657, w: 197, ratio: 1.172, guide: 1, bubble: 'left' },
   { id: 'goods',  name: '선물 상자',     tag: '굿즈 구경하기', src: '/items/gift.svg',   x: 1572, y: 753, w: 227, ratio: 0.967, guide: 0, bubble: 'top' },
 ]

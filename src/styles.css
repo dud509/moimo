@@ -139,10 +139,11 @@ input, textarea { cursor: text !important; }
 .item-label.top::after { left: 50%; top: 100%; margin: -7px 0 0 -7px; transform: rotate(45deg); }
 .item-label.bottom { left: 50%; top: 100%; transform: translate(-50%, 14px); }
 .item-label.bottom::after { left: 50%; bottom: 100%; margin: 0 0 -7px -7px; transform: rotate(-135deg); }
-.item-label.left { right: 100%; top: 35%; transform: translate(-14px, -50%); }
-.item-label.left::after { left: 100%; top: 50%; margin: -7px 0 0 -7px; transform: rotate(-45deg); }
-.item-label.right { left: 100%; top: 35%; transform: translate(14px, -50%); }
-.item-label.right::after { right: 100%; top: 50%; margin: -7px -7px 0 0; transform: rotate(135deg); }
+/* 가장자리 쪽 오브제는 위 모서리에서 대각선으로 뻗어 나온다 — 꼬리는 오브제 쪽 아래 모서리에 */
+.item-label.left { right: 62%; bottom: 88%; }
+.item-label.left::after { right: 14%; top: 100%; margin-top: -7px; transform: rotate(20deg); }
+.item-label.right { left: 62%; bottom: 88%; }
+.item-label.right::after { left: 14%; top: 100%; margin-top: -7px; transform: rotate(70deg); }
 @keyframes bubble-float { 0%, 100% { translate: 0 0 } 50% { translate: 0 -5px } }
 
 /* 돋보기를 들고 있을 때 — 마우스 대신 돋보기가 따라다닌다 */
