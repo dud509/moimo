@@ -33,7 +33,7 @@ const MOUSE_FAIRY = '/items/guide.svg'
 /** 마우스를 화면 끝까지 옮겼을 때 마을이 따라 움직이는 거리(px) */
 const PARALLAX_PX = 16
 /** 함께 보는 마을을 몇 ms 마다 새로 받아 올지 */
-const SYNC_MS = 5000
+const SYNC_MS = 10_000
 /** 이름표가 붙어 있는 시간 */
 const TAG_MS = 4000
 
