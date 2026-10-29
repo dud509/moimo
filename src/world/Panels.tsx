@@ -261,6 +261,7 @@ export function Camera({
   const [cam, setCam] = useState<'wait' | 'on' | 'off'>('wait')
   const [count, setCount] = useState(0)
   const [shot, setShot] = useState<string | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
 
   // 창이 열려 있는 동안만 웹캠을 켠다
   useEffect(() => {
@@ -272,6 +273,7 @@ export function Camera({
       (s) => {
         if (gone) { s.getTracks().forEach((t) => t.stop()); return }
         stream = s
+        streamRef.current = s
         const v = videoRef.current
         if (v) { v.srcObject = s; void v.play() }
         setCam('on')
@@ -280,6 +282,14 @@ export function Camera({
     )
     return () => { gone = true; stream?.getTracks().forEach((t) => t.stop()) }
   }, [])
+  // 다시 찍기 — 사진을 치우면 화면 칸의 video 가 새로 생기므로 켜 둔 웹캠을 다시 물린다
+  useEffect(() => {
+    const v = videoRef.current
+    const s = streamRef.current
+    if (shot || !v || !s || v.srcObject === s) return
+    v.srcObject = s
+    void v.play()
+  }, [shot])
 
   const toggle = (r: Resident) =>
     setPicked((p) => p.some((x) => x.id === r.id)

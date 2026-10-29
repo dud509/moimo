@@ -130,7 +130,7 @@ input, textarea { cursor: text !important; }
   animation: bubble-float 3s ease-in-out infinite;
 }
 .item-label::after {
-  content: ''; position: absolute; width: 14px; height: 14px;
+  content: ''; position: absolute; z-index: -1; width: 14px; height: 14px;
   background: var(--paper); border: solid #B0A192; border-width: 0 3px 3px 0;
 }
 /* 흰 테(약 25px)에 닿지 않게 띄운다 */
