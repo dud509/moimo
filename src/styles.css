@@ -445,7 +445,7 @@ input, textarea { cursor: text !important; }
 .jar-ui-base { width: 12.64cqw; display: block; }
 .jar-ui .born { display: grid; justify-items: center; }
 .jar-ui .born .art { width: 31cqw !important; height: 31cqw !important; margin: -2.6cqw 0 -3.3cqw; }
-.jar-ui-card { display: flex; gap: 0.8cqw; margin-top: 0.6cqw; }
+.jar-ui-card { display: flex; gap: 0.8cqw; margin-top: 0.6cqw; pointer-events: auto; }
 .jar-ui-card button {
   padding: 0.3cqw 1.6cqw; border-radius: 999px; border: 0.2cqw solid #B0A192;
   background: #FFFDF4; color: #8A7B6B; font-size: 2cqw; line-height: 1.2;
