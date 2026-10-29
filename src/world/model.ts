@@ -73,7 +73,7 @@ export type Item = Placed & {
  * 1px 이 마을의 1.333px 이고, 시안 한가운데가 마을 한가운데(CENTER)다.
  */
 export const ITEMS: Item[] = [
-  { id: 'jar',    name: '별사탕 유리병', tag: '모이모 만들기', src: '/items/jar02.svg',  x: 1811, y: 1212, w: 337, ratio: 1.23, guide: 0, bubble: 'top' },
+  { id: 'jar',    name: '별사탕 유리병', tag: '이거 먼저 눌러보세요!', src: '/items/jar02.svg',  x: 1811, y: 1212, w: 337, ratio: 1.23, guide: 0, bubble: 'top' },
   { id: 'camera', name: '카메라',       tag: '같이 사진찍기', src: '/items/camera.svg', x: 1195, y: 900, w: 257, ratio: 1.053, guide: 1, bubble: 'top' },
   { id: 'album',  name: '앨범',         tag: '기록과 방명록', src: '/items/album.svg',  x: 2371, y: 864, w: 361, ratio: 0.774, guide: 2, bubble: 'top' },
   { id: 'glass',  name: '돋보기',       tag: '이름 찾아보기', src: '/items/glass.svg',  x: 1348, y: 1657, w: 197, ratio: 1.172, guide: 1, bubble: 'top' },
