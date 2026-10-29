@@ -82,6 +82,7 @@ export default function App() {
   const fairyRef = useRef<HTMLImageElement>(null)
   const panelOpen = useRef(false)
   const jarClose = useRef<(() => void) | null>(null)
+  const jarBorn = useRef(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const table = useMemo<AnchorTable>(() => normalizeTable(anchorsJson), [])
@@ -217,6 +218,8 @@ export default function App() {
   useEffect(() => {
     let t = 0
     const idle = () => {
+      // 모이모가 막 태어난 유리병은 3분 타이머가 따로 저장하고 닫는다
+      if (panelOpen.current && window.location.hash === '#jar' && jarBorn.current) return
       if (panelOpen.current) {
         if (window.location.hash === '#jar') jarClose.current?.()
         else leave(true)
@@ -384,7 +387,7 @@ export default function App() {
             else leave(true)
           }}
         >
-          {panel === 'jar' && <Jar {...common} onSend={send} closeRef={jarClose} />}
+          {panel === 'jar' && <Jar {...common} onSend={send} closeRef={jarClose} bornRef={jarBorn} />}
           {panel === 'camera' && <CameraPanel {...common} residents={residents} />}
           {panel === 'album' && <Album {...common} residents={residents} onFocus={focus} />}
         </div>

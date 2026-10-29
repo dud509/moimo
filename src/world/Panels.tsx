@@ -13,11 +13,22 @@ type Common = { cache: PartsCache; table: AnchorTable; onClose: () => void }
 /* 그림 저장·공유 — 카메라 사진과 포토카드가 같이 쓴다                  */
 /* ------------------------------------------------------------------ */
 
+/** data URL 을 그대로 내려받기 링크로 쓰면 사파리·아이패드에서 안 받아질 때가 있어 Blob 주소로 바꿔 내려받는다 */
 function saveDataUrl(url: string, name: string) {
   const a = document.createElement('a')
-  a.href = url
+  a.href = URL.createObjectURL(dataUrlFile(url, name))
   a.download = name
+  document.body.appendChild(a)
   a.click()
+  a.remove()
+  window.setTimeout(() => URL.revokeObjectURL(a.href), 10_000)
+}
+
+function dataUrlFile(url: string, name: string): File {
+  const bin = atob(url.split(',')[1])
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return new File([bytes], name, { type: 'image/png' })
 }
 
 /** 공유 시트(맥·아이폰은 에어드롭)를 띄울 수 있는 브라우저인가 */
@@ -25,10 +36,7 @@ const CAN_SHARE = typeof navigator !== 'undefined' && !!navigator.canShare
 
 /** 사파리는 누른 순간에 바로 share 를 불러야 해서, 기다림 없이 그 자리에서 파일로 바꾼다 */
 async function shareDataUrl(url: string, name: string) {
-  const bin = atob(url.split(',')[1])
-  const bytes = new Uint8Array(bin.length)
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
-  const file = new File([bytes], name, { type: 'image/png' })
+  const file = dataUrlFile(url, name)
   if (!navigator.canShare?.({ files: [file] })) { saveDataUrl(url, name); return }
   try {
     await navigator.share({ files: [file], title: '모이모 월드' })
@@ -74,11 +82,13 @@ async function makePhotoCard(r: Resident, cache: PartsCache, table: AnchorTable)
 /* ------------------------------------------------------------------ */
 
 export function Jar({
-  cache, table, onClose, onSend, closeRef,
+  cache, table, onClose, onSend, closeRef, bornRef,
 }: Common & {
   onSend: (name: string, note: string) => void
   /** 창 바깥을 눌렀을 때 쓸 닫기 — ✕ 와 똑같이 단계에 맞춰 닫는다 */
   closeRef?: { current: (() => void) | null }
+  /** 태어난 단계인가 — 그동안은 마을의 2분 초기화 대신 이 창의 3분 타이머가 맡는다 */
+  bornRef?: { current: boolean }
 }) {
   const [name, setName] = useState('')
   const [note, setNote] = useState('')
@@ -115,6 +125,19 @@ export function Jar({
   }, [step])
   const cardName = born ? `모이모_${born.name}.png` : 'moimo.png'
   if (closeRef) closeRef.current = close
+  // 태어난 뒤 3분 동안 아무것도 안 하면 방명록 없이(또는 쓰던 대로) 저장하고 마을로 돌아간다
+  const finishRef = useRef(finish)
+  finishRef.current = finish
+  useEffect(() => {
+    if (step !== 'born') return
+    let t = 0
+    const poke = () => { window.clearTimeout(t); t = window.setTimeout(() => finishRef.current(), BORN_IDLE_MS) }
+    const evs = ['pointerdown', 'keydown', 'touchstart'] as const
+    evs.forEach((e) => window.addEventListener(e, poke, { passive: true }))
+    poke()
+    return () => { window.clearTimeout(t); evs.forEach((e) => window.removeEventListener(e, poke)) }
+  }, [step])
+  if (bornRef) bornRef.current = step === 'born'
 
   return (
     // 유리병 그림(ui_jar_bg.svg)을 창으로 쓰고, 원래 모습·이름 칸·✕ 만 위에 얹는다
@@ -155,8 +178,8 @@ export function Jar({
             <p className="jar-ui-says">{born.name} 모이모가 태어났어요!</p>
             <MoimoImg resident={born} cache={cache} table={table} size={260} className="soft-in" />
             <div className="jar-ui-card">
-              <button disabled={!card} onClick={() => card && saveDataUrl(card, cardName)}>포토카드 저장</button>
-              {CAN_SHARE && <button disabled={!card} onClick={() => card && shareDataUrl(card, cardName)}>에어드롭</button>}
+              {/* 버튼 하나 — 공유 시트가 있으면(에어드롭·사진에 저장) 그걸, 없으면 바로 내려받기 */}
+              <button disabled={!card} onClick={() => card && (CAN_SHARE ? shareDataUrl(card, cardName) : saveDataUrl(card, cardName))}>이미지 저장 (에어드롭)</button>
             </div>
           </div>
         )}
@@ -184,7 +207,7 @@ export function Jar({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') finish() }}
-              placeholder="한마디 남겨주세요"
+              placeholder="한마디 남겨주세요 (선택)"
               aria-label="방명록"
               maxLength={40}
               autoFocus
@@ -202,6 +225,7 @@ export function Jar({
 
 /** 아기요정 마법 시간 */
 const MAGIC_MS = 2800
+const BORN_IDLE_MS = 3 * 60_000
 /** 반짝이 자리 — 왼쪽 %, 위 %, 늦게 시작 */
 /** 마법 반짝이 — 원래 모습의 몸 둘레에서 하나씩 피어난다. [x, y (무대 %), 늦게 시작(초)] */
 const SPARKS: [number, number, number][] = [
