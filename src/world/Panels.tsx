@@ -391,7 +391,10 @@ export function Camera({
         onClick={start}
         aria-label="찰칵"
         title="찰칵"
-      />
+      >
+        {/* 셔터 — 짙은 원 안에 흰 링과 흰 버튼 */}
+        <span className="cam-ui-ring"><i /></span>
+      </button>
 
       <div className="cam-ui-screen">
         {shot ? (
