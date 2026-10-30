@@ -242,7 +242,7 @@ const SPARK_COLORS = ['#F7D947', '#FFFFFF']
 /** 같이 찍을 수 있는 모이모 수 */
 const CAM_MAX = 2
 /** 모이모가 사진 속에 설 자리 — 가로 가운데(%) · 사람 얼굴은 가운데에 오니 양옆으로 비킨다 */
-const CAM_SPOTS = [[85], [15, 85]]
+const CAM_SPOTS = [[82.5], [17.5, 82.5]]
 /** 포즈 이름 — POSES 순서 */
 const POSE_NAMES = ['기본', '갸웃', '브이', '양손', '빼꼼']
 /** 빼꼼 포즈 — 손이 사진 아래 테두리에 얹히게, 그림 위에서부터 손 아래끝 높이(비율) */
@@ -251,7 +251,7 @@ const PEEK_LINE = 0.63
 /** 서 있는 포즈의 발끝 높이(그림 위에서부터 비율) — 발이 사진 아래 테두리에 닿게 */
 const FEET_LINE = 0.75
 /** 사진 속 모이모 크기 — 사진 너비에 대한 비율 */
-const CAM_SIZE = 0.5
+const CAM_SIZE = 0.55
 
 export function Camera({
   cache, table, onClose, residents,
