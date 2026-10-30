@@ -534,11 +534,8 @@ input, textarea { cursor: text !important; }
   background: transparent; transition: box-shadow 0.15s, background 0.15s;
 }
 .cam-ui-shutter { display: grid; place-items: center; padding: 0; }
-.cam-ui-ring { width: 72%; aspect-ratio: 1; border-radius: 50%; border: 0.5cqw solid #FFFFFF; display: grid; place-items: center; transition: transform 0.1s; }
-.cam-ui-ring i { width: 70%; aspect-ratio: 1; border-radius: 50%; background: #FFFFFF; }
-/* 모이모를 골라 찍을 수 있을 때 — 노란 빛이 은은하게 */
-.cam-ui-shutter:not(:disabled) { animation: shutter-glow 1.6s ease-in-out infinite; }
-@keyframes shutter-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(247, 217, 71, 0) } 50% { box-shadow: 0 0 1.6cqw 0.5cqw rgba(247, 217, 71, 0.85) } }
+.cam-ui-ring { width: 86%; aspect-ratio: 1; border-radius: 50%; border: 0.5cqw solid #FFFFFF; display: grid; place-items: center; transition: transform 0.1s; }
+.cam-ui-ring i { width: 62%; aspect-ratio: 1; border-radius: 50%; background: #FFFFFF; }
 .cam-ui-shutter:not(:disabled):active .cam-ui-ring { transform: scale(0.92); }
 .cam-ui-shutter:disabled .cam-ui-ring { opacity: 0.5; }
 .cam-ui-shutter:disabled { cursor: default; }
