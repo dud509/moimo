@@ -547,7 +547,7 @@ input, textarea { cursor: text !important; }
   position: absolute; left: 77.5%; top: 34%; width: 17%; display: grid; gap: 1cqw; justify-items: center; text-align: center;
 }
 .cam-ui-side .btn { width: 100%; padding: 0.8cqw 0; font-size: 2.4cqw; }
-.cam-ui-tip { margin: 0; font-size: 1.9cqw; line-height: 1.45; color: #867561; word-break: keep-all; }
+.cam-ui-tip { margin: 0; font-size: 1.9cqw; line-height: 2; color: #867561; word-break: keep-all; }
 /* 포즈 고르기 — 카메라 아래 분홍 띠 */
 .cam-ui-poses { position: absolute; left: 10.98%; top: 76.5%; width: 64.88%; height: 18%; display: flex; gap: 1cqw; justify-content: center; align-items: center; }
 .cam-ui-pose {
