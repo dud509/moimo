@@ -160,6 +160,8 @@ type Props = {
   table: AnchorTable
   onItem: (id: ItemId) => void
   onResident: (r: Resident) => void
+  /** 모이모를 끌어다 놓았다 — 놓은 자리(마을 좌표) */
+  onMoveResident?: (id: string, x: number, y: number) => void
   arrivedId: string | null
   /** 돋보기 — 이름표를 띄워둘지 */
   showNames: boolean
@@ -173,7 +175,7 @@ type Props = {
 }
 
 export const World = forwardRef<WorldHandle, Props>(function World(
-  { residents, cache, table, onItem, onResident, arrivedId, showNames, hits, tagged = null, lens = false, onCamera },
+  { residents, cache, table, onItem, onResident, onMoveResident, arrivedId, showNames, hits, tagged = null, lens = false, onCamera },
   ref,
 ) {
   const art = useTightArt(ART_SRCS, ART_LINES)
@@ -217,6 +219,19 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   const camRef = useRef<Camera>({ tx: 0, ty: 0, scale: 0.6 })
   const [glide, setGlide] = useState(false)
   const drag = useRef<{ id: number; x: number; y: number; sx: number; sy: number; moved: boolean } | null>(null)
+  /** 잡고 있는 모이모 — 끄는 동안엔 그 버튼 하나의 left/top 만 바꾸고, 놓을 때 한 번 자리를 정한다 */
+  const held = useRef<{ rid: string; el: HTMLElement; x0: number; y0: number; x: number; y: number } | null>(null)
+  const letGo = () => {
+    const h = held.current
+    held.current = null
+    if (!h) return
+    // 원래 자리로 되돌려 둔다 — 새 자리는 React 가 다시 그린다
+    h.el.style.left = `${h.x0}px`
+    h.el.style.top = `${h.y0}px`
+    h.el.style.zIndex = ''
+    h.el.classList.remove('held')
+    return h
+  }
   /** 방금 끌기를 마쳤나 — 끌고 손을 뗀 자리의 클릭은 무시한다 */
   const dragged = useRef(false)
   const pinch = useRef<Map<number, { x: number; y: number }>>(new Map())
@@ -340,9 +355,13 @@ export const World = forwardRef<WorldHandle, Props>(function World(
       const [a, b] = [...pinch.current.values()]
       pinchStart.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), scale: camRef.current.scale }
       drag.current = null
+      letGo()
       return
     }
     setGlide(false)
+    const el = (e.target as HTMLElement).closest<HTMLElement>('.moimo')
+    const r = el && onMoveResident ? residentsRef.current.find((m) => m.id === el.dataset.id) : undefined
+    held.current = el && r ? { rid: r.id, el, x0: r.x, y0: r.y, x: r.x, y: r.y } : null
     // 누르자마자 마우스를 붙잡으면 모이모·오브제 클릭이 마을에 먹혀 버린다.
     // 실제로 끌기 시작했을 때만 붙잡는다 (onPointerMove)
     drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, moved: false }
@@ -371,6 +390,17 @@ export const World = forwardRef<WorldHandle, Props>(function World(
       d.moved = true
       ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
     }
+    const h = held.current
+    if (h) {
+      // 모이모를 잡고 끄는 중 — 마을은 그대로 두고 그 모이모만 따라온다
+      if (!h.el.classList.contains('held')) { h.el.classList.add('held'); h.el.style.zIndex = '999' }
+      const k = camRef.current.scale
+      h.x = h.x0 + (e.clientX - d.sx) / k
+      h.y = h.y0 + (e.clientY - d.sy) / k
+      h.el.style.left = `${h.x}px`
+      h.el.style.top = `${h.y}px`
+      return
+    }
     const dx = e.clientX - d.x
     const dy = e.clientY - d.y
     d.x = e.clientX
@@ -384,11 +414,14 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     pinch.current.delete(e.pointerId)
     if (pinch.current.size < 2) pinchStart.current = null
     if (drag.current?.id === e.pointerId) {
-      if (drag.current.moved) {
+      const moved = drag.current.moved
+      if (moved) {
         dragged.current = true
         window.setTimeout(() => { dragged.current = false }, 0)
       }
       drag.current = null
+      const h = letGo()
+      if (h && moved) onMoveResident?.(h.rid, h.x, h.y)
     }
   }
 
@@ -483,6 +516,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
           return (
             <button
               key={r.id}
+              data-id={r.id}
               className={`moimo${r.id === arrivedId ? ' arrive' : ''}${fresh ? ' mine' : ''}${dim ? ' dim' : ''}${r.id === tagged ? ' tagged' : ''}${named ? ' named' : ''}`}
               style={{
                 left: r.x,

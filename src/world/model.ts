@@ -556,6 +556,29 @@ export function settle(list: Resident[]): Resident[] {
   return out
 }
 
+/**
+ * 끌어다 놓은 자리 — 놓은 곳이 비어 있으면 그대로, 오브제·말풍선·이웃과 겹치면
+ * 놓은 곳에서 가장 가까운 빈자리로 비켜 선다
+ */
+export function dropSpot(list: Resident[], id: string, x: number, y: number): { x: number; y: number } {
+  const others = list.filter((r) => r.id !== id)
+  x = Math.round(x)
+  y = Math.round(y)
+  if (standsFree(x, y, MIN_GAP, others)) return { x, y }
+  for (let ring = 1; ring <= 40; ring++) {
+    const d = ring * 12
+    const n = 8 + ring * 2
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2
+      const px = Math.round(x + Math.cos(a) * d)
+      const py = Math.round(y + Math.sin(a) * d)
+      if (standsFree(px, py, MIN_GAP, others)) return { x: px, y: py }
+    }
+  }
+  const r = list.find((r) => r.id === id)
+  return r ? { x: r.x, y: r.y } : { x, y }
+}
+
 export function loadWorld(seeds_ = SEED_COUNT): Resident[] {
   try {
     const raw = localStorage.getItem(KEY)

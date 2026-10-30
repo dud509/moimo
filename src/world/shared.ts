@@ -36,3 +36,17 @@ export async function postShared(r: Resident): Promise<boolean> {
     return false
   }
 }
+
+/** 끌어다 놓은 자리를 모두의 마을에 알린다 */
+export async function moveShared(id: string, x: number, y: number): Promise<boolean> {
+  try {
+    const res = await fetch(API, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, x, y }),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}

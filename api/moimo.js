@@ -3,6 +3,7 @@
  *
  *   GET    /api/moimo          마을에 있는 모이모 전부
  *   POST   /api/moimo          새 모이모 하나 { id, name, x, y, phase, at, note? }
+ *   PATCH  /api/moimo          자리 옮기기 { id, x, y } — 마을에서 끌어다 놓은 자리
  *   DELETE /api/moimo?id=…     하나 내보내기 — 헤더 x-admin 이 MOIMO_ADMIN 과 같아야 한다
  *
  * 유전자는 이름에서 늘 다시 계산하므로 저장하지 않는다.
@@ -42,6 +43,16 @@ export default async function handler(req, res) {
         ...(typeof b.note === 'string' && b.note.trim() ? { note: b.note.trim().slice(0, 40) } : {}),
       }
       await redis(['RPUSH', KEY, JSON.stringify(r)])
+      return res.status(200).json(r)
+    }
+    if (req.method === 'PATCH') {
+      const b = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {}
+      if (typeof b.id !== 'string' || !num(b.x) || !num(b.y)) return res.status(400).json({ error: 'bad move' })
+      const list = (await redis(['LRANGE', KEY, '0', '-1'])) || []
+      const i = list.findIndex((s) => JSON.parse(s).id === b.id)
+      if (i < 0) return res.status(404).json({ error: 'not found' })
+      const r = { ...JSON.parse(list[i]), x: Math.round(b.x), y: Math.round(b.y) }
+      await redis(['LSET', KEY, String(i), JSON.stringify(r)])
       return res.status(200).json(r)
     }
     if (req.method === 'DELETE') {

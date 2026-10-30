@@ -4,11 +4,11 @@ import { normalizeTable, type AnchorTable } from './moimo/parts'
 import anchorsJson from './data/anchors.json'
 import { World, type Camera, type WorldHandle } from './world/World'
 import { Album, Camera as CameraPanel, Jar } from './world/Panels'
-import { fetchShared, postShared } from './world/shared'
+import { fetchShared, moveShared, postShared } from './world/shared'
 import { Manual } from './world/Manual'
 import { measureFootprints } from './world/footprint'
 import {
-  DECOR, ITEMS, WORLD, loadWorld, setFootprints, residentFromName, saveWorld, settle, trimWorld,
+  DECOR, ITEMS, WORLD, dropSpot, loadWorld, setFootprints, residentFromName, saveWorld, settle, trimWorld,
   type ItemId, type Resident,
 } from './world/model'
 import './styles.css'
@@ -151,8 +151,11 @@ export default function App() {
         setResidents((prev) => {
           const ids = new Set(list.map((r) => r.id))
           const pending = prev.filter((r) => !ids.has(r.id) && Date.now() - r.at < 30_000)
-          if (!pending.length && list.length === prev.length && list.every((r, i) => r.id === prev[i]?.id)) return prev
-          return trimWorld([...settle(list), ...pending])
+          // 방금 옮긴 모이모는 서버에 닿기 전이라 잠깐 내 자리를 믿는다
+          const mine = new Map(prev.filter((r) => Date.now() - (moved.current.get(r.id) ?? 0) < SYNC_MS * 2).map((r) => [r.id, r]))
+          const next = settle(list.map((r) => { const m = mine.get(r.id); return m ? { ...r, x: m.x, y: m.y } : r }))
+          if (!pending.length && next.length === prev.length && next.every((r, i) => r.id === prev[i]?.id && r.x === prev[i].x && r.y === prev[i].y)) return prev
+          return trimWorld([...next, ...pending])
         })
       })
     }, SYNC_MS)
@@ -267,6 +270,15 @@ export default function App() {
     setResidents((list) => trimWorld([...list, r]))
   }, [say, leave])
 
+  // 끌어다 놓은 모이모 — 빈자리에 세우고 모두의 마을에도 알린다
+  const moved = useRef(new Map<string, number>())
+  const moveResident = useCallback((id: string, x: number, y: number) => {
+    const spot = dropSpot(residentsRef.current, id, x, y)
+    moved.current.set(id, Date.now())
+    setResidents((list) => list.map((r) => (r.id === id ? { ...r, ...spot } : r)))
+    if (shared.current) void moveShared(id, spot.x, spot.y)
+  }, [])
+
   /** 마을 노래를 켜고 끈다. 파일이 없으면 그 사실을 알린다 */
   const audio = useCallback(() => {
     let a = audioRef.current
@@ -352,6 +364,7 @@ export default function App() {
         lens={lens}
         onItem={openItem}
         onResident={(r) => tag(tagged === r.id ? null : r.id)}
+        onMoveResident={moveResident}
         tagged={tagged}
         onCamera={setCamera}
       />
