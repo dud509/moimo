@@ -544,7 +544,7 @@ input, textarea { cursor: text !important; }
 .cam-ui-screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 .cam-ui-screen .cam-shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; }
 .cam-ui-side {
-  position: absolute; left: 77.5%; top: 29%; width: 17%; display: grid; gap: 1cqw; justify-items: center; text-align: center;
+  position: absolute; left: 77.5%; top: 34%; width: 17%; display: grid; gap: 1cqw; justify-items: center; text-align: center;
 }
 .cam-ui-side .btn { width: 100%; padding: 0.8cqw 0; font-size: 2.4cqw; }
 .cam-ui-tip { margin: 0; font-size: 1.9cqw; line-height: 1.45; color: #867561; word-break: keep-all; }
