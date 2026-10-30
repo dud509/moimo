@@ -199,8 +199,12 @@ input, textarea { cursor: text !important; }
   position: absolute; background: none; border: 0; padding: 0; line-height: 0;
   transition: opacity 0.25s ease; cursor: grab;
 }
-/* 잡고 끄는 중 — 살짝 들린 듯 그림자만 옅게 */
-.moimo.held { cursor: grabbing; opacity: 0.85; }
+/* 잡고 끄는 중 — 양손을 들고 바들바들 */
+.moimo.held { cursor: grabbing; }
+.moimo .art.shiver { animation: shiver 0.12s linear infinite; }
+@keyframes shiver {
+  0% { translate: 0 0 } 25% { translate: -1.5px 0.5px } 50% { translate: 1px -0.5px } 75% { translate: -0.5px 1px } 100% { translate: 0 0 }
+}
 /* 모이모는 제자리에 가만히 서 있다. 바닥에 옅은 그림자가 깔린다 */
 .art { display: block; position: relative; line-height: 0; }
 .art svg { width: 100%; height: 100%; display: block; }

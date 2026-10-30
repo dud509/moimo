@@ -120,19 +120,24 @@ const IS_SAFARI = typeof navigator !== 'undefined' && /^((?!chrome|android|crios
 /** 막 태어난 모이모에 점을 달아 두는 시간 */
 const FRESH_MS = 2 * 60_000
 
+/** 들어 올렸을 때의 자세 — 양손 */
+const LIFT_POSE = 3
+
 export const MoimoImg = memo(function MoimoImg({
-  resident, cache, table, size = MOIMO_PX, className,
+  resident, cache, table, size = MOIMO_PX, className, pose,
 }: {
   resident: Resident; cache: PartsCache; table: AnchorTable
   size?: number
+  /** 자세 — 비우면 기본. 3 은 양손을 든 모습(들어 올렸을 때) */
+  pose?: number
   className?: string
 }) {
   // SVG 를 그림 파일로 구워 걸면 브라우저가 '놓인 크기'로 한 번 비트맵을 만들어 둔다.
   // 확대하면 그 비트맵을 늘리게 되고, 수십 마리분이 한꺼번에 화면에 얹히면
   // 가장자리가 부서지거나 가로줄이 생긴다. 그래서 벡터인 채로 그대로 심는다.
   const html = useMemo(
-    () => composeMoimo(resident.genes, cache, table),
-    [resident.genes, cache, table],
+    () => composeMoimo(resident.genes, cache, table, pose ? { pose } : undefined),
+    [resident.genes, cache, table, pose],
   )
   if (IS_SAFARI) {
     return (
@@ -221,9 +226,12 @@ export const World = forwardRef<WorldHandle, Props>(function World(
   const drag = useRef<{ id: number; x: number; y: number; sx: number; sy: number; moved: boolean } | null>(null)
   /** 잡고 있는 모이모 — 끄는 동안엔 그 버튼 하나의 left/top 만 바꾸고, 놓을 때 한 번 자리를 정한다 */
   const held = useRef<{ rid: string; el: HTMLElement; x0: number; y0: number; x: number; y: number } | null>(null)
+  /** 들어 올린 모이모 — 양손을 들고 바들바들 떤다 */
+  const [liftedId, setLiftedId] = useState<string | null>(null)
   const letGo = () => {
     const h = held.current
     held.current = null
+    setLiftedId(null)
     if (!h) return
     // 원래 자리로 되돌려 둔다 — 새 자리는 React 가 다시 그린다
     h.el.style.left = `${h.x0}px`
@@ -393,7 +401,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
     const h = held.current
     if (h) {
       // 모이모를 잡고 끄는 중 — 마을은 그대로 두고 그 모이모만 따라온다
-      if (!h.el.classList.contains('held')) { h.el.classList.add('held'); h.el.style.zIndex = '999' }
+      if (!h.el.classList.contains('held')) { h.el.classList.add('held'); h.el.style.zIndex = '999'; setLiftedId(h.rid) }
       const k = camRef.current.scale
       h.x = h.x0 + (e.clientX - d.sx) / k
       h.y = h.y0 + (e.clientY - d.sy) / k
@@ -527,7 +535,7 @@ export const World = forwardRef<WorldHandle, Props>(function World(
               onClick={() => { if (!dragged.current) onResident(r) }}
             >
               <Shadow />
-              <MoimoImg resident={r} cache={cache} table={table} />
+              <MoimoImg resident={r} cache={cache} table={table} pose={r.id === liftedId ? LIFT_POSE : undefined} className={r.id === liftedId ? 'shiver' : undefined} />
               {named && (
                 <span className={`moimo-name${r.id === tagged ? ' tag' : ''}`} style={{ background: PASTEL_BG[r.genes.color - 1] }}>
                   {r.name}
