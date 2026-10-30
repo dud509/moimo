@@ -20,6 +20,9 @@
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #867561; border-radius: 6px; }
 html, body, #root { height: 100%; }
+/* 화면 밖에 접혀 있는 가이드 같은 것 때문에 페이지가 옆으로 밀려 돌아오지 않던 것 —
+   hidden 은 포커스·스크롤 요청에 밀리지만 clip 은 아예 밀리지 않는다 */
+html { overflow: hidden; overflow: clip; overscroll-behavior: none; }
 body {
   margin: 0;
   font-family: var(--font);
@@ -27,7 +30,7 @@ body {
   font-size-adjust: 0.52;
   color: var(--ink);
   background: var(--ground);
-  overflow: hidden;
+  overflow: hidden; overflow: clip;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -38,7 +41,7 @@ button { cursor: pointer; }
 body, body * { cursor: var(--wand), auto !important; }
 input, textarea { cursor: text !important; }
 
-.app { position: relative; height: 100%; overflow: hidden; background: var(--ground); }
+.app { position: relative; height: 100%; overflow: hidden; overflow: clip; background: var(--ground); }
 .booting { height: 100%; display: grid; place-items: center; color: var(--ink-soft); font-weight: 700; }
 
 /* ---------------- 마을 ---------------- */

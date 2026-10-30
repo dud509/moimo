@@ -237,6 +237,17 @@ export default function App() {
     return () => { window.clearTimeout(t); evs.forEach((e) => window.removeEventListener(e, poke)) }
   }, [leave])
 
+  // 페이지 자체는 절대 스크롤되지 않는다 — 옛 사파리처럼 clip 을 모르는 브라우저에서 밀려도 바로 되돌린다
+  useEffect(() => {
+    const back = (e: Event) => {
+      const el = e.target === document ? document.scrollingElement : (e.target as Element)
+      if (!el || !(el === document.scrollingElement || el === document.body || el.classList?.contains('app'))) return
+      if (el.scrollLeft || el.scrollTop) { el.scrollLeft = 0; el.scrollTop = 0 }
+    }
+    document.addEventListener('scroll', back, true)
+    return () => document.removeEventListener('scroll', back, true)
+  }, [])
+
   // Esc 로 돋보기를 내려놓는다
   useEffect(() => {
     if (!lens) return
