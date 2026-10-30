@@ -249,9 +249,9 @@ const POSE_NAMES = ['기본', '갸웃', '브이', '양손', '빼꼼']
 const PEEK_POSE = 4
 const PEEK_LINE = 0.63
 /** 서 있는 포즈의 발끝 높이(그림 위에서부터 비율) — 발이 사진 아래 테두리에 닿게 */
-const FEET_LINE = 0.8
+const FEET_LINE = 0.75
 /** 사진 속 모이모 크기 — 사진 너비에 대한 비율 */
-const CAM_SIZE = 0.62
+const CAM_SIZE = 0.5
 
 export function Camera({
   cache, table, onClose, residents,
