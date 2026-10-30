@@ -534,7 +534,7 @@ input, textarea { cursor: text !important; }
   background: transparent; transition: box-shadow 0.15s, background 0.15s;
 }
 .cam-ui-shutter { display: grid; place-items: center; padding: 0; }
-.cam-ui-ring { width: 86%; aspect-ratio: 1; border-radius: 50%; border: 0.5cqw solid #FFFFFF; display: grid; place-items: center; transition: transform 0.1s; }
+.cam-ui-ring { width: 79%; aspect-ratio: 1; border-radius: 50%; border: 0.5cqw solid #FFFFFF; display: grid; place-items: center; transition: transform 0.1s; }
 .cam-ui-ring i { width: 62%; aspect-ratio: 1; border-radius: 50%; background: #FFFFFF; }
 .cam-ui-shutter:not(:disabled):active .cam-ui-ring { transform: scale(0.92); }
 .cam-ui-shutter:disabled .cam-ui-ring { opacity: 0.5; }
